@@ -132,7 +132,3 @@ int main() {
 	cout << "MSE: " << reg.mse() << endl;
 	cout << "Error in 2050 = " << reg.get_residuals(2050) << endl;
 }
-		
-
-
-
