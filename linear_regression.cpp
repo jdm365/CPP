@@ -145,6 +145,7 @@ class LinearRegression {
 				float pred = predict(X[idx]);
 				error += (pred - y[idx]) * (pred - y[idx]);
 			}
+			error = error / y.size();
 			return error;
 		}
 };
