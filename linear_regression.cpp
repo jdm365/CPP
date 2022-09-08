@@ -103,7 +103,6 @@ class LinearRegression {
 		void fit() {
 			float N 		 = y.size();
 			float y_sum 	 = get_y_sum(N);
-			float y_sqrd_sum = get_y_sqrd_sum(N);
 
 			for (int dim = 0; dim < dims; dim++) {
 				float x_sum 	 = get_x_sum(N, dim);
@@ -122,7 +121,7 @@ class LinearRegression {
 			}
 
 			cout << "The best fitting line is y = ";
-			for (int idx = 0; idx < beta_1.size(); idx++) {
+			for (int idx = 0; idx < int (beta_1.size()); idx++) {
 				cout << beta_1[idx] << " * x_" << idx << " + ";
 			}
 			cout << beta_0 << endl;
@@ -130,7 +129,7 @@ class LinearRegression {
 
 		float predict(vector<float> X_pred) {
 			float pred = 0;
-			for (int idx = 0; idx < beta_1.size(); idx++) {
+			for (int idx = 0; idx < int (beta_1.size()); idx++) {
 				pred += beta_1[idx] * X_pred[idx];
 			}
 			pred += beta_0;
@@ -141,7 +140,7 @@ class LinearRegression {
 			assert (X[0].size() == y.size());
 
 			float error = 0;
-			for (int idx = 0; idx < beta_1.size(); idx++) {
+			for (int idx = 0; idx < int (beta_1.size()); idx++) {
 				float pred = predict(X[idx]);
 				error += (pred - y[idx]) * (pred - y[idx]);
 			}
