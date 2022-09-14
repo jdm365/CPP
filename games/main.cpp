@@ -11,6 +11,7 @@
 const char* GRASS_FILEPATH  = "textures/ground_grass_1.png";
 const char* PLAYER_FILEPATH = "textures/hulking_knight.png";
 const float TIME_STEP = 0.01f;
+const int PLAYER_SIZE = 48;
 
 
 int main(int argc, char* args[]) {
@@ -41,8 +42,8 @@ int main(int argc, char* args[]) {
 	
 	Entity player_entity(
 			Vector2f(100, platform_h - 32 * 1.5), 
-			player_entity.PLAYER_SIZE,
-			player_entity.PLAYER_SIZE, 
+			PLAYER_SIZE,
+			PLAYER_SIZE, 
 			player_texture
 			);
 

@@ -8,7 +8,6 @@
 
 class Entity {
 	public:
-		const int PLAYER_SIZE = 48;
 		Entity(Vector2f player_pos, int w, int h, SDL_Texture* player_texture);
 		Vector2f& get_pos() {
 			return pos;
