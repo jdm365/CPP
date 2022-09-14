@@ -68,6 +68,9 @@ int main(int argc, char* args[]) {
 				}
 				switch(event.key.keysym.sym) {
 					case SDLK_DOWN:
+						if (player_entity.get_pos().y >= platform_h - 32 * 1.5) {
+							break;
+						}
 						player_entity.pos = Vector2f (player_entity.get_pos().x, player_entity.get_pos().y + 10);
 						break;
 				}
