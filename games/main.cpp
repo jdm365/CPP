@@ -6,7 +6,7 @@
 #include "render_window.hpp"
 #include "entity.hpp"
 #include "utils.hpp"
-
+#include "event_listener.hpp"
 
 const char* GRASS_FILEPATH  = "textures/ground_grass_1.png";
 const char* PLAYER_FILEPATH = "textures/hulking_knight.png";
@@ -30,11 +30,13 @@ int main(int argc, char* args[]) {
 
 	int n_ground_textures = 1280 / GROUND_SIZE;
 	int platform_h        = 720 * 2 / 3;
+	const int GROUND_HEIGHT = platform_h - GROUND_SIZE * 1.5;
 
 	std::vector<Entity> ground_entities;
 	for (int idx = 0; idx < n_ground_textures; idx++) {
 		ground_entities.push_back(Entity(
 					Vector2f(GROUND_SIZE * idx, platform_h), 
+					Vector2f(0, 0), 
 					GROUND_SIZE,
 					GROUND_SIZE,
 					grass_texture
@@ -42,7 +44,8 @@ int main(int argc, char* args[]) {
 	}
 	
 	Entity player_entity(
-			Vector2f(100, platform_h - GROUND_SIZE * 1.5), 
+			Vector2f(100, GROUND_HEIGHT), 
+			Vector2f(0, 0), 
 			PLAYER_SIZE,
 			PLAYER_SIZE, 
 			player_texture
@@ -56,42 +59,24 @@ int main(int argc, char* args[]) {
 		float current_time   = utils::hire_time_in_seconds();
 
 		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				game_running = false;
-			}
-			if (event.type == SDL_KEYDOWN) {
-				switch(event.key.keysym.sym) {
-					case SDLK_LEFT:
-						player_entity.pos = Vector2f (player_entity.get_pos().x - 10, player_entity.get_pos().y);
-						break;
-					case SDLK_RIGHT:
-						player_entity.pos = Vector2f (player_entity.get_pos().x + 10, player_entity.get_pos().y);
-						break;
-					case SDLK_UP:
-						player_entity.pos = Vector2f (player_entity.get_pos().x, player_entity.get_pos().y - PLAYER_SIZE);
-						break;
-				}
-			}
-
-			window.clear();
-
-			for (Entity& entity: ground_entities) {
-				window.render(entity);
-			}
-			window.render(player_entity);
-
-			window.display();
+			player_entity = handle(event, player_entity, game_running);
+			player_entity = update(player_entity, GROUND_HEIGHT);
 
 		}
+		window.clear();
+
+		for (Entity& entity: ground_entities) {
+			window.render(entity);
+		}
+
+		window.render(player_entity);
+
+		window.display();
 		float new_time   = utils::hire_time_in_seconds();
 		float frame_time = new_time - current_time;
 
 		if (frame_time < TIME_STEP) {
 			SDL_Delay(1000 * (TIME_STEP - frame_time));
-		}
-
-		if (player_entity.get_pos().y < platform_h - GROUND_SIZE * 1.5) {
-			player_entity.pos = Vector2f (player_entity.get_pos().x, player_entity.get_pos().y + 2);
 		}
 	}
 
