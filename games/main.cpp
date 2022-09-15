@@ -61,8 +61,13 @@ int main(int argc, char* args[]) {
 		while (SDL_PollEvent(&event)) {
 			player_entity = handle(event, player_entity, game_running);
 			player_entity = update(player_entity, GROUND_HEIGHT);
+			float new_time   = utils::hire_time_in_seconds();
+			float frame_time = new_time - current_time;
+			if (frame_time >= TIME_STEP) {
+				break;
+			}
 
-		}
+
 		window.clear();
 
 		for (Entity& entity: ground_entities) {
@@ -72,13 +77,8 @@ int main(int argc, char* args[]) {
 		window.render(player_entity);
 
 		window.display();
-		float new_time   = utils::hire_time_in_seconds();
-		float frame_time = new_time - current_time;
-
-		if (frame_time < TIME_STEP) {
-			SDL_Delay(1000 * (TIME_STEP - frame_time));
-		}
 	}
+}
 
 	window.clean_up();
 	SDL_Quit();
