@@ -44,14 +44,17 @@ int main(int argc, char* args[]) {
 			player_texture
 			);
 
+
 	SDL_Event event;
 
-	while (true) {
+	bool done = false;
+	while (!done) {
 		while (SDL_PollEvent(&event)) {
 			player_entity = handle(event, player_entity);
 
 			if (event.type == SDL_QUIT) {
 				window.quit();
+				done = true;
 			}
 		}
 
