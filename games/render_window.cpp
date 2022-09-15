@@ -52,7 +52,7 @@ void RenderWindow::clear() {
 }
 
 void RenderWindow::render(Entity& player_entity) {
-	SDL_Rect src;
+	SDL_Rect src;									// location on image
 	src.x = player_entity.get_current_frame().x;
 	src.y = player_entity.get_current_frame().y;
 	src.w = player_entity.get_current_frame().w;
@@ -71,6 +71,8 @@ void RenderWindow::display() {
 	SDL_RenderPresent(renderer);
 }
 
-void RenderWindow::clean_up() {
+void RenderWindow::quit() {
 	SDL_DestroyWindow(window);
+	SDL_Quit();
 }
+

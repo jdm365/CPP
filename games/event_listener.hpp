@@ -6,6 +6,6 @@
 #include "entity.hpp"
 #include "constants.h"
 
-Entity handle(SDL_Event event, Entity player_entity, bool game_running);
+Entity handle(SDL_Event event, Entity player_entity);
 Entity update(Entity player_entity);
 

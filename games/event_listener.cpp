@@ -5,11 +5,7 @@
 #include "event_listener.hpp"
 #include "constants.h"
 
-Entity handle(SDL_Event event, Entity player_entity, bool game_running) {
-	if (event.type == SDL_QUIT) {
-		game_running = false;
-	}
-
+Entity handle(SDL_Event event, Entity player_entity) {
 	if (event.type == SDL_KEYDOWN) {
 		switch(event.key.keysym.sym) {
 			case SDLK_LEFT:

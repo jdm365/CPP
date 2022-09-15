@@ -28,11 +28,11 @@ int main(int argc, char* args[]) {
 	std::vector<Entity> ground_entities;
 	for (int idx = 0; idx < n_ground_textures; idx++) {
 		ground_entities.push_back(Entity(
-					Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT), 
-					Vector2f(0, 0), 
-					GROUND_SIZE,
-					GROUND_SIZE,
-					grass_texture
+					Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT), // position
+					Vector2f(0, 0), // velocity
+					GROUND_SIZE, // width
+					GROUND_SIZE, // height
+					grass_texture // texture
 					));
 	}
 	
@@ -44,17 +44,19 @@ int main(int argc, char* args[]) {
 			player_texture
 			);
 
-	bool game_running = true;
-
 	SDL_Event event;
 
-	while (game_running) {
+	while (true) {
 		while (SDL_PollEvent(&event)) {
-			player_entity = handle(event, player_entity, game_running);
+			player_entity = handle(event, player_entity);
+
+			if (event.type == SDL_QUIT) {
+				window.quit();
+			}
 		}
+
 		player_entity = update(player_entity);
 		SDL_Delay(1000 * TIME_STEP);
-
 
 		window.clear();
 
@@ -63,12 +65,8 @@ int main(int argc, char* args[]) {
 		}
 
 		window.render(player_entity);
-
 		window.display();
 }
-
-	window.clean_up();
-	SDL_Quit();
 
 	return 0;
 }
