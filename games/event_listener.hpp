@@ -4,7 +4,8 @@
 #include <SDL2/SDL_image.h>
 
 #include "entity.hpp"
+#include "constants.h"
 
 Entity handle(SDL_Event event, Entity player_entity, bool game_running);
-Entity update(Entity player_entity, int GROUND_HEIGHT);
+Entity update(Entity player_entity);
 

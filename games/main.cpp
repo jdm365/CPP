@@ -7,12 +7,7 @@
 #include "entity.hpp"
 #include "utils.hpp"
 #include "event_listener.hpp"
-
-const char* GRASS_FILEPATH  = "textures/ground_grass_1.png";
-const char* PLAYER_FILEPATH = "textures/hulking_knight.png";
-const float TIME_STEP = 0.01f;
-const int PLAYER_SIZE = 48;
-const int GROUND_SIZE = 32;
+#include "constants.h"
 
 
 int main(int argc, char* args[]) {
@@ -23,19 +18,17 @@ int main(int argc, char* args[]) {
 		std::cout << "IMG_Init failed" << SDL_GetError() << std::endl;
 	}
 
-	RenderWindow window("Game v1.0", 1280, 720);
+	RenderWindow window("Game v1.0", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	SDL_Texture* grass_texture  = window.load_texture(GRASS_FILEPATH);
 	SDL_Texture* player_texture = window.load_texture(PLAYER_FILEPATH);
 
-	int n_ground_textures = 1280 / GROUND_SIZE;
-	int platform_h        = 720 * 2 / 3;
-	const int GROUND_HEIGHT = platform_h - GROUND_SIZE * 1.5;
+	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
 
 	std::vector<Entity> ground_entities;
 	for (int idx = 0; idx < n_ground_textures; idx++) {
 		ground_entities.push_back(Entity(
-					Vector2f(GROUND_SIZE * idx, platform_h), 
+					Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT), 
 					Vector2f(0, 0), 
 					GROUND_SIZE,
 					GROUND_SIZE,
@@ -56,16 +49,11 @@ int main(int argc, char* args[]) {
 	SDL_Event event;
 
 	while (game_running) {
-		float current_time   = utils::hire_time_in_seconds();
-
 		while (SDL_PollEvent(&event)) {
 			player_entity = handle(event, player_entity, game_running);
-			player_entity = update(player_entity, GROUND_HEIGHT);
-			float new_time   = utils::hire_time_in_seconds();
-			float frame_time = new_time - current_time;
-			if (frame_time >= TIME_STEP) {
-				break;
-			}
+		}
+		player_entity = update(player_entity);
+		SDL_Delay(1000 * TIME_STEP);
 
 
 		window.clear();
@@ -77,7 +65,6 @@ int main(int argc, char* args[]) {
 		window.render(player_entity);
 
 		window.display();
-	}
 }
 
 	window.clean_up();
