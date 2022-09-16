@@ -21,19 +21,31 @@ int main(int argc, char* args[]) {
 	RenderWindow window("Game v1.0", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	SDL_Texture* grass_texture  = window.load_texture(GRASS_FILEPATH);
+	SDL_Texture* dirt_texture   = window.load_texture(DIRT_FILEPATH);
 	SDL_Texture* player_texture = window.load_texture(PLAYER_FILEPATH);
 
 	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
+	int n_ground_layers   = (WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE;
 
 	std::vector<Entity> ground_entities;
-	for (int idx = 0; idx < n_ground_textures; idx++) {
-		ground_entities.push_back(Entity(
-					Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT), // position
-					Vector2f(0, 0), // velocity
-					GROUND_SIZE, // width
-					GROUND_SIZE, // height
-					grass_texture // texture
-					));
+
+	for (int layer = 0; layer < n_ground_layers; layer++) {
+		for (int idx = 0; idx < n_ground_textures; idx++) {
+			if (layer == 0) {
+				SDL_Texture* texture = grass_texture;
+			}
+			else {
+				SDL_Texture* texture = dirt_texture;
+			}
+
+			ground_entities.push_back(Entity(
+						Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
+						Vector2f(0, 0), // velocity
+						GROUND_SIZE, // width
+						GROUND_SIZE, // height
+						grass_texture // texture
+						));
+		}
 	}
 	
 	Entity player_entity(

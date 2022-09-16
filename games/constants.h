@@ -2,7 +2,8 @@
 #define CONSTANTS_H
 
 #define GRASS_FILEPATH   	"textures/grass_texture.png"
-#define PLAYER_FILEPATH  	"textures/knight.png"
+#define DIRT_FILEPATH   	"textures/dirt_texture.jpg"
+#define PLAYER_FILEPATH  	"textures/knight_texture.png"
 #define TIME_STEP  			0.04f
 #define PLAYER_SIZE  		48
 #define GROUND_SIZE  		32
