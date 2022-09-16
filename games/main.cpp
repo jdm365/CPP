@@ -32,19 +32,27 @@ int main(int argc, char* args[]) {
 	for (int layer = 0; layer < n_ground_layers; layer++) {
 		for (int idx = 0; idx < n_ground_textures; idx++) {
 			if (layer == 0) {
-				SDL_Texture* texture = grass_texture;
-			}
+				ground_entities.push_back(
+						Entity(
+							Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
+							Vector2f(0, 0), 													// velocity
+							GROUND_SIZE, 														// width
+							GROUND_SIZE, 														// height
+							grass_texture 														// texture
+							)
+						);
+				}
 			else {
-				SDL_Texture* texture = dirt_texture;
+				ground_entities.push_back(
+						Entity(
+							Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
+							Vector2f(0, 0), 													// velocity
+							GROUND_SIZE, 														// width
+							GROUND_SIZE, 														// height
+							dirt_texture														// texture
+							)
+						);
 			}
-
-			ground_entities.push_back(Entity(
-						Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
-						Vector2f(0, 0), // velocity
-						GROUND_SIZE, // width
-						GROUND_SIZE, // height
-						grass_texture // texture
-						));
 		}
 	}
 	
