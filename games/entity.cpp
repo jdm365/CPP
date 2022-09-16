@@ -8,8 +8,12 @@ Entity::Entity(
 		Vector2f player_vel, 
 		int w,
 		int h,
-		SDL_Texture* player_texture
-		): pos(player_pos), vel(player_vel), texture(player_texture) {
+		SDL_Texture* default_texture
+		) {
+
+	pos = player_pos;
+	vel = player_vel;
+	texture = default_texture;
 
 	current_frame.x = 0;
 	current_frame.y = 0;

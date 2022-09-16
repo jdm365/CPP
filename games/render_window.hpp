@@ -12,7 +12,7 @@ class RenderWindow {
 		SDL_Texture* load_texture(const char* player_filepath);
 		int get_refresh_rate();
 		void clear();
-		void render(Entity& player_entity);
+		void render(Entity& player_entity, int step_index = 0, SDL_Texture* left_texture = NULL);
 		void display();
 		void quit();
 	private:

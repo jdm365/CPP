@@ -20,9 +20,19 @@ int main(int argc, char* args[]) {
 
 	RenderWindow window("Game v1.0", WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	SDL_Texture* sky_texture    = window.load_texture(SKY_FILEPATH);
 	SDL_Texture* grass_texture  = window.load_texture(GRASS_FILEPATH);
 	SDL_Texture* dirt_texture   = window.load_texture(DIRT_FILEPATH);
 	SDL_Texture* player_texture = window.load_texture(PLAYER_FILEPATH);
+	SDL_Texture* player_texture_left = window.load_texture(PLAYER_FILEPATH_LEFT);
+
+	Entity sky_entity(
+			Vector2f(0, 0), 
+			Vector2f(0, 0), 
+			WINDOW_WIDTH,
+			PLATFORM_HEIGHT, 
+			sky_texture	
+			);
 
 	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
 	int n_ground_layers   = (WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE;
@@ -66,8 +76,10 @@ int main(int argc, char* args[]) {
 
 
 	SDL_Event event;
-
 	bool done = false;
+	int step_idx = 0;
+	int final_idx;
+
 	while (!done) {
 		while (SDL_PollEvent(&event)) {
 			player_entity = handle(event, player_entity);
@@ -81,13 +93,24 @@ int main(int argc, char* args[]) {
 		player_entity = update(player_entity);
 		SDL_Delay(1000 * TIME_STEP);
 
+		step_idx  = (step_idx + 1) % (7 * BUFFER_FACTOR);
+		if (player_entity.get_vel().x != 0) {
+			final_idx = step_idx;
+		}
+		else {
+			final_idx  = step_idx % (2 * BUFFER_FACTOR);
+			final_idx += 8 * BUFFER_FACTOR;
+		}
+
 		window.clear();
 
+		// Render all.
+		window.render(sky_entity);
 		for (Entity& entity: ground_entities) {
 			window.render(entity);
 		}
+		window.render(player_entity, final_idx / BUFFER_FACTOR, player_texture_left);
 
-		window.render(player_entity);
 		window.display();
 }
 

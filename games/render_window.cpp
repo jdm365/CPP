@@ -4,6 +4,7 @@
 
 #include "render_window.hpp"
 #include "entity.hpp"
+#include "constants.h"
 
 RenderWindow::RenderWindow(
 		const char* player_title, 
@@ -51,10 +52,13 @@ void RenderWindow::clear() {
 	SDL_RenderClear(renderer);
 }
 
-void RenderWindow::render(Entity& player_entity) {
-	SDL_Rect src;									// location on image
-	src.x = player_entity.get_current_frame().x;
-	src.y = player_entity.get_current_frame().y;
+void RenderWindow::render(Entity& player_entity, int step_index, SDL_Texture* left_texture) {
+	float src_x_factor = 1.28f * (step_index % 5);
+	float src_y_factor = 1.28f * (step_index > 4);
+
+	SDL_Rect src;
+	src.x = player_entity.get_current_frame().x + PLAYER_SIZE * src_x_factor;
+	src.y = player_entity.get_current_frame().y + PLAYER_SIZE * src_y_factor;
 	src.w = player_entity.get_current_frame().w;
 	src.h = player_entity.get_current_frame().h;
 
@@ -64,7 +68,12 @@ void RenderWindow::render(Entity& player_entity) {
 	dst.w = player_entity.get_current_frame().w;
 	dst.h = player_entity.get_current_frame().h;
 
-	SDL_RenderCopy(renderer, player_entity.get_texture(), &src, &dst);
+	if (player_entity.get_vel().x < 0) {
+		SDL_RenderCopy(renderer, left_texture, &src, &dst);
+	}
+	else {
+		SDL_RenderCopy(renderer, player_entity.get_texture(), &src, &dst);
+	}
 }
 
 void RenderWindow::display() {
