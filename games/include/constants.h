@@ -7,12 +7,15 @@
 #define PLAYER_FILEPATH  		"textures/knight_texture.png"
 #define PLAYER_FILEPATH_LEFT  	"textures/knight_texture_left.png"
 #define TIME_STEP  				0.04f
-#define PLAYER_SIZE  			50
+#define PLAYER_SIZE  			96
 #define GROUND_SIZE  			32
 #define BUFFER_FACTOR    		4	
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
 #define PLATFORM_HEIGHT  		WINDOW_HEIGHT * 2 / 3
-#define GROUND_HEIGHT  			PLATFORM_HEIGHT - GROUND_SIZE * 1.5
+#define GROUND_HEIGHT  			int(PLATFORM_HEIGHT - 0.78 * PLAYER_SIZE)
+#define PLAYER_SPEED			16
+#define JUMP_SPEED				16
+#define GRAVITY					2	
 
 #endif

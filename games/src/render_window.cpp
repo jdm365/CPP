@@ -53,14 +53,24 @@ void RenderWindow::clear() {
 }
 
 void RenderWindow::render(Entity& player_entity, int step_index, SDL_Texture* left_texture) {
-	float src_x_factor = 1.28f * (step_index % 5);
-	float src_y_factor = 1.28f * (step_index > 4);
+	SDL_Point size;
+	SDL_QueryTexture(player_entity.get_texture(), NULL, NULL, &size.x, &size.y);
+
+	float src_x_factor = (size.x / 5) * (step_index % 5);
+	float src_y_factor = (size.y / 2) * float(step_index > 4);
 
 	SDL_Rect src;
-	src.x = player_entity.get_current_frame().x + PLAYER_SIZE * src_x_factor;
-	src.y = player_entity.get_current_frame().y + PLAYER_SIZE * src_y_factor;
-	src.w = player_entity.get_current_frame().w;
-	src.h = player_entity.get_current_frame().h;
+	src.x = player_entity.get_current_frame().x + src_x_factor;
+	src.y = player_entity.get_current_frame().y + src_y_factor;
+
+	if (left_texture != NULL) {
+		src.w = size.x / 5;
+		src.h = size.y / 2;
+	}
+	else {
+		src.w = player_entity.get_current_frame().w;
+		src.h = player_entity.get_current_frame().h;
+	}
 
 	SDL_Rect dst;
 	dst.x = player_entity.get_pos().x;

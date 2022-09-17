@@ -9,14 +9,14 @@ Entity handle(SDL_Event event, Entity player_entity) {
 	if (event.type == SDL_KEYDOWN) {
 		switch(event.key.keysym.sym) {
 			case SDLK_LEFT:
-				player_entity.vel = Vector2f(-10, player_entity.get_vel().y);
+				player_entity.vel = Vector2f(-PLAYER_SPEED, player_entity.get_vel().y);
 				break;
 			case SDLK_RIGHT:
-				player_entity.vel = Vector2f(10, player_entity.get_vel().y);
+				player_entity.vel = Vector2f(PLAYER_SPEED, player_entity.get_vel().y);
 				break;
 			case SDLK_UP:
 				if (player_entity.get_pos().y == GROUND_HEIGHT) {
-					player_entity.vel = Vector2f(player_entity.get_vel().x, -10);
+					player_entity.vel = Vector2f(player_entity.get_vel().x, -JUMP_SPEED);
 					break;
 				}
 		}
@@ -36,7 +36,7 @@ Entity update(Entity player_entity) {
 
 	float g = 0;
 	if (player_entity.get_pos().y < GROUND_HEIGHT) {
-		g = 2;
+		g = GRAVITY;
 	}
 
 	float y_vel = player_entity.get_vel().y + g;
@@ -48,7 +48,7 @@ Entity update(Entity player_entity) {
 	}
 
 	player_entity.pos = Vector2f(
-			player_entity.get_pos().x + player_entity.get_vel().x,
+			float(int(player_entity.get_pos().x + player_entity.get_vel().x) % WINDOW_WIDTH),
 			y_pos
 			);
 	player_entity.vel = Vector2f(

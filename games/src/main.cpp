@@ -74,7 +74,6 @@ int main(int argc, char* args[]) {
 			player_texture
 			);
 
-
 	SDL_Event event;
 	bool done = false;
 	int step_idx = 0;
@@ -93,13 +92,13 @@ int main(int argc, char* args[]) {
 		player_entity = update(player_entity);
 		SDL_Delay(1000 * TIME_STEP);
 
-		step_idx  = (step_idx + 1) % (7 * BUFFER_FACTOR);
+		step_idx  = (step_idx + 1) % (6 * BUFFER_FACTOR);
 		if (player_entity.get_vel().x != 0) {
 			final_idx = step_idx;
 		}
 		else {
-			final_idx  = step_idx % (2 * BUFFER_FACTOR);
-			final_idx += 8 * BUFFER_FACTOR;
+			final_idx  = step_idx % (3 * BUFFER_FACTOR);
+			final_idx += 7 * BUFFER_FACTOR;
 		}
 
 		window.clear();

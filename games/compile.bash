@@ -1,1 +1,2 @@
-g++ -Wall main.cpp render_window.cpp entity.cpp event_listener.cpp -lSDL2 -lSDL2_image -std=c++11
+g++ -Wall src/*.cpp -I include -lSDL2 -lSDL2_image -std=c++11
+mv a.out bin/
