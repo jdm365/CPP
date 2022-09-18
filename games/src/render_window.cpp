@@ -63,13 +63,19 @@ void RenderWindow::render(Entity& player_entity, int step_index, SDL_Texture* le
 	src.x = player_entity.get_current_frame().x + src_x_factor;
 	src.y = player_entity.get_current_frame().y + src_y_factor;
 
-	if (left_texture != NULL) {
-		src.w = size.x / 5;
-		src.h = size.y / 2;
-	}
-	else {
-		src.w = player_entity.get_current_frame().w;
-		src.h = player_entity.get_current_frame().h;
+	switch(player_entity.type) {
+		case 1:
+			src.w = player_entity.get_current_frame().w;
+			src.h = player_entity.get_current_frame().h;
+			break;
+		case 3:
+			src.w = size.x / 5;
+			src.h = size.y / 2;
+			break;
+		default:
+			src.w = size.x;
+			src.h = size.y;
+			break;
 	}
 
 	SDL_Rect dst;

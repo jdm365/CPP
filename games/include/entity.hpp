@@ -13,6 +13,7 @@ class Entity {
 				Vector2f player_vel, 
 				int w, 
 				int h, 
+				int entity_type,
 				SDL_Texture* player_texture
 				);
 		Vector2f& get_pos() {
@@ -23,6 +24,7 @@ class Entity {
 		}
 		SDL_Rect get_current_frame();
 		SDL_Texture* get_texture();
+		int type;
 		Vector2f pos;
 		Vector2f vel;
 	private:

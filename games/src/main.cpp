@@ -20,22 +20,30 @@ int main(int argc, char* args[]) {
 
 	RenderWindow window("Game v1.0", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	SDL_Texture* sky_texture    = window.load_texture(SKY_FILEPATH);
-	SDL_Texture* grass_texture  = window.load_texture(GRASS_FILEPATH);
-	SDL_Texture* dirt_texture   = window.load_texture(DIRT_FILEPATH);
-	SDL_Texture* player_texture = window.load_texture(PLAYER_FILEPATH);
-	SDL_Texture* player_texture_left = window.load_texture(PLAYER_FILEPATH_LEFT);
+	//SDL_Texture* background_texture	  = window.load_texture(SKY_FILEPATH);
+	SDL_Texture* background_texture	  = window.load_texture(NAMEK_FILEPATH);
+	SDL_Texture* grass_texture        = window.load_texture(GRASS_FILEPATH);
+	SDL_Texture* dirt_texture         = window.load_texture(DIRT_FILEPATH);
+	SDL_Texture* player_texture_right = window.load_texture(PLAYER_FILEPATH_RIGHT);
+	SDL_Texture* player_texture_left  = window.load_texture(PLAYER_FILEPATH_LEFT);
 
-	Entity sky_entity(
-			Vector2f(0, 0), 
-			Vector2f(0, 0), 
-			WINDOW_WIDTH,
-			PLATFORM_HEIGHT, 
-			sky_texture	
+
+	int background_type = 0;
+	int grass_type  	= 1;
+	int dirt_type   	= 2;
+	int player_type 	= 3;
+
+	Entity background_entity(
+			Vector2f(0, 0),								// position 
+			Vector2f(0, 0),								// velocity 
+			WINDOW_WIDTH,								// width
+			PLATFORM_HEIGHT,							// height 
+			background_type,							// type
+			background_texture							// texture	
 			);
 
 	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
-	int n_ground_layers   = (WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE;
+	int n_ground_layers   = 1 + ((WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE);
 
 	std::vector<Entity> ground_entities;
 
@@ -48,6 +56,7 @@ int main(int argc, char* args[]) {
 							Vector2f(0, 0), 													// velocity
 							GROUND_SIZE, 														// width
 							GROUND_SIZE, 														// height
+							grass_type,															// type
 							grass_texture 														// texture
 							)
 						);
@@ -59,6 +68,7 @@ int main(int argc, char* args[]) {
 							Vector2f(0, 0), 													// velocity
 							GROUND_SIZE, 														// width
 							GROUND_SIZE, 														// height
+							dirt_type,															// type
 							dirt_texture														// texture
 							)
 						);
@@ -67,11 +77,12 @@ int main(int argc, char* args[]) {
 	}
 	
 	Entity player_entity(
-			Vector2f(100, GROUND_HEIGHT), 
-			Vector2f(0, 0), 
-			PLAYER_SIZE,
-			PLAYER_SIZE, 
-			player_texture
+			Vector2f(100, GROUND_HEIGHT), 				// position
+			Vector2f(0, 0),								// velocity 
+			PLAYER_SIZE,								// width
+			PLAYER_SIZE,								// height 
+			player_type,								// type
+			player_texture_right						// texture
 			);
 
 	SDL_Event event;
@@ -104,7 +115,7 @@ int main(int argc, char* args[]) {
 		window.clear();
 
 		// Render all.
-		window.render(sky_entity);
+		window.render(background_entity);
 		for (Entity& entity: ground_entities) {
 			window.render(entity);
 		}
