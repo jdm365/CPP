@@ -21,7 +21,7 @@
 #define TIME_STEP  				0.04f
 #define BUFFER_FACTOR    		int(80 * TIME_STEP)	
 #define PLAYER_SPEED			16
-#define JUMP_SPEED				16
+#define JUMP_SPEED				24
 #define GRAVITY					2	
 
 #endif

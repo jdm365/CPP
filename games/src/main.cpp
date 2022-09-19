@@ -6,7 +6,7 @@
 #include "render_window.hpp"
 #include "entity.hpp"
 #include "utils.hpp"
-#include "event_listener.hpp"
+#include "event_handler.hpp"
 #include "constants.h"
 
 
@@ -92,19 +92,19 @@ int main(int argc, char* args[]) {
 
 	while (!done) {
 		while (SDL_PollEvent(&event)) {
-			player_entity = handle(event, player_entity);
-
 			if (event.type == SDL_QUIT) {
 				window.quit();
 				done = true;
 			}
 		}
 
-		player_entity = update(player_entity);
 		SDL_Delay(1000 * TIME_STEP);
+		player_entity = handle(event, player_entity);
+		player_entity = update(player_entity);
+
 
 		step_idx  = (step_idx + 1) % (6 * BUFFER_FACTOR);
-		if (player_entity.get_vel().x != 0) {
+		if (player_entity.vel.x != 0) {
 			final_idx = step_idx;
 		}
 		else {

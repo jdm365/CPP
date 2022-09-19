@@ -6,18 +6,17 @@
 #include "entity.hpp"
 #include "constants.h"
 
-RenderWindow::RenderWindow(
-		const char* player_title, 
-		int player_width, 
-		int player_height
-		): window(NULL), renderer(NULL) {
+RenderWindow::RenderWindow(const char* title, int width, int height) {
+	// Initialize with NULL to catch errors.
+	window	 = NULL;
+	renderer = NULL;
 
 	window = SDL_CreateWindow(
-			player_title, 
+			title, 
 			SDL_WINDOWPOS_UNDEFINED, 
 			SDL_WINDOWPOS_UNDEFINED, 
-			player_width, 
-			player_height, 
+			width, 
+			height, 
 			SDL_WINDOW_SHOWN
 			);
 	if (window == NULL) {
@@ -27,6 +26,7 @@ RenderWindow::RenderWindow(
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
+
 
 SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 	SDL_Texture* texture = NULL;
@@ -38,36 +38,28 @@ SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 	return texture;
 }
 
-int RenderWindow::get_refresh_rate() {
-	int display_index = SDL_GetWindowDisplayIndex(window);
-
-	SDL_DisplayMode mode;
-
-	SDL_GetDisplayMode(display_index, 0, &mode);
-
-	return mode.refresh_rate;
-}
 
 void RenderWindow::clear() {
 	SDL_RenderClear(renderer);
 }
 
-void RenderWindow::render(Entity& player_entity, int step_index, SDL_Texture* left_texture) {
+
+void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_texture) {
 	SDL_Point size;
-	SDL_QueryTexture(player_entity.get_texture(), NULL, NULL, &size.x, &size.y);
+	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
-	float src_x_factor = (size.x / 5) * (step_index % 5);
-	float src_y_factor = (size.y / 2) * float(step_index > 4);
-
+	// Left sprite sheet is reflected about the y-axis.
+	if (entity.vel.x < 0) {
+		step_index = abs(step_index - 4);
+	}
+	
+	// Used to choose correct sprite on sprite sheet.
 	SDL_Rect src;
-	src.x = player_entity.get_current_frame().x + src_x_factor;
-	src.y = player_entity.get_current_frame().y + src_y_factor;
+	src.x = (size.x / 5) * (step_index % 5);
+	src.y = (size.y / 2) * float(step_index > 4);
 
-	switch(player_entity.type) {
-		case 1:
-			src.w = player_entity.get_current_frame().w;
-			src.h = player_entity.get_current_frame().h;
-			break;
+	switch(entity.type) {
+		// player
 		case 3:
 			src.w = size.x / 5;
 			src.h = size.y / 2;
@@ -78,17 +70,18 @@ void RenderWindow::render(Entity& player_entity, int step_index, SDL_Texture* le
 			break;
 	}
 
+	// Size and location to display on screen.
 	SDL_Rect dst;
-	dst.x = player_entity.get_pos().x;
-	dst.y = player_entity.get_pos().y;
-	dst.w = player_entity.get_current_frame().w;
-	dst.h = player_entity.get_current_frame().h;
+	dst.x = entity.pos.x;
+	dst.y = entity.pos.y;
+	dst.w = entity.width;
+	dst.h = entity.height;
 
-	if (player_entity.get_vel().x < 0) {
+	if (entity.vel.x < 0) {
 		SDL_RenderCopy(renderer, left_texture, &src, &dst);
 	}
 	else {
-		SDL_RenderCopy(renderer, player_entity.get_texture(), &src, &dst);
+		SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
 	}
 }
 
@@ -100,4 +93,3 @@ void RenderWindow::quit() {
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
-

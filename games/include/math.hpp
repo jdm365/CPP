@@ -3,13 +3,16 @@
 #include <iostream>
 
 struct Vector2f {
-	Vector2f(): x(0.0f), y(0.0f) {}
+	float x, y;
 
-	Vector2f(float player_x, float player_y): x(player_x), y(player_y) {}
-
-	void print() {
-		std::cout << x << "," << y << std::endl;
+	// Overloading vector constructors.
+	Vector2f() {
+		x = 0.00f;
+		y = 0.00f;
 	}
 
-	float x, y;
+	Vector2f(float x_in, float y_in) {
+		x = x_in; 
+		y = y_in;
+	}
 };

@@ -9,25 +9,19 @@
 class Entity {
 	public:
 		Entity(
-				Vector2f player_pos, 
-				Vector2f player_vel, 
+				Vector2f entity_pos, 
+				Vector2f entity_vel, 
 				int w, 
 				int h, 
 				int entity_type,
 				SDL_Texture* player_texture
 				);
-		Vector2f& get_pos() {
-			return pos;
-		}
-		Vector2f& get_vel() {
-			return vel;
-		}
-		SDL_Rect get_current_frame();
 		SDL_Texture* get_texture();
 		int type;
+		int width;
+		int height;
 		Vector2f pos;
 		Vector2f vel;
 	private:
-		SDL_Rect current_frame;
 		SDL_Texture* texture;
 };
