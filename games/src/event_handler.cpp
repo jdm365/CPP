@@ -17,7 +17,7 @@ std::vector<bool> detect_collisions(Entity player_entity, std::vector<std::vecto
 	bool right_collision  = false;
 	bool bottom_collision = false;
 
-	for (int idx = 0; idx < collidable_entity_positions.size(); idx++) {
+	for (int idx = 0; idx < int(collidable_entity_positions.size()); idx++) {
 		int left_edge_obj   = collidable_entity_positions[idx][0];
 		int top_edge_obj 	= collidable_entity_positions[idx][1];
 		int right_edge_obj  = collidable_entity_positions[idx][2];
@@ -109,15 +109,16 @@ Entity handle(
 
 Entity update(Entity player_entity, std::vector<std::vector<int>> collidable_entity_positions) {
 	std::vector<bool> collisions = detect_collisions(player_entity, collidable_entity_positions); 
+
 	bool top_collision    = collisions[1];
 	bool bottom_collision = collisions[3];
 
 	bool cond_0 = !(bottom_collision && (player_entity.vel.y >= 0));
-	bool cond_1 = !(top_collision && (player_entity.vel.y <= 0));
+	bool cond_1 = !(top_collision    && (player_entity.vel.y <= 0));
 
 	float x_vel = player_entity.vel.x;
 	float y_vel = (player_entity.vel.y + GRAVITY) * float(cond_0) * float(cond_1);
-	float x_pos = float(int(player_entity.pos.x + x_vel) % WINDOW_WIDTH);
+	float x_pos = float(abs(int(player_entity.pos.x + x_vel) % WINDOW_WIDTH));
 	float y_pos = player_entity.pos.y + y_vel;
 
 	player_entity.pos = Vector2f(x_pos, y_pos);

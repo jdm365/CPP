@@ -76,7 +76,7 @@ int main(int argc, char* args[]) {
 			}
 		}
 	}
-	for (int idx = 0; idx < ground_entities.size(); idx++) {
+	for (int idx = 0; idx < int(ground_entities.size()); idx++) {
 		if (ground_entities[idx].type == 1) {
 			std::vector<int> tmp;
 			tmp.push_back(ground_entities[idx].pos.x);
