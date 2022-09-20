@@ -45,7 +45,8 @@ int main(int argc, char* args[]) {
 	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
 	int n_ground_layers   = 1 + ((WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE);
 
-	std::vector<Entity> ground_entities;
+	std::vector<Entity>  ground_entities;
+	std::vector<std::vector<int>> collidable_entity_positions;
 
 	for (int layer = 0; layer < n_ground_layers; layer++) {
 		for (int idx = 0; idx < n_ground_textures; idx++) {
@@ -75,9 +76,19 @@ int main(int argc, char* args[]) {
 			}
 		}
 	}
+	for (int idx = 0; idx < ground_entities.size(); idx++) {
+		if (ground_entities[idx].type == 1) {
+			std::vector<int> tmp;
+			tmp.push_back(ground_entities[idx].pos.x);
+			tmp.push_back(ground_entities[idx].pos.y);
+			tmp.push_back(ground_entities[idx].pos.x + ground_entities[idx].width);
+			tmp.push_back(ground_entities[idx].pos.y + ground_entities[idx].height);
+			collidable_entity_positions.push_back(tmp);
+		}
+	}
 	
 	Entity player_entity(
-			Vector2f(100, GROUND_HEIGHT), 				// position
+			Vector2f(100, GROUND_HEIGHT - 100), 		// position
 			Vector2f(0, 0),								// velocity 
 			PLAYER_SIZE,								// width
 			PLAYER_SIZE,								// height 
@@ -96,12 +107,10 @@ int main(int argc, char* args[]) {
 				window.quit();
 				done = true;
 			}
+			player_entity = handle(event, player_entity, collidable_entity_positions);
 		}
-
+		player_entity = update(player_entity, collidable_entity_positions);
 		SDL_Delay(1000 * TIME_STEP);
-		player_entity = handle(event, player_entity);
-		player_entity = update(player_entity);
-
 
 		step_idx  = (step_idx + 1) % (6 * BUFFER_FACTOR);
 		if (player_entity.vel.x != 0) {
