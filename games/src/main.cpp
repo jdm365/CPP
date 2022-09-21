@@ -7,6 +7,7 @@
 #include "entity.hpp"
 #include "utils.hpp"
 #include "event_handler.hpp"
+#include "read_level.hpp"
 #include "constants.h"
 
 
@@ -29,45 +30,46 @@ int main(int argc, char* args[]) {
 
 
 	int background_type = 0;
-	int grass_type  	= 1;
-	int dirt_type   	= 2;
+	int ground_type  	= 1;
 	int player_type 	= 3;
 
 	Entity background_entity(
 			Vector2f(0, 0),								// position 
 			Vector2f(0, 0),								// velocity 
 			WINDOW_WIDTH,								// width
-			PLATFORM_HEIGHT,							// height 
+			WINDOW_HEIGHT,								// height 
 			background_type,							// type
 			background_texture							// texture	
 			);
 
 	std::vector<Entity> ground_entities;
+	std::vector<int> level_design = read_level_csv(LEVEL_DESIGN_FILEPATH);
 	std::vector<std::vector<int>> collidable_entity_positions;
 
 	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
 	for (int idx = 0; idx < n_ground_textures; idx++) {
 		int x_pos  		  = GROUND_SIZE * idx;
-		int n_dirt_layers = (WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE;
-
+		int height		  = PLATFORM_HEIGHT - level_design[idx] * GROUND_SIZE;
+		int n_dirt_layers = (WINDOW_HEIGHT - height) / GROUND_SIZE;
+		
 		ground_entities.push_back(
 				Entity(
-					Vector2f(x_pos, PLATFORM_HEIGHT),									// position
+					Vector2f(x_pos, height),											// position
 					Vector2f(0, 0), 													// velocity
 					GROUND_SIZE, 														// width
 					GROUND_SIZE, 														// height
-					grass_type,															// type
+					ground_type,														// type
 					grass_texture 														// texture
 					)
 				);
 		for (int idx_2 = 1; idx_2 < n_dirt_layers + 1; idx_2++) {
 			ground_entities.push_back(
 					Entity(
-						Vector2f(x_pos, PLATFORM_HEIGHT + idx_2 * GROUND_SIZE), 			// position
+						Vector2f(x_pos, height + idx_2 * GROUND_SIZE), 						// position
 						Vector2f(0, 0), 													// velocity
 						GROUND_SIZE, 														// width
 						GROUND_SIZE, 														// height
-						dirt_type,															// type
+						ground_type,														// type
 						dirt_texture														// texture
 						)
 					);
@@ -86,12 +88,12 @@ int main(int argc, char* args[]) {
 	}
 	
 	Entity player_entity(
-			Vector2f(100, GROUND_HEIGHT - 100), 		// position
-			Vector2f(0, 0),								// velocity 
-			PLAYER_SIZE,								// width
-			PLAYER_SIZE,								// height 
-			player_type,								// type
-			player_texture_right						// texture
+			Vector2f(100, PLATFORM_HEIGHT - (GROUND_SIZE + PLAYER_SIZE)), 	// position
+			Vector2f(0, 0),													// velocity 
+			PLAYER_SIZE,													// width
+			PLAYER_SIZE,													// height 
+			player_type,													// type
+			player_texture_right											// texture
 			);
 
 	SDL_Event event;

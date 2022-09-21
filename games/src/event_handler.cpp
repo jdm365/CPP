@@ -6,7 +6,10 @@
 #include "event_handler.hpp"
 #include "constants.h"
 
-std::vector<bool> detect_collisions(Entity player_entity, std::vector<std::vector<int>> collidable_entity_positions) {
+std::vector<bool> detect_collisions(
+		Entity player_entity, 
+		std::vector<std::vector<int>> collidable_entity_positions
+		) {
 	int left_edge_p   = int(player_entity.pos.x);
 	int top_edge_p 	  = int(player_entity.pos.y);
 	int right_edge_p  = int(player_entity.pos.x) + player_entity.width;
@@ -26,27 +29,29 @@ std::vector<bool> detect_collisions(Entity player_entity, std::vector<std::vecto
 		// Left collision
 		bool cond_0 = (left_edge_p <= right_edge_obj);
 		bool cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj < bottom_edge_p);
-		if (cond_0 && cond_1) {
+		bool cond_2 = (right_edge_p > right_edge_obj);
+		if (cond_0 && cond_1 && cond_2) {
 			left_collision = true;
 		}
 		// Top collision
 		cond_0 = (top_edge_p <= bottom_edge_obj);
 		cond_1 = (right_edge_obj > left_edge_p) && (left_edge_obj < right_edge_p);
-		bool cond_2 = (top_edge_obj < top_edge_p);
+		cond_2 = (top_edge_obj < top_edge_p);
 		if (cond_0 && cond_1 && cond_2) {
 			top_collision = true;
 		}
 		// Right collision
-		cond_0 = (right_edge_p <= left_edge_obj);
+		cond_0 = (right_edge_p >= left_edge_obj);
 		cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj < bottom_edge_p);
-		if (cond_0 && cond_1) {
+		cond_2 = (left_edge_p < left_edge_obj);
+		if (cond_0 && cond_1 && cond_2) {
 			right_collision = true;
 		}
 		// Bottom collision
 		cond_0 = (bottom_edge_p >= top_edge_obj);
 		cond_1 = (right_edge_obj > left_edge_p) && (left_edge_obj < right_edge_p);
 		cond_2 = (bottom_edge_obj > bottom_edge_p);
-		if (cond_0 && cond_1) {
+		if (cond_0 && cond_1 && cond_2) {
 			bottom_collision = true;
 		}
 	}
@@ -107,7 +112,10 @@ Entity handle(
 	return player_entity;
 }
 
-Entity update(Entity player_entity, std::vector<std::vector<int>> collidable_entity_positions) {
+Entity update(
+		Entity player_entity, 
+		std::vector<std::vector<int>> collidable_entity_positions
+		) {
 	std::vector<bool> collisions = detect_collisions(player_entity, collidable_entity_positions); 
 
 	bool top_collision    = collisions[1];
@@ -118,11 +126,25 @@ Entity update(Entity player_entity, std::vector<std::vector<int>> collidable_ent
 
 	float x_vel = player_entity.vel.x;
 	float y_vel = (player_entity.vel.y + GRAVITY) * float(cond_0) * float(cond_1);
+
+	float corrective_factor = 0.00f;
+	if ((y_vel == 0) && bottom_collision && ((int(player_entity.pos.y) % GROUND_SIZE) != 0)) {
+		corrective_factor = float(int(player_entity.pos.y) % GROUND_SIZE);
+	}
+
 	float x_pos = float(abs(int(player_entity.pos.x + x_vel) % WINDOW_WIDTH));
-	float y_pos = player_entity.pos.y + y_vel;
+	float y_pos = player_entity.pos.y + y_vel - corrective_factor;
+
+	// Respawn if player falls off map.
+	if (y_pos > WINDOW_HEIGHT) {
+		x_pos = 100.00f;
+		y_pos = float(PLATFORM_HEIGHT - 2 * PLAYER_SIZE);
+		x_vel = 0.00f;
+		y_vel = 0.00f;
+	}
 
 	player_entity.pos = Vector2f(x_pos, y_pos);
 	player_entity.vel = Vector2f(x_vel, y_vel);
 	
 	return player_entity;
-}
+	}

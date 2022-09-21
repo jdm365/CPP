@@ -8,14 +8,16 @@
 #define NAMEK_FILEPATH  		"textures/namek_texture.png"
 #define PLAYER_FILEPATH_RIGHT  	"textures/knight_texture.png"
 #define PLAYER_FILEPATH_LEFT  	"textures/knight_texture_left.png"
+#define LEVEL_DESIGN_FILEPATH  	"textures/level_design.csv"
 
 // Frame sizing
 #define PLAYER_SIZE  			96
+#define PLAYER_FRAME_FACTOR_X	0.20f
+#define PLAYER_FRAME_FACTOR_Y	0.20f
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
 #define PLATFORM_HEIGHT  		WINDOW_HEIGHT * 2 / 3
-#define GROUND_HEIGHT  			int(PLATFORM_HEIGHT - 0.78 * PLAYER_SIZE)
 
 // Animation factors
 #define TIME_STEP  				0.04f

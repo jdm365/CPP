@@ -13,5 +13,7 @@ Entity handle(
 		std::vector<std::vector<int>> collidable_entity_positions
 		);
 Entity update(Entity entity, std::vector<std::vector<int>>);
-std::vector<bool> detect_collisions(Entity player_entity, std::vector<std::vector<int>> collidable_entity_positions);
-
+std::vector<bool> detect_collisions(
+		Entity player_entity, 
+		std::vector<std::vector<int>> collidable_entity_positions
+		);

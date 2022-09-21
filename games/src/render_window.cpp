@@ -58,24 +58,27 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	src.x = (size.x / 5) * (step_index % 5);
 	src.y = (size.y / 2) * float(step_index > 4);
 
-	switch(entity.type) {
-		// player
-		case 3:
-			src.w = (size.x / 5);
-			src.h = int((size.y / 2) * 0.88);
-			break;
-		default:
-			src.w = size.x;
-			src.h = size.y;
-			break;
-	}
-
 	// Size and location to display on screen.
 	SDL_Rect dst;
 	dst.x = entity.pos.x;
 	dst.y = entity.pos.y;
-	dst.w = entity.width;
-	dst.h = entity.height;
+
+	switch(entity.type) {
+		// player
+		case 3:
+			src.w = (size.x / 5) - ((size.x / 5) * PLAYER_FRAME_FACTOR_X);
+			src.h = (size.y / 2) - ((size.y / 2) * PLAYER_FRAME_FACTOR_Y);
+			dst.w = entity.width;
+			dst.h = entity.height;
+			break;
+		default:
+			src.w = size.x;
+			src.h = size.y;
+			dst.w = entity.width;
+			dst.h = entity.height;
+			break;
+	}
+
 
 	if (entity.vel.x < 0) {
 		SDL_RenderCopy(renderer, left_texture, &src, &dst);
