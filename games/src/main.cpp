@@ -42,40 +42,38 @@ int main(int argc, char* args[]) {
 			background_texture							// texture	
 			);
 
-	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
-	int n_ground_layers   = 1 + ((WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE);
-
-	std::vector<Entity>  ground_entities;
+	std::vector<Entity> ground_entities;
 	std::vector<std::vector<int>> collidable_entity_positions;
 
-	for (int layer = 0; layer < n_ground_layers; layer++) {
-		for (int idx = 0; idx < n_ground_textures; idx++) {
-			if (layer == 0) {
-				ground_entities.push_back(
-						Entity(
-							Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
-							Vector2f(0, 0), 													// velocity
-							GROUND_SIZE, 														// width
-							GROUND_SIZE, 														// height
-							grass_type,															// type
-							grass_texture 														// texture
-							)
-						);
-				}
-			else {
-				ground_entities.push_back(
-						Entity(
-							Vector2f(GROUND_SIZE * idx, PLATFORM_HEIGHT + layer * GROUND_SIZE), // position
-							Vector2f(0, 0), 													// velocity
-							GROUND_SIZE, 														// width
-							GROUND_SIZE, 														// height
-							dirt_type,															// type
-							dirt_texture														// texture
-							)
-						);
+	int n_ground_textures = WINDOW_WIDTH / GROUND_SIZE;
+	for (int idx = 0; idx < n_ground_textures; idx++) {
+		int x_pos  		  = GROUND_SIZE * idx;
+		int n_dirt_layers = (WINDOW_HEIGHT - PLATFORM_HEIGHT) / GROUND_SIZE;
+
+		ground_entities.push_back(
+				Entity(
+					Vector2f(x_pos, PLATFORM_HEIGHT),									// position
+					Vector2f(0, 0), 													// velocity
+					GROUND_SIZE, 														// width
+					GROUND_SIZE, 														// height
+					grass_type,															// type
+					grass_texture 														// texture
+					)
+				);
+		for (int idx_2 = 1; idx_2 < n_dirt_layers + 1; idx_2++) {
+			ground_entities.push_back(
+					Entity(
+						Vector2f(x_pos, PLATFORM_HEIGHT + idx_2 * GROUND_SIZE), 			// position
+						Vector2f(0, 0), 													// velocity
+						GROUND_SIZE, 														// width
+						GROUND_SIZE, 														// height
+						dirt_type,															// type
+						dirt_texture														// texture
+						)
+					);
 			}
 		}
-	}
+
 	for (int idx = 0; idx < int(ground_entities.size()); idx++) {
 		if (ground_entities[idx].type == 1) {
 			std::vector<int> tmp;

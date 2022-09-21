@@ -81,7 +81,7 @@ Entity handle(
 						);
 				break;
 			case SDLK_UP:
-				if (player_entity.vel.y == 0) {
+				if ((player_entity.vel.y == 0) && bottom_collision) {
 					player_entity.vel = Vector2f(
 							player_entity.vel.x * float(!left_collision) * float(!right_collision),
 							-JUMP_SPEED * float(!top_collision)

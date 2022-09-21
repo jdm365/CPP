@@ -61,7 +61,7 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	switch(entity.type) {
 		// player
 		case 3:
-			src.w = size.x / 5;
+			src.w = (size.x / 5);
 			src.h = int((size.y / 2) * 0.88);
 			break;
 		default:
