@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <vector>
+#include <algorithm>
 
 #include "entity.hpp"
 #include "event_handler.hpp"
@@ -129,7 +130,8 @@ Entity handle(
 
 Entity update(
 		Entity player_entity, 
-		std::vector<std::vector<int>> collidable_entity_positions
+		std::vector<std::vector<int>> collidable_entity_positions,
+		int max_width
 		) {
 	std::vector<bool> collisions = detect_collisions(player_entity, collidable_entity_positions); 
 
@@ -155,7 +157,7 @@ Entity update(
 		corrective_factor_y = float(int(player_entity.pos.y) % GROUND_SIZE);
 	}
 
-	float x_pos = float(abs(int(player_entity.pos.x + x_vel) % WINDOW_WIDTH)) - corrective_factor_x;
+	float x_pos = std::min(int(abs(player_entity.pos.x + x_vel - corrective_factor_x)), max_width);
 	float y_pos = player_entity.pos.y + y_vel - corrective_factor_y;
 
 	// Respawn if player falls off map.
@@ -168,6 +170,6 @@ Entity update(
 
 	player_entity.pos = Vector2f(x_pos, y_pos);
 	player_entity.vel = Vector2f(x_vel, y_vel);
-	
+
 	return player_entity;
 	}

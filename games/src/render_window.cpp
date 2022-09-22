@@ -44,7 +44,13 @@ void RenderWindow::clear() {
 }
 
 
-void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_texture) {
+void RenderWindow::render(
+		Entity& entity, 
+		int step_index, 
+		SDL_Texture* left_texture, 
+		int scroll_factor_x,
+		int scroll_factor_y
+		) {
 	SDL_Point size;
 	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
@@ -58,26 +64,44 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 
 	// Size and location to display on screen.
 	SDL_Rect dst;
-	dst.x = entity.pos.x;
-	dst.y = entity.pos.y;
 
 	switch(entity.type) {
-		// player
-		case 3:
-			src.x = ((size.x / 5) * (step_index % 5)) + PLAYER_CROP_FACTOR_X;
-			src.y = ((size.y / 2) * float(step_index > 4)) + PLAYER_CROP_FACTOR_Y;
-			src.w = PLAYER_WIDTH_SRC;
-			src.h = PLAYER_HEIGHT_SRC - 1;
+		// Ground object
+		case 1:
+			src.x = 0;
+			src.y = 0;
+			src.w = size.x;
+			src.h = size.y;
 
+			dst.x = entity.pos.x - scroll_factor_x;
+			dst.y = entity.pos.y + scroll_factor_y;
 			dst.w = entity.width;
 			dst.h = entity.height;
 			break;
+		// Player 
+		case 3:
+			src.x = ((size.x / 5) * (step_index % 5));
+			src.y = ((size.y / 2) * float(step_index > 4));
+			src.x += PLAYER_CROP_FACTOR_X;
+			src.y += PLAYER_CROP_FACTOR_Y;
+
+			src.w = PLAYER_WIDTH_SRC;
+			src.h = PLAYER_HEIGHT_SRC - 1;
+
+			dst.x = entity.pos.x - scroll_factor_x;
+			dst.y = entity.pos.y + scroll_factor_y;
+			dst.w = entity.width;
+			dst.h = entity.height;
+			break;
+		// Background
 		default:
 			src.x = 0;
 			src.y = 0;
 			src.w = size.x;
 			src.h = size.y;
 
+			dst.x = entity.pos.x;
+			dst.y = entity.pos.y;
 			dst.w = entity.width;
 			dst.h = entity.height;
 			break;
