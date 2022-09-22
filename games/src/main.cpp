@@ -96,19 +96,19 @@ int main(int argc, char* args[]) {
 			player_texture_right											// texture
 			);
 
-	SDL_Event event;
 	bool done = false;
 	int step_idx = 0;
 	int final_idx;
 
 	while (!done) {
+		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
 				window.quit();
 				done = true;
 			}
-			player_entity = handle(event, player_entity, collidable_entity_positions);
 		}
+		player_entity = handle(event, player_entity, collidable_entity_positions);
 		player_entity = update(player_entity, collidable_entity_positions);
 		SDL_Delay(1000 * TIME_STEP);
 
