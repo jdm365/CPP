@@ -88,10 +88,10 @@ int main(int argc, char* args[]) {
 	}
 	
 	Entity player_entity(
-			Vector2f(100, PLATFORM_HEIGHT - (GROUND_SIZE + PLAYER_SIZE)), 	// position
+			Vector2f(100, PLATFORM_HEIGHT - (250)), 						// position
 			Vector2f(0, 0),													// velocity 
-			PLAYER_SIZE,													// width
-			PLAYER_SIZE,													// height 
+			int(PLAYER_SIZE_FACTOR * PLAYER_WIDTH_SRC),						// width
+			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),					// height 
 			player_type,													// type
 			player_texture_right											// texture
 			);

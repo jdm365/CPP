@@ -161,7 +161,7 @@ Entity update(
 	// Respawn if player falls off map.
 	if (y_pos > WINDOW_HEIGHT) {
 		x_pos = 100.00f;
-		y_pos = float(PLATFORM_HEIGHT - 2 * PLAYER_SIZE);
+		y_pos = float(PLATFORM_HEIGHT - 250);
 		x_vel = 0.00f;
 		y_vel = 0.00f;
 	}

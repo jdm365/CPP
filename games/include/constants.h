@@ -11,9 +11,11 @@
 #define LEVEL_DESIGN_FILEPATH  	"textures/level_design.csv"
 
 // Frame sizing
-#define PLAYER_SIZE  			96
-#define PLAYER_FRAME_FACTOR_X	16
-#define PLAYER_FRAME_FACTOR_Y	3
+#define PLAYER_WIDTH_SRC		32
+#define PLAYER_HEIGHT_SRC		48
+#define PLAYER_SIZE_FACTOR  	2.00f
+#define PLAYER_CROP_FACTOR_X	18
+#define PLAYER_CROP_FACTOR_Y	2
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720

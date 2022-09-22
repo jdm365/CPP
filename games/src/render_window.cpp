@@ -13,7 +13,7 @@ RenderWindow::RenderWindow(const char* title, int width, int height) {
 
 	window = SDL_CreateWindow(
 			title, 
-			SDL_WINDOWPOS_UNDEFINED, 
+			SDL_WINDOWPOS_UNDEFINED,  
 			SDL_WINDOWPOS_UNDEFINED, 
 			width, 
 			height, 
@@ -55,9 +55,6 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	
 	// Used to choose correct sprite on sprite sheet.
 	SDL_Rect src;
-	// step_index always zero for non-player objects.
-	src.x = (size.x / 5) * (step_index % 5);
-	src.y = (size.y / 2) * float(step_index > 4);
 
 	// Size and location to display on screen.
 	SDL_Rect dst;
@@ -67,14 +64,20 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	switch(entity.type) {
 		// player
 		case 3:
-			src.w = (size.x / 5);
-			src.h = (size.y / 2);
+			src.x = ((size.x / 5) * (step_index % 5)) + PLAYER_CROP_FACTOR_X;
+			src.y = ((size.y / 2) * float(step_index > 4)) + PLAYER_CROP_FACTOR_Y;
+			src.w = PLAYER_WIDTH_SRC;
+			src.h = PLAYER_HEIGHT_SRC - 1;
+
 			dst.w = entity.width;
 			dst.h = entity.height;
 			break;
 		default:
+			src.x = 0;
+			src.y = 0;
 			src.w = size.x;
 			src.h = size.y;
+
 			dst.w = entity.width;
 			dst.h = entity.height;
 			break;
