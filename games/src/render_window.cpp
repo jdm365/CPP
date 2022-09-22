@@ -55,8 +55,9 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	
 	// Used to choose correct sprite on sprite sheet.
 	SDL_Rect src;
-	src.x = (size.x / 5) * (step_index % 5);
-	src.y = (size.y / 2) * float(step_index > 4);
+	// step_index always zero for non-player objects.
+	src.x = (size.x / 5) * (step_index % 5) + int(entity.type == 3) * PLAYER_FRAME_FACTOR_X;
+	src.y = (size.y / 2) * float(step_index > 4) + int(entity.type == 3) * PLAYER_FRAME_FACTOR_Y;
 
 	// Size and location to display on screen.
 	SDL_Rect dst;
@@ -66,8 +67,8 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 	switch(entity.type) {
 		// player
 		case 3:
-			src.w = (size.x / 5) - ((size.x / 5) * PLAYER_FRAME_FACTOR_X);
-			src.h = (size.y / 2) - ((size.y / 2) * PLAYER_FRAME_FACTOR_Y);
+			src.w = (size.x / 5) - PLAYER_FRAME_FACTOR_X;
+			src.h = (size.y / 2) - PLAYER_FRAME_FACTOR_Y;
 			dst.w = entity.width;
 			dst.h = entity.height;
 			break;
@@ -78,7 +79,6 @@ void RenderWindow::render(Entity& entity, int step_index, SDL_Texture* left_text
 			dst.h = entity.height;
 			break;
 	}
-
 
 	if (entity.vel.x < 0) {
 		SDL_RenderCopy(renderer, left_texture, &src, &dst);

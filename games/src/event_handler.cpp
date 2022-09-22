@@ -28,7 +28,7 @@ std::vector<bool> detect_collisions(
 
 		// Left collision
 		bool cond_0 = (left_edge_p <= right_edge_obj);
-		bool cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj < bottom_edge_p);
+		bool cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj > top_edge_p);
 		bool cond_2 = (right_edge_p > right_edge_obj);
 		if (cond_0 && cond_1 && cond_2) {
 			left_collision = true;
@@ -42,7 +42,7 @@ std::vector<bool> detect_collisions(
 		}
 		// Right collision
 		cond_0 = (right_edge_p >= left_edge_obj);
-		cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj < bottom_edge_p);
+		cond_1 = (top_edge_obj < bottom_edge_p) && (bottom_edge_obj > top_edge_p);
 		cond_2 = (left_edge_p < left_edge_obj);
 		if (cond_0 && cond_1 && cond_2) {
 			right_collision = true;

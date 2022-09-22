@@ -12,8 +12,8 @@
 
 // Frame sizing
 #define PLAYER_SIZE  			96
-#define PLAYER_FRAME_FACTOR_X	0.20f
-#define PLAYER_FRAME_FACTOR_Y	0.20f
+#define PLAYER_FRAME_FACTOR_X	16
+#define PLAYER_FRAME_FACTOR_Y	3
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
