@@ -64,47 +64,44 @@ void RenderWindow::render(
 
 	// Size and location to display on screen.
 	SDL_Rect dst;
+	const char* ground = "ground";
+	const char* player = "player";
 
-	switch(entity.type) {
-		// Ground object
-		case 1:
-			src.x = 0;
-			src.y = 0;
-			src.w = size.x;
-			src.h = size.y;
+	if (entity.type == ground) {
+		src.x = 0;
+		src.y = 0;
+		src.w = size.x;
+		src.h = size.y;
 
-			dst.x = entity.pos.x - scroll_factor_x;
-			dst.y = entity.pos.y + scroll_factor_y;
-			dst.w = entity.width;
-			dst.h = entity.height;
-			break;
-		// Player 
-		case 3:
-			src.x = ((size.x / 5) * (step_index % 5));
-			src.y = ((size.y / 2) * float(step_index > 4));
-			src.x += PLAYER_CROP_FACTOR_X;
-			src.y += PLAYER_CROP_FACTOR_Y;
+		dst.x = entity.pos.x - scroll_factor_x;
+		dst.y = entity.pos.y + scroll_factor_y;
+		dst.w = entity.width;
+		dst.h = entity.height;
+	}
+	else if (entity.type == player) {
+		src.x = ((size.x / 5) * (step_index % 5));
+		src.y = ((size.y / 2) * float(step_index > 4));
+		src.x += PLAYER_CROP_FACTOR_X;
+		src.y += PLAYER_CROP_FACTOR_Y;
 
-			src.w = PLAYER_WIDTH_SRC;
-			src.h = PLAYER_HEIGHT_SRC - 1;
+		src.w = PLAYER_WIDTH_SRC;
+		src.h = PLAYER_HEIGHT_SRC - 1;
 
-			dst.x = entity.pos.x - scroll_factor_x;
-			dst.y = entity.pos.y + scroll_factor_y;
-			dst.w = entity.width;
-			dst.h = entity.height;
-			break;
-		// Background
-		default:
-			src.x = 0;
-			src.y = 0;
-			src.w = size.x;
-			src.h = size.y;
+		dst.x = entity.pos.x - scroll_factor_x;
+		dst.y = entity.pos.y + scroll_factor_y;
+		dst.w = entity.width;
+		dst.h = entity.height;
+	}
+	else {
+		src.x = 0;
+		src.y = 0;
+		src.w = size.x;
+		src.h = size.y;
 
-			dst.x = entity.pos.x;
-			dst.y = entity.pos.y;
-			dst.w = entity.width;
-			dst.h = entity.height;
-			break;
+		dst.x = entity.pos.x;
+		dst.y = entity.pos.y;
+		dst.w = entity.width;
+		dst.h = entity.height;
 	}
 
 	if (entity.vel.x < 0) {

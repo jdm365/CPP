@@ -3,12 +3,21 @@
 
 #include "entity.hpp"
 
+Entity::Entity() {
+	pos 	= Vector2f();
+	vel 	= Vector2f();
+	texture = NULL;
+	type 	= "player";
+	width   = 0;
+	height  = 0;
+}
+
 Entity::Entity(
 		Vector2f entity_pos, 
 		Vector2f entity_vel, 
 		int w,
 		int h,
-		int entity_type,
+		const char* entity_type,
 		SDL_Texture* default_texture
 		) {
 

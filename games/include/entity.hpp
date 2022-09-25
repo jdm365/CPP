@@ -8,20 +8,21 @@
 
 class Entity {
 	public:
+		Entity();
 		Entity(
 				Vector2f entity_pos, 
 				Vector2f entity_vel, 
 				int w, 
 				int h, 
-				int entity_type,
+				const char* entity_type,
 				SDL_Texture* player_texture
 				);
 		SDL_Texture* get_texture();
-		int type;
+		const char* type;
 		int width;
 		int height;
 		Vector2f pos;
 		Vector2f vel;
 	private:
 		SDL_Texture* texture;
-};
+}; 

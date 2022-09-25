@@ -85,7 +85,7 @@ Entity handle(
 	bool top_collision    = collisions[1];
 	bool right_collision  = collisions[2];
 	bool bottom_collision = collisions[3];
-	
+
 	// Update player velocity.
 	if (event.type == SDL_KEYDOWN) {
 		switch(event.key.keysym.sym) {
@@ -107,9 +107,15 @@ Entity handle(
 							player_entity.vel.x * float(!left_collision) * float(!right_collision),
 							-JUMP_SPEED * float(!top_collision)
 							);
-					break;
 				}
-		}
+				break;
+			case SDLK_SPACE:
+				player_entity.vel = Vector2f(
+						player_entity.vel.x * float(!left_collision) * float(!right_collision),
+						(player_entity.vel.y - ROCKET_POWER) * float(!top_collision)
+						);
+				break;
+ 		}
 	}
 	if (event.type == SDL_KEYUP) {
 		switch(event.key.keysym.sym) {
@@ -118,11 +124,13 @@ Entity handle(
 						0, 
 						player_entity.vel.y * float(!top_collision) * float(!bottom_collision)
 						);
+				break;
 			case SDLK_RIGHT:
 				player_entity.vel = Vector2f(
 						0, 
 						player_entity.vel.y * float(!top_collision) * float(!bottom_collision)
 						);
+				break;
 		}
 	}
 	return player_entity;
@@ -130,8 +138,7 @@ Entity handle(
 
 Entity update(
 		Entity player_entity, 
-		std::vector<std::vector<int>> collidable_entity_positions,
-		int max_width
+		std::vector<std::vector<int>> collidable_entity_positions
 		) {
 	std::vector<bool> collisions = detect_collisions(player_entity, collidable_entity_positions); 
 
@@ -157,7 +164,7 @@ Entity update(
 		corrective_factor_y = float(int(player_entity.pos.y) % GROUND_SIZE);
 	}
 
-	float x_pos = std::min(int(abs(player_entity.pos.x + x_vel - corrective_factor_x)), max_width);
+	float x_pos = int(abs(player_entity.pos.x + x_vel - corrective_factor_x));
 	float y_pos = player_entity.pos.y + y_vel - corrective_factor_y;
 
 	// Respawn if player falls off map.

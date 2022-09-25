@@ -6,6 +6,7 @@
 #define DIRT_FILEPATH   		"textures/dirt_texture.jpg"
 #define SKY_FILEPATH  			"textures/sky_texture.jpg"
 #define NAMEK_FILEPATH  		"textures/namek_texture.png"
+#define ROCKET_FILEPATH 		"textures/rocket_texture.jpg"
 #define PLAYER_FILEPATH_RIGHT  	"textures/knight_texture.png"
 #define PLAYER_FILEPATH_LEFT  	"textures/knight_texture_left.png"
 #define LEVEL_DESIGN_FILEPATH  	"textures/level_design.csv"
@@ -27,5 +28,6 @@
 #define PLAYER_SPEED			16
 #define JUMP_SPEED				24
 #define GRAVITY					2	
+#define ROCKET_POWER			2.00f	
 
 #endif

@@ -14,8 +14,7 @@ Entity handle(
 		);
 Entity update(
 		Entity entity, 
-		std::vector<std::vector<int>> collidable_entity_positions,
-		int max_width
+		std::vector<std::vector<int>> collidable_entity_positions
 		);
 std::vector<bool> detect_collisions(
 		Entity player_entity, 
