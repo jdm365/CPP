@@ -81,6 +81,7 @@ int main(int argc, char* args[]) {
 				scroll_factor_y
 				);
 
+		/*
 		window.render(
 				entities.rocket_entity, 
 				0,
@@ -88,6 +89,7 @@ int main(int argc, char* args[]) {
 				scroll_factor_x,
 				scroll_factor_y
 				);
+		*/
 		window.display();
 }
 

@@ -110,10 +110,7 @@ Entity handle(
 				}
 				break;
 			case SDLK_SPACE:
-				player_entity.vel = Vector2f(
-						player_entity.vel.x * float(!left_collision) * float(!right_collision),
-						(player_entity.vel.y - ROCKET_POWER) * float(!top_collision)
-						);
+				player_entity.gravity = GRAVITY - ROCKET_POWER;
 				break;
  		}
 	}
@@ -130,6 +127,9 @@ Entity handle(
 						0, 
 						player_entity.vel.y * float(!top_collision) * float(!bottom_collision)
 						);
+				break;
+			case SDLK_SPACE:
+				player_entity.gravity = GRAVITY;
 				break;
 		}
 	}
@@ -151,7 +151,7 @@ Entity update(
 	bool cond_1 = !(top_collision    && (player_entity.vel.y <= 0));
 
 	float x_vel = player_entity.vel.x;
-	float y_vel = (player_entity.vel.y + GRAVITY) * float(cond_0) * float(cond_1);
+	float y_vel = (player_entity.vel.y + player_entity.gravity) * float(cond_0) * float(cond_1);
 
 	float corrective_factor_x = 0.00f;
 	if (left_collision || right_collision) {

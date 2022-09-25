@@ -23,6 +23,7 @@ class Entity {
 		int height;
 		Vector2f pos;
 		Vector2f vel;
+		int gravity;
 	private:
 		SDL_Texture* texture;
 }; 
