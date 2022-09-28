@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <string.h>
 
 #include "render_window.hpp"
 #include "entity.hpp"
@@ -67,7 +68,7 @@ void RenderWindow::render(
 	const char* ground = "ground";
 	const char* player = "player";
 
-	if (entity.type == ground) {
+	if (strcmp(entity.type, ground) == 0) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
@@ -78,7 +79,7 @@ void RenderWindow::render(
 		dst.w = entity.width;
 		dst.h = entity.height;
 	}
-	else if (entity.type == player) {
+	else if (strcmp(entity.type, player) == 0) {
 		src.x = ((size.x / 5) * (step_index % 5));
 		src.y = ((size.y / 2) * float(step_index > 4));
 		src.x += PLAYER_CROP_FACTOR_X;

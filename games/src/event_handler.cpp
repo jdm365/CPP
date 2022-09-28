@@ -153,6 +153,15 @@ Entity update(
 	float x_vel = player_entity.vel.x;
 	float y_vel = (player_entity.vel.y + player_entity.gravity) * float(cond_0) * float(cond_1);
 
+	// Cap velocity
+	if (y_vel >= 0) {
+		y_vel = std::min(y_vel, float(3 * PLAYER_SPEED));
+	}
+	else {
+		y_vel = std::max(y_vel, float(-3 * PLAYER_SPEED));
+	}
+
+
 	float corrective_factor_x = 0.00f;
 	if (left_collision || right_collision) {
 		float sign = -float(left_collision) + float(right_collision) + float(left_collision && right_collision);
