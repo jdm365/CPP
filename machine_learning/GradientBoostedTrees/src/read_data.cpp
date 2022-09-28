@@ -2,8 +2,8 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <stdio.h>
-#include <bits/stdc++.h>
 
 #include "read_data.hpp"
 
