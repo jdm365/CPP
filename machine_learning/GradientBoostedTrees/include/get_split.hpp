@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 float calc_gamma(
 		std::vector<float>& gradient, 
@@ -17,7 +18,7 @@ float calc_score(
 		float& gamma
 		);
 
-std::vector<float> find_greedy_split_point(
+std::array<std::vector<std::vector<float>>, 2> find_greedy_split_point(
 		std::vector<std::vector<float>>& X,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,

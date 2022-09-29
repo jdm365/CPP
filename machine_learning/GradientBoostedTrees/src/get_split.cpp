@@ -1,8 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <array>
 #include <cmath>
 
-#include "find_split.hpp"
+#include "get_split.hpp"
 
 
 float calc_gamma(
@@ -41,7 +42,7 @@ float calc_score(
 }
 
 
-std::vector<float> find_greedy_split_point(
+std::array<std::vector<std::vector<float>>, 2> get_greedy_split(
 		std::vector<std::vector<float>>& X,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
@@ -106,6 +107,17 @@ std::vector<float> find_greedy_split_point(
 			}
 		}
 	}
-	std::vector<float> split_point = {split_val, float(split_col)};
-	return split_point;
+	std::vector<std::vector<float>> X_left;
+	std::vector<std::vector<float>> X_right;
+
+	for (int idx = 0; idx < n_rows; idx++) {
+		if (X[split_col][idx] <= split_val) {
+			X_left.push_back(X[idx]);
+		}
+		else {
+			X_right.push_back(X[idx]);
+		}
+	}
+	std::array<std::vector<std::vector<float>>, 2> X_split = {{X_left, X_right}};
+	return X_split;
 }
