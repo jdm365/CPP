@@ -6,12 +6,30 @@
 #include "get_split.hpp"
 
 
-float calc_gamma(
-		std::vector<float>& gradient, 
-		std::vector<float>& hessian, 
-		float& l2_reg
+Node::Node(
+		std::vector<std::vector<float>>& X_new,
+		std::vector<float>& gradient_new,
+		std::vector<float>& hessian_new,
+		float& l2_reg_new,
+		int& min_data_in_leaf_new,
+		float& min_child_weight_new,
+		int depth_new
 		) {
 
+	X 		 		 = X_new;
+	depth	 		 = depth_new;
+	gradient 		 = gradient_new;
+	hessian  		 = hessian_new;
+	l2_reg	 		 = l2_reg_new;
+	min_data_in_leaf = min_data_in_leaf_new;
+	min_child_weight = min_child_weight_new;
+	gamma	 		 = calc_gamma();
+
+	get_greedy_split();
+}
+
+
+float Node::calc_gamma() {
 	float gradient_sum = 0.00f;
 	float hessian_sum = 0.00f;
 	for (int idx = 0; idx < int(gradient.size()); idx++) {
@@ -24,32 +42,23 @@ float calc_gamma(
 }
 
 
-float calc_score(
+float Node::calc_score(
 		float& left_gradient_sum,
 		float& right_gradient_sum,
 		float& left_hessian_sum,
-		float& right_hessian_sum,
-		float& l2_reg,
-		float& gamma
+		float& right_hessian_sum
 		) {
 	float expr_0 = std::pow(left_gradient_sum, 2) / (left_hessian_sum + l2_reg);
 	float expr_1 = std::pow(right_gradient_sum, 2) / (right_hessian_sum + l2_reg);
 	float expr_2 = std::pow((left_gradient_sum * right_gradient_sum), 2) 
 							 / (left_hessian_sum + right_hessian_sum + l2_reg);
 
-	float score = 0.5 * (expr_0 + expr_1 - expr_2) - gamma;
+	float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma;
 	return score;
 }
 
 
-std::array<std::vector<std::vector<float>>, 2> get_greedy_split(
-		std::vector<std::vector<float>>& X,
-		std::vector<float>& gradient,
-		std::vector<float>& hessian,
-		int&   min_data_in_leaf,
-		float& min_child_weight,
-		float& l2_reg
-		) {
+void Node::get_greedy_split() {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
 
@@ -66,7 +75,6 @@ std::array<std::vector<std::vector<float>>, 2> get_greedy_split(
 	int   split_col;
 	float split_val;
 	float score, best_score;
-	float gamma = calc_gamma(gradient, hessian, l2_reg);
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
@@ -96,9 +104,7 @@ std::array<std::vector<std::vector<float>>, 2> get_greedy_split(
 					left_gradient_sum,
 					right_gradient_sum,
 					left_hessian_sum, 
-					right_hessian_sum,
-					l2_reg,
-					gamma
+					right_hessian_sum
 					);
 			if (score > best_score) {
 				split_val  = X_col[row];
@@ -110,14 +116,39 @@ std::array<std::vector<std::vector<float>>, 2> get_greedy_split(
 	std::vector<std::vector<float>> X_left;
 	std::vector<std::vector<float>> X_right;
 
+	std::vector<float> gradient_left;
+	std::vector<float> gradient_right;
+	std::vector<float> hessian_left;
+	std::vector<float> hessian_right;
+
 	for (int idx = 0; idx < n_rows; idx++) {
 		if (X[split_col][idx] <= split_val) {
 			X_left.push_back(X[idx]);
+			gradient_left.push_back(gradient[idx]);
+			hessian_left.push_back(hessian[idx]);
 		}
 		else {
 			X_right.push_back(X[idx]);
+			gradient_right.push_back(gradient[idx]);
+			hessian_right.push_back(hessian[idx]);
 		}
 	}
-	std::array<std::vector<std::vector<float>>, 2> X_split = {{X_left, X_right}};
-	return X_split;
+	Node(
+			X_left, 
+			gradient_left, 
+			hessian_left, 
+			l2_reg,
+			min_data_in_leaf,
+			min_child_weight,
+			depth + 1
+			);	
+	Node(
+			X_right, 
+			gradient_right, 
+			hessian_right, 
+			l2_reg,
+			min_data_in_leaf,
+			min_child_weight,
+			depth + 1
+			);	
 }
