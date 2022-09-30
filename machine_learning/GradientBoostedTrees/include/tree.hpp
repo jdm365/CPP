@@ -11,7 +11,6 @@ struct Tree {
 	std::vector<float> gradient;
 	std::vector<float> hessian;
 	int   max_depth;
-	float gamma;
 	float l2_reg;
 	float min_child_weight;
 	int   min_data_in_leaf;
@@ -23,7 +22,6 @@ struct Tree {
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			int&   max_depth_new,
-			float& gamma_new,
 			float& l2_reg_new,
 			float& min_child_weight_new,
 			int&   min_data_in_leaf_new

@@ -9,7 +9,6 @@ Tree::Tree(
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
 		int&   max_depth_new,
-		float& gamma_new,
 		float& l2_reg_new,
 		float& min_child_weight_new,
 		int&   min_data_in_leaf_new
@@ -19,7 +18,6 @@ Tree::Tree(
 	gradient = gradient_new;
 	hessian  = hessian_new;
 	max_depth = max_depth_new;
-	gamma	  = gamma_new;
 	l2_reg	  = l2_reg_new;
 	min_child_weight = min_child_weight_new;
 	min_data_in_leaf = min_data_in_leaf_new;
