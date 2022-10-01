@@ -27,7 +27,7 @@ struct GBM {
 		);
 
 	void train(std::vector<std::vector<float>>& X, std::vector<float>& y);
-	std::vector<float> predict(std::vector<std::vector<float>>& X, float y_mean);
+	std::vector<float> predict(std::vector<std::vector<float>>& X);
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 };
