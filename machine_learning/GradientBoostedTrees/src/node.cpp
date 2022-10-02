@@ -31,10 +31,10 @@ Node::Node(
 	is_leaf			 = (depth >= max_depth);
 	split_val		 = 0.00f;
 	split_col		 = 0;
+	gamma 			 = calc_gamma();
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
-		gamma = calc_gamma();
 		get_greedy_split();
 	}
 }
@@ -61,7 +61,7 @@ float Node::calc_score(
 		) {
 	float expr_0 = std::pow(left_gradient_sum, 2) / (left_hessian_sum + l2_reg);
 	float expr_1 = std::pow(right_gradient_sum, 2) / (right_hessian_sum + l2_reg);
-	float expr_2 = std::pow((left_gradient_sum * right_gradient_sum), 2) 
+	float expr_2 = std::pow((left_gradient_sum + right_gradient_sum), 2) 
 							 / (left_hessian_sum + right_hessian_sum + l2_reg);
 
 	float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma;
@@ -133,25 +133,46 @@ void Node::get_greedy_split() {
 
 	std::vector<std::vector<float>> X_left;
 	std::vector<std::vector<float>> X_right;
+	
+	std::vector<float> X_left_col;
+	std::vector<float> X_right_col;
 
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;
 	std::vector<float> hessian_left;
 	std::vector<float> hessian_right;
 
-	for (int idx = 0; idx < n_rows; idx++) {
-		if (X[split_col][idx] <= split_val) {
-			X_left.push_back(X[idx]);
-			gradient_left.push_back(gradient[idx]);
-			hessian_left.push_back(hessian[idx]);
+	for (int col = 0; col < n_cols; col++) {
+		for (int idx = 0; idx < n_rows; idx++) {
+			if (X[split_col][idx] <= split_val) {
+				X_left_col.push_back(X[col][idx]);
+				if (idx == 0) {
+					gradient_left.push_back(gradient[idx]);
+					hessian_left.push_back(hessian[idx]);
+				}
+			}
+			else {
+				X_right_col.push_back(X[col][idx]);
+				if (idx == 0) {
+					gradient_right.push_back(gradient[idx]);
+					hessian_right.push_back(hessian[idx]);
+				}
+			}
 		}
-		else {
-			X_right.push_back(X[idx]);
-			gradient_right.push_back(gradient[idx]);
-			hessian_right.push_back(hessian[idx]);
-		}
+		X_left.push_back(X_left_col);
+		X_right.push_back(X_right_col);
+
+		// Delete all elements of col vectors.
+		X_left_col.clear();
+		X_right_col.clear();
 	}
-	Node left_child(
+
+	std::cout << split_col << " node" << std::endl;
+	std::cout << split_val << " node" << std::endl;
+	std::cout << depth << " node" << std::endl;
+	std::cout << std::endl;
+
+	left_child = new Node(
 			X_left, 
 			gradient_left, 
 			hessian_left, 
@@ -161,7 +182,7 @@ void Node::get_greedy_split() {
 			max_depth,
 			depth + 1
 			);	
-	Node right_child(
+	right_child = new Node(
 			X_right, 
 			gradient_right, 
 			hessian_right, 
@@ -170,7 +191,7 @@ void Node::get_greedy_split() {
 			min_data_in_leaf,
 			max_depth,
 			depth + 1
-			);	
+			);
 }
 
 float Node::predict_obs(std::vector<float>& obs) {
@@ -185,7 +206,7 @@ float Node::predict_obs(std::vector<float>& obs) {
 
 std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	std::vector<float> preds;
-	for (int idx = 0; idx < int(X_pred[0].size()); idx++) {
+	for (int idx = 0; idx < int(X_pred.size()); idx++) {
 		preds.push_back(predict_obs(X_pred[idx]));
 	}
 	return preds;

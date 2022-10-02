@@ -15,7 +15,7 @@ struct Tree {
 	float min_child_weight;
 	int   min_data_in_leaf;
 
-	Node root;
+	Node* root;
 
 	Tree(
 			std::vector<std::vector<float>>& X_new,

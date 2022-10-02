@@ -14,20 +14,25 @@ struct GBM {
 	float lr;
 	float min_child_weight;
 	int   min_data_in_leaf;
-	unsigned int num_boosting_rounds;
+	int   num_boosting_rounds;
 	std::vector<Tree> trees;
 
 	GBM(
-			int&   max_depth_new,
-			float& l2_reg_new,
-			float& lr_new,
-			float& min_child_weight_new,
-			int&   min_data_in_leaf_new,
-			unsigned int& num_boosting_rounds_new
+			int   max_depth_new,
+			float l2_reg_new,
+			float lr_new,
+			float min_child_weight_new,
+			int   min_data_in_leaf_new,
+			int   num_boosting_rounds_new
 		);
 
-	void train(std::vector<std::vector<float>>& X, std::vector<float>& y);
+	void train(
+			std::vector<std::vector<float>>& X, 
+			std::vector<std::vector<float>>& X_rowwise, 
+			std::vector<float>& y
+			);
 	std::vector<float> predict(std::vector<std::vector<float>>& X);
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
+	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 };

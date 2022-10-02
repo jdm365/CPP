@@ -23,7 +23,7 @@ Tree::Tree(
 	min_data_in_leaf = min_data_in_leaf_new;
 
 	// Creating the root node will recursively create nodes and build the tree.
-	root = Node(
+	root = new Node(
 			X,
 			gradient,
 			hessian,
@@ -36,6 +36,5 @@ Tree::Tree(
 }
 
 std::vector<float> Tree::predict(std::vector<std::vector<float>>& X_pred) {
-	return root.predict(X_pred);
+	return (*root).predict(X_pred);
 }
-
