@@ -24,7 +24,7 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split(
 	srand(time(NULL));
 
 	int idx;
-	while ((test_idxs.size()) != test_length) {
+	while (int(test_idxs.size()) != test_length) {
 		// Generate random number in range [0, X.size()].
 		idx = rand() % int(train_idxs.size());
 		test_idxs.push_back(idx);
@@ -38,8 +38,8 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split(
 	std::vector<float> X_test_col;
 
 	for (int col = 0; col < int(X.size()); col++) {
-		for (int row = 0; row < int(train_idxs.size()); row++) {
-			if (row < int(test_idxs.size())) {
+		for (int row = 0; row < train_length; row++) {
+			if (row < test_length) {
 				X_test_col.push_back(X[col][test_idxs[row]]);
 			}
 			X_train_col.push_back(X[col][train_idxs[row]]);
@@ -48,7 +48,7 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split(
 		X_train.push_back(X_train_col);
 
 		// Delete all elements of vectors.
-		X_train_col.clear();
+		X_test_col.clear();
 		X_train_col.clear();
 	}
 

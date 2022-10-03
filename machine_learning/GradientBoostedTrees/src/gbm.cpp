@@ -39,7 +39,8 @@ void GBM::train(
 	}
 	float loss;
 
-	for (int idx = 0; idx < num_boosting_rounds; idx++) {
+	std::vector<float> preds;
+	for (int round = 0; round < num_boosting_rounds; round++) {
 		trees.push_back(
 				Tree(
 					X,
@@ -52,12 +53,20 @@ void GBM::train(
 				)
 			);
 
-		std::vector<float> round_preds = predict(X_rowwise);
-		gradient = calculate_gradient(round_preds, y);
-		hessian  = calculate_hessian(round_preds, y);
+		std::vector<float> round_preds = trees[round].predict(X_rowwise);
+		for (int idx = 0; idx < int(round_preds.size()); idx++) {
+			if (round == 0) {
+				preds.push_back(lr * round_preds[idx]);
+			}
+			else {
+				preds[idx] += lr * round_preds[idx];
+			}
+		}
+		gradient = calculate_gradient(preds, y);
+		hessian  = calculate_hessian(preds, y);
 
-		loss = calculate_mse_loss(round_preds, y);
-		std::cout << "Round " << idx + 1 << " MSE Loss: " << loss << std::endl;
+		loss = calculate_mse_loss(preds, y);
+		std::cout << "Round " << round + 1 << " MSE Loss: " << loss << std::endl;
 	}
 }
 
@@ -66,13 +75,14 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowwise) {
 	std::vector<float> tree_preds;
 
 	for (int tree_num = 0; tree_num < int(trees.size()); tree_num++) {
-		if (tree_num == 0) {
-			round_preds = trees[tree_num].predict(X_rowwise);
-			continue;
-		}
 		tree_preds = trees[tree_num].predict(X_rowwise);
-		for (int row = 0; row < int(round_preds.size()); row++) {
-			round_preds[row] += lr * tree_preds[row];
+		for (int row = 0; row < int(X_rowwise.size()); row++) {
+			if (tree_num == 0) {
+				round_preds.push_back(lr * tree_preds[row]);
+			}
+			else {
+				round_preds[row] += lr * tree_preds[row];
+			}
 		}
 	}
 	return round_preds;
