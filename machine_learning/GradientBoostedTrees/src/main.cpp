@@ -8,7 +8,8 @@
 #include "gbm.hpp"
 
 int main() {
-	const char* FILENAME = "data/iris_copy.csv";
+	// const char* FILENAME = "data/iris_copy.csv";
+	const char* FILENAME = "data/regression_dataset.csv";
 	std::vector<std::vector<float>> X = read_csv(FILENAME);
 
 	std::cout << "Number of columns: " << X.size() << std::endl;
@@ -58,11 +59,11 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			8,				// max_depth
+			5,				// max_depth
 			1.00f,			// l2_reg
-			0.10f,			// lr
+			0.1f,			// lr
 			1.00f,			// min_child_weight
-			5,				// min_data_in_leaf
+			20,				// min_data_in_leaf
 			250				// num_boosting_rounds
 			);
 	model.train(X_train, X_train_rowwise, y_train);

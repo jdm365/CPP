@@ -31,10 +31,10 @@ Node::Node(
 	is_leaf			 = (depth >= max_depth);
 	split_val		 = 0.00f;
 	split_col		 = 0;
+	gamma 			 = calc_gamma();
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
-		gamma = calc_gamma();
 		get_greedy_split();
 	}
 }
