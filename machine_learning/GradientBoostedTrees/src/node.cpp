@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "node.hpp"
+#include "utils.hpp"
 
 
 Node::Node() {
@@ -194,11 +195,15 @@ void Node::get_greedy_split() {
 }
 
 // TODO: Write weighted quantile sketch and approximate algorithm.
+// Start with incorrect naive quantile based histogram split.
 void Node::get_approximate_split() {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
 
+	int n_bins = 32;
+
 	std::vector<float> X_col;
+	std::vector<float> split_vals;
 
 	float left_sum 			 = 0.00f;
 	float right_sum			 = 0.00f;
@@ -213,7 +218,8 @@ void Node::get_approximate_split() {
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		for (int row = 0; row < n_rows; row++) {
+		split_vals = get_quantiles(X_col, n_bins=n_bins);
+		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			right_sum 		   = 0;
@@ -224,7 +230,7 @@ void Node::get_approximate_split() {
 
 			// Look at each potential split point.
 			for (int idx = 0; idx < n_rows; idx++) {
-				if (X_col[idx] <= X_col[row]) {
+				if (X_col[idx] <= split_vals[quantile_idx]) {
 					left_sum += 1;
 					left_gradient_sum += gradient[idx];
 					left_hessian_sum  += hessian[idx];
@@ -251,7 +257,7 @@ void Node::get_approximate_split() {
 					right_hessian_sum
 					);
 			if (score > best_score) {
-				split_val  = X_col[row];
+				split_val  = X_col[quantile_idx];
 				split_col  = col;
 				best_score = score;
 			}

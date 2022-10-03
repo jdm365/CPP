@@ -31,18 +31,15 @@ struct Node {
 			int& max_depth_new,
 			int depth_new = 0
 		);
-
 	float calc_gamma();
-
 	float calc_score(
 			float& left_gradient_sum, 
 			float& right_gradient_sum, 
 			float& left_hessian_sum, 
 			float& right_hessian_sum
 			);
-
 	void get_greedy_split();
-
+	void get_approximate_split();
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
 };
