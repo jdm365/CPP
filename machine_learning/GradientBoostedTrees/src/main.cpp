@@ -59,9 +59,9 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			5,				// max_depth
+			8,				// max_depth
 			1.00f,			// l2_reg
-			0.1f,			// lr
+			0.10f,			// lr
 			1.00f,			// min_child_weight
 			20,				// min_data_in_leaf
 			250				// num_boosting_rounds
