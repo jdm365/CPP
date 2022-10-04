@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 
 #include "node.hpp"
@@ -32,6 +33,14 @@ void GBM::train(
 	std::vector<float> gradient;
 	std::vector<float> hessian;
 
+	std::vector<std::vector<float>> split_vals;
+
+	int max_bins = 127;
+	for (int col = 0; col < int(X.size()); col++) {
+		struct Node tmp_node = Node();
+		split_vals.push_back(tmp_node.get_quantiles(X[col], max_bins));
+	}
+
 	// Init gradient and hessian to 0.
 	for (int idx = 0; idx < int(y.size()); idx++) {
 		gradient.push_back(0.00f);
@@ -44,6 +53,7 @@ void GBM::train(
 		trees.push_back(
 				Tree(
 					X,
+					split_vals,
 					gradient,
 					hessian,
 					round,

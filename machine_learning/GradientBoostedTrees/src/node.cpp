@@ -14,6 +14,7 @@ Node::Node() {
 
 Node::Node(
 		std::vector<std::vector<float>>& X_new,
+		std::vector<std::vector<float>>& split_vals_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
 		int&   tree_num_new,
@@ -25,6 +26,7 @@ Node::Node(
 		) {
 
 	X 		 		 = X_new;
+	split_vals 		 = split_vals_new;
 	gradient 		 = gradient_new;
 	hessian  		 = hessian_new;
 	tree_num		 = tree_num_new;
@@ -179,6 +181,7 @@ void Node::get_greedy_split() {
 
 	left_child = new Node(
 			X_left, 
+			split_vals,
 			gradient_left, 
 			hessian_left, 
 			tree_num,
@@ -190,6 +193,7 @@ void Node::get_greedy_split() {
 			);
 	right_child = new Node(
 			X_right, 
+			split_vals,
 			gradient_right, 
 			hessian_right, 
 			tree_num,
@@ -207,7 +211,7 @@ void Node::get_approximate_split(int max_bins) {
 	int n_rows = int(X[0].size());
 
 	std::vector<float> X_col;
-	std::vector<float> split_vals;
+	// std::vector<float> split_vals;
 
 	float left_sum 			 = 0.00f;
 	float right_sum			 = 0.00f;
@@ -222,8 +226,8 @@ void Node::get_approximate_split(int max_bins) {
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		split_vals = get_quantiles(X_col, max_bins);
-		for (int quantile_idx = 0; quantile_idx < int(split_vals.size()); quantile_idx++) {
+		// split_vals = get_quantiles(X_col, max_bins);
+		for (int quantile_idx = 0; quantile_idx < int(split_vals[col].size()); quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			right_sum 		   = 0;
@@ -234,7 +238,7 @@ void Node::get_approximate_split(int max_bins) {
 
 			// Look at each potential split point.
 			for (int idx = 0; idx < n_rows; idx++) {
-				if (X_col[idx] <= split_vals[quantile_idx]) {
+				if (X_col[idx] <= split_vals[col][quantile_idx]) {
 					left_sum += 1;
 					left_gradient_sum += gradient[idx];
 					left_hessian_sum  += hessian[idx];
@@ -261,7 +265,7 @@ void Node::get_approximate_split(int max_bins) {
 					right_hessian_sum
 					);
 			if (score > best_score) {
-				split_val  = split_vals[quantile_idx];
+				split_val  = split_vals[col][quantile_idx];
 				split_col  = col;
 				best_score = score;
 			}
@@ -311,6 +315,7 @@ void Node::get_approximate_split(int max_bins) {
 
 	left_child = new Node(
 			X_left, 
+			split_vals,
 			gradient_left, 
 			hessian_left, 
 			tree_num,
@@ -322,6 +327,7 @@ void Node::get_approximate_split(int max_bins) {
 			);
 	right_child = new Node(
 			X_right, 
+			split_vals,
 			gradient_right, 
 			hessian_right, 
 			tree_num,
@@ -361,9 +367,8 @@ std::vector<float> Node::sort_values(std::vector<float> X_col) {
 
 std::vector<float> Node::get_quantiles(std::vector<float> X_col, int n_bins) {
 	std::vector<float> split_vals;
-	std::vector<float> sorted_col;
 
-	sorted_col = sort_values(X_col);
+	X_col = sort_values(X_col);
 	// Init to random. Get unique quantiles.
 	float last_val = INFINITY;
 	int split_idx;
@@ -373,12 +378,12 @@ std::vector<float> Node::get_quantiles(std::vector<float> X_col, int n_bins) {
 		split_idx = idx * bin_size;
 
 		// Only get unique quantiles.
-		if (sorted_col[split_idx] == last_val) {
+		if (X_col[split_idx] == last_val) {
 			continue;
 		}
 
-		last_val = sorted_col[split_idx];
-		split_vals.push_back(sorted_col[split_idx]);
+		last_val = X_col[split_idx];
+		split_vals.push_back(X_col[split_idx]);
 	}
 	return split_vals;
 }

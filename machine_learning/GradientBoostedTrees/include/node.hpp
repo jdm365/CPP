@@ -6,6 +6,7 @@
 
 struct Node {
 	std::vector<std::vector<float>> X;
+	std::vector<std::vector<float>> split_vals;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
 	int   tree_num;
@@ -24,6 +25,7 @@ struct Node {
 	Node();
 	Node(
 			std::vector<std::vector<float>>& X_new,
+			std::vector<std::vector<float>>& split_vals_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			int&   tree_num_new,
