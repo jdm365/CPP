@@ -2,6 +2,8 @@
 #include <vector>
 #include <array>
 #include <cmath>
+#include <algorithm>
+#include <cmath>
 
 #include "node.hpp"
 #include "utils.hpp"
@@ -39,7 +41,7 @@ Node::Node(
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
 		//get_greedy_split();
-		get_approximate_split();
+		get_approximate_split(127);
 	}
 }
 
@@ -199,13 +201,10 @@ void Node::get_greedy_split() {
 			);
 }
 
-// TODO: Write weighted quantile sketch and approximate algorithm.
-// Start with incorrect naive quantile based histogram split.
-void Node::get_approximate_split() {
+// Naive quantile based histogram split.
+void Node::get_approximate_split(int max_bins) {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
-
-	int n_bins = 32;
 
 	std::vector<float> X_col;
 	std::vector<float> split_vals;
@@ -223,9 +222,8 @@ void Node::get_approximate_split() {
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		std::vector<float> sorted_col = sort_values(X_col);
-		split_vals = get_quantiles(sorted_col, n_bins);
-		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
+		split_vals = get_quantiles(X_col, max_bins);
+		for (int quantile_idx = 0; quantile_idx < int(split_vals.size()); quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			right_sum 		   = 0;
@@ -346,6 +344,7 @@ float Node::predict_obs(std::vector<float>& obs) {
 	return (*right_child).predict_obs(obs);
 }
 
+
 std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	std::vector<float> preds;
 	// X_pred is rowwise storage.
@@ -353,4 +352,33 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 		preds.push_back(predict_obs(X_pred[row]));
 	}
 	return preds;
+}
+
+std::vector<float> Node::sort_values(std::vector<float> X_col) {
+	std::sort(X_col.begin(), X_col.end());
+	return X_col;
+}
+
+std::vector<float> Node::get_quantiles(std::vector<float> X_col, int n_bins) {
+	std::vector<float> split_vals;
+	std::vector<float> sorted_col;
+
+	sorted_col = sort_values(X_col);
+	// Init to random. Get unique quantiles.
+	float last_val = INFINITY;
+	int split_idx;
+	int bin_size = int(int(X_col.size()) / n_bins);
+
+	for (int idx = 0; idx < n_bins; idx++) {
+		split_idx = idx * bin_size;
+
+		// Only get unique quantiles.
+		if (sorted_col[split_idx] == last_val) {
+			continue;
+		}
+
+		last_val = sorted_col[split_idx];
+		split_vals.push_back(sorted_col[split_idx]);
+	}
+	return split_vals;
 }

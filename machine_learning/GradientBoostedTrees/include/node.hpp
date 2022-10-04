@@ -41,7 +41,9 @@ struct Node {
 			float& right_hessian_sum
 			);
 	void get_greedy_split();
-	void get_approximate_split();
+	void get_approximate_split(int max_bins);
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
+	std::vector<float> sort_values(std::vector<float> X_col);
+	std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins);
 };

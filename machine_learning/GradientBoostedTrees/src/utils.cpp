@@ -2,7 +2,6 @@
 #include <vector>
 #include <array>
 #include <stdlib.h>
-#include <algorithm>
 
 #include "utils.hpp"
 
@@ -57,19 +56,3 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split(
 	return split;
 }
 
-std::vector<float> sort_values(std::vector<float> X_col) {
-	std::sort(X_col.begin(), X_col.end());
-	return X_col;
-}
-
-std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins) {
-	std::vector<float> split_vals;
-	int split_idx;
-	int bin_size = int(int(X_col.size()) / n_bins);
-
-	for (int idx = 0; idx < n_bins; idx++) {
-		split_idx = idx * bin_size;
-		split_vals.push_back(X_col[split_idx]);
-	}
-	return split_vals;
-}

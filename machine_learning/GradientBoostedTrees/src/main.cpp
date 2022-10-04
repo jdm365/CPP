@@ -59,13 +59,18 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			8,				// max_depth
+			6,				// max_depth
 			1.00f,			// l2_reg
-			0.10f,			// lr
+			0.50f,			// lr
 			1.00f,			// min_child_weight
 			20,				// min_data_in_leaf
-			250				// num_boosting_rounds
+			100				// num_boosting_rounds
 			);
 	model.train(X_train, X_train_rowwise, y_train);
+	/*
+	std::vector<float> test_preds = model.predict(X_test_rowwise);
+	float test_loss = model.calculate_mse_loss(test_preds, y_test);
+	std::cout << std::endl << "Test MSE Loss: " << test_loss << std::endl;
+	*/
 	return 0;
 }
