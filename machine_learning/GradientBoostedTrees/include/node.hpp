@@ -8,6 +8,7 @@ struct Node {
 	std::vector<std::vector<float>> X;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
+	int   tree_num;
 	int   max_depth;
 	int   depth;
 	float gamma;
@@ -25,6 +26,7 @@ struct Node {
 			std::vector<std::vector<float>>& X_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
+			int&   tree_num_new,
 			float& l2_reg_new,
 			float& min_child_weight_new,
 			int& min_data_in_leaf_new,

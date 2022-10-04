@@ -14,6 +14,7 @@ Node::Node(
 		std::vector<std::vector<float>>& X_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
+		int&   tree_num_new,
 		float& l2_reg_new,
 		float& min_child_weight_new,
 		int&   min_data_in_leaf_new,
@@ -24,6 +25,7 @@ Node::Node(
 	X 		 		 = X_new;
 	gradient 		 = gradient_new;
 	hessian  		 = hessian_new;
+	tree_num		 = tree_num_new;
 	l2_reg	 		 = l2_reg_new;
 	min_child_weight = min_child_weight_new;
 	min_data_in_leaf = min_data_in_leaf_new;
@@ -36,7 +38,8 @@ Node::Node(
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
-		get_greedy_split();
+		//get_greedy_split();
+		get_approximate_split();
 	}
 }
 
@@ -176,6 +179,7 @@ void Node::get_greedy_split() {
 			X_left, 
 			gradient_left, 
 			hessian_left, 
+			tree_num,
 			l2_reg,
 			min_child_weight,
 			min_data_in_leaf,
@@ -186,6 +190,7 @@ void Node::get_greedy_split() {
 			X_right, 
 			gradient_right, 
 			hessian_right, 
+			tree_num,
 			l2_reg,
 			min_child_weight,
 			min_data_in_leaf,
@@ -200,7 +205,7 @@ void Node::get_approximate_split() {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
 
-	int n_bins = 32;
+	int n_bins   = 255;
 
 	std::vector<float> X_col;
 	std::vector<float> split_vals;
@@ -218,7 +223,11 @@ void Node::get_approximate_split() {
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		split_vals = get_quantiles(X_col, n_bins=n_bins);
+		std::vector<float> sorted_col = sort_values(X_col);
+		if (tree_num == 0 && depth == 0) {
+			X_sorted.push_back(sorted_col);
+		}
+		split_vals = get_quantiles(X_sorted[col], n_bins);
 		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
@@ -257,7 +266,7 @@ void Node::get_approximate_split() {
 					right_hessian_sum
 					);
 			if (score > best_score) {
-				split_val  = X_col[quantile_idx];
+				split_val  = split_vals[quantile_idx];
 				split_col  = col;
 				best_score = score;
 			}
@@ -309,6 +318,7 @@ void Node::get_approximate_split() {
 			X_left, 
 			gradient_left, 
 			hessian_left, 
+			tree_num,
 			l2_reg,
 			min_child_weight,
 			min_data_in_leaf,
@@ -319,6 +329,7 @@ void Node::get_approximate_split() {
 			X_right, 
 			gradient_right, 
 			hessian_right, 
+			tree_num,
 			l2_reg,
 			min_child_weight,
 			min_data_in_leaf,

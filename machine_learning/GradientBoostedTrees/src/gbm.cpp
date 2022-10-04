@@ -46,6 +46,7 @@ void GBM::train(
 					X,
 					gradient,
 					hessian,
+					round,
 					max_depth,
 					l2_reg,
 					min_child_weight,
