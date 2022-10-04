@@ -205,7 +205,7 @@ void Node::get_approximate_split() {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
 
-	int n_bins   = 255;
+	int n_bins = 32;
 
 	std::vector<float> X_col;
 	std::vector<float> split_vals;
@@ -224,10 +224,7 @@ void Node::get_approximate_split() {
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
 		std::vector<float> sorted_col = sort_values(X_col);
-		if (tree_num == 0 && depth == 0) {
-			X_sorted.push_back(sorted_col);
-		}
-		split_vals = get_quantiles(X_sorted[col], n_bins);
+		split_vals = get_quantiles(sorted_col, n_bins);
 		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
