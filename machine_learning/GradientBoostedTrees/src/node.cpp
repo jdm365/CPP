@@ -43,7 +43,7 @@ Node::Node(
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
 		//get_greedy_split();
-		get_approximate_split(127);
+		get_approximate_split();
 	}
 }
 
@@ -206,15 +206,15 @@ void Node::get_greedy_split() {
 }
 
 // Naive quantile based histogram split.
-void Node::get_approximate_split(int max_bins) {
+void Node::get_approximate_split() {
 	int n_cols = int(X.size());
 	int n_rows = int(X[0].size());
 
 	std::vector<float> X_col;
 	// std::vector<float> split_vals;
 
-	float left_sum 			 = 0.00f;
-	float right_sum			 = 0.00f;
+	int   left_sum 			 = 0;
+	int   right_sum			 = 0;
 	float left_gradient_sum  = 0.00f;
 	float right_gradient_sum = 0.00f;
 	float left_hessian_sum   = 0.00f;
@@ -223,11 +223,100 @@ void Node::get_approximate_split(int max_bins) {
 	bool  cond_0, cond_1, cond_2, cond_3;
 	float score;
 	float best_score = -INFINITY;
+	int   n_bins;
+
+
+	/*
+	TRY PRECOMPUTING GRADIENT/HESSIAN SUMS IN BUCKETS.
+	
+	=============================================================
+	-------------------------------------------------------------
+	Very Approximate Histogram Algorithm
+	-------------------------------------------------------------
+
+	*************************************************************
+	1) Get sorted indices upon initial histogram construction
+	   before training begins.
+	2) In the tree initialization phase, calculate count, 
+	   gradient, and hessian statistics for each bin.
+	3) Choose best split bin.
+	4) When creating child nodes, pass bins still in data.
+
+	*************************************************************
+	=============================================================
+	std::vector<int> counts;
+	std::vector<float> gradient_sums;
+	std::vector<float> hessian_sums;
+	int bin_size = int(n_rows / n_bins);
+	for (int idx = 0; idx < n_bins; idx++) {
+		// Reset summary statistics.
+		sum 		  = 0;
+		gradient_sum  = 0.00f;
+		hessian_sum   = 0.00f;
+
+		for (int row = idx * bin_size; row < (idx + 1) * bin_size; row++) {
+			sum++;
+			gradient_sum += gradient[row];
+			hessian_sum  += hessian[row];
+		}
+		counts.push_back(sum);
+		gradient_sums.push_back(gradient_sum);
+		hessian_sums.push_back(hessian_sum);
+		}
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		// split_vals = get_quantiles(X_col, max_bins);
-		for (int quantile_idx = 0; quantile_idx < int(split_vals[col].size()); quantile_idx++) {
+		n_bins = int(split_vals[col].size());
+		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
+			// Reset summary statistics.
+			left_sum 		   = 0;
+			right_sum 		   = 0;
+			left_gradient_sum  = 0.00f;
+			right_gradient_sum = 0.00f;
+			left_hessian_sum   = 0.00f;
+			right_hessian_sum  = 0.00f;
+
+			// Look at each potential split point.
+			for (int idx = 0; idx < n_bins; idx++) {
+				if (X_col[idx] <= split_vals[col][quantile_idx]) {
+					left_sum++;
+					left_gradient_sum += gradient[idx];
+					left_hessian_sum  += hessian[idx];
+				}
+				else {
+					right_sum++;
+					right_gradient_sum += gradient[idx];
+					right_hessian_sum  += hessian[idx];
+				}
+			}
+			cond_0 = (left_sum  < min_data_in_leaf);
+			cond_1 = (right_sum < min_data_in_leaf);
+			cond_2 = (left_hessian_sum  < min_child_weight);
+			cond_3 = (right_hessian_sum < min_child_weight);
+
+			if (cond_0 || cond_1 || cond_2 || cond_3) {
+				continue;
+			}
+
+			score = calc_score(
+					left_gradient_sum,
+					right_gradient_sum,
+					left_hessian_sum, 
+					right_hessian_sum
+					);
+			if (score > best_score) {
+				split_val  = split_vals[col][quantile_idx];
+				split_col  = col;
+				best_score = score;
+			}
+		}
+	}
+	 */
+
+	for (int col = 0; col < n_cols; col++) {
+		X_col = X[col];
+		n_bins = int(split_vals[col].size());
+		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			right_sum 		   = 0;
@@ -239,12 +328,12 @@ void Node::get_approximate_split(int max_bins) {
 			// Look at each potential split point.
 			for (int idx = 0; idx < n_rows; idx++) {
 				if (X_col[idx] <= split_vals[col][quantile_idx]) {
-					left_sum += 1;
+					left_sum++;
 					left_gradient_sum += gradient[idx];
 					left_hessian_sum  += hessian[idx];
 				}
 				else {
-					right_sum += 1;
+					right_sum++;
 					right_gradient_sum += gradient[idx];
 					right_hessian_sum  += hessian[idx];
 				}
@@ -378,9 +467,9 @@ std::vector<float> Node::get_quantiles(std::vector<float> X_col, int n_bins) {
 		split_idx = idx * bin_size;
 
 		// Only get unique quantiles.
-		if (X_col[split_idx] == last_val) {
-			continue;
-		}
+		//if (X_col[split_idx] == last_val) {
+			//continue;
+		//}
 
 		last_val = X_col[split_idx];
 		split_vals.push_back(X_col[split_idx]);

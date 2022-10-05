@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 
 #include "node.hpp"
 #include "tree.hpp"
@@ -35,22 +36,27 @@ void GBM::train(
 
 	std::vector<std::vector<float>> split_vals;
 
-	int max_bins = 127;
+	int max_bins = 64;
+	int n_bins = 0;
 	for (int col = 0; col < int(X.size()); col++) {
 		struct Node tmp_node = Node();
 		split_vals.push_back(tmp_node.get_quantiles(X[col], max_bins));
+		n_bins += int(split_vals.size());
 	}
+	std::cout << "Num bins: " << n_bins << std::endl;
 
 	// Init gradient and hessian to 0.
 	for (int idx = 0; idx < int(y.size()); idx++) {
-		gradient.push_back(0.00f);
-		hessian.push_back(0.00f);
+		gradient.push_back(2.00f);
+		hessian.push_back(2.00f);
 	}
 	float loss;
 
 	std::vector<float> preds;
+	trees.reserve(num_boosting_rounds);
+	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; round++) {
-		trees.push_back(
+		trees.emplace_back(
 				Tree(
 					X,
 					split_vals,
@@ -77,7 +83,10 @@ void GBM::train(
 		hessian  = calculate_hessian(preds, y);
 
 		loss = calculate_mse_loss(preds, y);
-		std::cout << "Round " << round + 1 << " MSE Loss: " << loss << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
+		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
 	}
 }
 
