@@ -6,6 +6,7 @@
 
 struct Node {
 	std::vector<std::vector<float>> X;
+	std::vector<std::vector<int>> original_col_idxs;
 	std::vector<std::vector<float>> split_vals;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
@@ -25,6 +26,7 @@ struct Node {
 	Node();
 	Node(
 			std::vector<std::vector<float>>& X_new,
+			std::vector<std::vector<int>>& original_col_idxs_new,
 			std::vector<std::vector<float>>& split_vals_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
@@ -46,6 +48,4 @@ struct Node {
 	void get_approximate_split();
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
-	std::vector<float> sort_values(std::vector<float> X_col);
-	std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins);
 };

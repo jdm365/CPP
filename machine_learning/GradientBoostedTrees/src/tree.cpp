@@ -6,6 +6,7 @@
 
 Tree::Tree(
 		std::vector<std::vector<float>>& X_new,
+		std::vector<std::vector<int>>& original_col_idxs,
 		std::vector<std::vector<float>>& split_vals_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
@@ -29,6 +30,7 @@ Tree::Tree(
 	// Creating the root node will recursively create nodes and build the tree.
 	root = new Node(
 			X,
+			original_col_idxs,
 			split_vals,
 			gradient,
 			hessian,

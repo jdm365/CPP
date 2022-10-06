@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <chrono>
 
@@ -23,7 +24,6 @@ GBM::GBM(
 	min_child_weight 	= min_child_weight_new;
 	min_data_in_leaf 	= min_data_in_leaf_new;
 	num_boosting_rounds = num_boosting_rounds_new;
-	trees = {};
 }
 
 void GBM::train(
@@ -31,25 +31,19 @@ void GBM::train(
 		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
 		) {
-	std::vector<float> gradient;
-	std::vector<float> hessian;
+	std::vector<float> gradient(X[0].size());
+	std::vector<float> hessian(X[0].size());
 
 	std::vector<std::vector<float>> split_vals;
 
-	int max_bins = 64;
-	int n_bins = 0;
+	int max_bins 	 = 64;
+	int n_total_bins = 0;
 	for (int col = 0; col < int(X.size()); col++) {
-		struct Node tmp_node = Node();
-		split_vals.push_back(tmp_node.get_quantiles(X[col], max_bins));
-		n_bins += int(split_vals.size());
+		split_vals.push_back(get_quantiles(X[col], max_bins));
+		n_total_bins += int(split_vals.size());
 	}
-	std::cout << "Num bins: " << n_bins << std::endl;
+	std::cout << "Num bins: " << n_total_bins << std::endl;
 
-	// Init gradient and hessian to 0.
-	for (int idx = 0; idx < int(y.size()); idx++) {
-		gradient.push_back(2.00f);
-		hessian.push_back(2.00f);
-	}
 	float loss;
 
 	std::vector<float> preds;
@@ -59,6 +53,7 @@ void GBM::train(
 		trees.emplace_back(
 				Tree(
 					X,
+					original_col_idxs,
 					split_vals,
 					gradient,
 					hessian,
@@ -134,4 +129,35 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 	}
 	loss = loss / float(preds.size());	
 	return loss;
+}
+
+std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
+	std::vector<float> split_vals;
+	std::vector<int> sorted_col_idxs(X_col.size());
+	std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
+
+	std::stable_sort(
+			sorted_col_idxs.begin(), 
+			sorted_col_idxs.end(), 
+			[&X_col](int i, int j) {return X_col[i] < X_col[j];}
+			);
+	original_col_idxs.push_back(sorted_col_idxs);
+
+	// Init to random. Get unique quantiles.
+	float last_val = INFINITY;
+	int   split_idx;
+	int   bin_size = int(int(X_col.size()) / n_bins);
+
+	for (int idx = 0; idx < n_bins; idx++) {
+		split_idx = idx * bin_size;
+
+		// Only get unique quantiles.
+		//if (X_col[split_idx] == last_val) {
+			//continue;
+		//}
+
+		last_val = X_col[split_idx];
+		split_vals.push_back(X_col[split_idx]);
+	}
+	return split_vals;
 }

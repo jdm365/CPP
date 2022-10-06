@@ -14,6 +14,7 @@ Node::Node() {
 
 Node::Node(
 		std::vector<std::vector<float>>& X_new,
+		std::vector<std::vector<int>>& original_col_idxs_new,
 		std::vector<std::vector<float>>& split_vals_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
@@ -25,20 +26,21 @@ Node::Node(
 		int    depth_new
 		) {
 
-	X 		 		 = X_new;
-	split_vals 		 = split_vals_new;
-	gradient 		 = gradient_new;
-	hessian  		 = hessian_new;
-	tree_num		 = tree_num_new;
-	l2_reg	 		 = l2_reg_new;
-	min_child_weight = min_child_weight_new;
-	min_data_in_leaf = min_data_in_leaf_new;
-	max_depth	 	 = max_depth_new;
-	depth	 		 = depth_new;
-	is_leaf			 = (depth >= max_depth);
-	split_val		 = 0.00f;
-	split_col		 = 0;
-	gamma 			 = calc_gamma();
+	X 		 		  = X_new;
+	original_col_idxs = original_col_idxs_new;
+	split_vals 		  = split_vals_new;
+	gradient 		  = gradient_new;
+	hessian  		  = hessian_new;
+	tree_num		  = tree_num_new;
+	l2_reg	 		  = l2_reg_new;
+	min_child_weight  = min_child_weight_new;
+	min_data_in_leaf  = min_data_in_leaf_new;
+	max_depth	 	  = max_depth_new;
+	depth	 		  = depth_new;
+	is_leaf			  = (depth >= max_depth);
+	split_val		  = 0.00f;
+	split_col		  = 0;
+	gamma 			  = calc_gamma();
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
@@ -181,6 +183,7 @@ void Node::get_greedy_split() {
 
 	left_child = new Node(
 			X_left, 
+			original_col_idxs,
 			split_vals,
 			gradient_left, 
 			hessian_left, 
@@ -193,6 +196,7 @@ void Node::get_greedy_split() {
 			);
 	right_child = new Node(
 			X_right, 
+			original_col_idxs,
 			split_vals,
 			gradient_right, 
 			hessian_right, 
@@ -404,6 +408,7 @@ void Node::get_approximate_split() {
 
 	left_child = new Node(
 			X_left, 
+			original_col_idxs,
 			split_vals,
 			gradient_left, 
 			hessian_left, 
@@ -416,6 +421,7 @@ void Node::get_approximate_split() {
 			);
 	right_child = new Node(
 			X_right, 
+			original_col_idxs,
 			split_vals,
 			gradient_right, 
 			hessian_right, 
@@ -439,7 +445,6 @@ float Node::predict_obs(std::vector<float>& obs) {
 	return (*right_child).predict_obs(obs);
 }
 
-
 std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	std::vector<float> preds;
 	// X_pred is rowwise storage.
@@ -449,30 +454,3 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	return preds;
 }
 
-std::vector<float> Node::sort_values(std::vector<float> X_col) {
-	std::sort(X_col.begin(), X_col.end());
-	return X_col;
-}
-
-std::vector<float> Node::get_quantiles(std::vector<float> X_col, int n_bins) {
-	std::vector<float> split_vals;
-
-	X_col = sort_values(X_col);
-	// Init to random. Get unique quantiles.
-	float last_val = INFINITY;
-	int split_idx;
-	int bin_size = int(int(X_col.size()) / n_bins);
-
-	for (int idx = 0; idx < n_bins; idx++) {
-		split_idx = idx * bin_size;
-
-		// Only get unique quantiles.
-		//if (X_col[split_idx] == last_val) {
-			//continue;
-		//}
-
-		last_val = X_col[split_idx];
-		split_vals.push_back(X_col[split_idx]);
-	}
-	return split_vals;
-}

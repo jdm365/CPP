@@ -15,6 +15,7 @@ struct GBM {
 	float min_child_weight;
 	int   min_data_in_leaf;
 	int   num_boosting_rounds;
+	std::vector<std::vector<int>> original_col_idxs;
 	std::vector<Tree> trees;
 
 	GBM(
@@ -35,4 +36,5 @@ struct GBM {
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
+	std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins);
 };

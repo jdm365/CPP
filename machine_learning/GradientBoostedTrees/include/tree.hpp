@@ -8,6 +8,7 @@
 
 struct Tree {
 	std::vector<std::vector<float>> X;
+	std::vector<std::vector<int>> original_col_idxs;
 	std::vector<std::vector<float>> split_vals;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
@@ -21,6 +22,7 @@ struct Tree {
 
 	Tree(
 			std::vector<std::vector<float>>& X_new,
+			std::vector<std::vector<int>>& original_col_idxs,
 			std::vector<std::vector<float>>& split_vals_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
