@@ -3,6 +3,7 @@
 #include <array>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <assert.h>
 
@@ -300,7 +301,12 @@ void Node::get_hist_statistics() {
 			gradient_sum  = 0.00f;
 			hessian_sum   = 0.00f;
 
-			for (int row = idx * bin_size; row < (idx + 1) * bin_size; row++) {
+			for (
+					int row = idx * bin_size; 
+					row < std::min(int(orig_col_idxs[0].size()), (idx + 1) * bin_size); 
+					row++
+					) {
+				assert(orig_col_idxs[col].size() > row);
 				orig_idx = orig_col_idxs[col][row];	
 				gradient_sum += gradient[orig_idx];
 				hessian_sum  += hessian[orig_idx];
@@ -340,7 +346,7 @@ void Node::get_hist_split() {
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
 		bin_size = int(n_rows / n_bins);
-		for (int quantile_idx = 0; quantile_idx < n_bins; quantile_idx++) {
+		for (int quantile_idx = 1; quantile_idx < n_bins - 1; quantile_idx++) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			right_sum 		   = 0;
@@ -365,7 +371,6 @@ void Node::get_hist_split() {
 			cond_1 = (right_sum < min_data_in_leaf);
 			cond_2 = (left_hessian_sum  < min_child_weight);
 			cond_3 = (right_hessian_sum < min_child_weight);
-
 
 			if (cond_0 || cond_1 || cond_2 || cond_3) {
 				continue;
@@ -393,42 +398,46 @@ void Node::get_hist_split() {
 
 	std::vector<std::vector<float>> X_left;
 	std::vector<std::vector<float>> X_right;
-	std::vector<std::vector<int>> orig_col_idxs_left;
-	std::vector<std::vector<int>> orig_col_idxs_right;
+	std::vector<float> gradient_left;
+	std::vector<float> gradient_right;
+	std::vector<float> hessian_left;
+	std::vector<float> hessian_right;
 	
 	std::vector<float> X_left_col;
 	std::vector<float> X_right_col;
-	std::vector<int> orig_col_idxs_left_col;
-	std::vector<int> orig_col_idxs_right_col;
 
 	for (int col = 0; col < n_cols; col++) {
 		for (int row = 0; row < n_rows; row++) {
 			if (X[split_col][row] < split_val) {
 				X_left_col.push_back(X[col][row]);
-				orig_col_idxs_left_col.push_back(orig_col_idxs[col][row]);
+				if (col == 0) {
+					gradient_left.push_back(gradient[row]);
+					hessian_left.push_back(hessian[row]);
+				}
 			}
 			else {
 				X_right_col.push_back(X[col][row]);
-				orig_col_idxs_right_col.push_back(orig_col_idxs[col][row]);
+				if (col == 0) {
+					gradient_right.push_back(gradient[row]);
+					hessian_right.push_back(hessian[row]);
+				}
 			}
 		}
 		X_left.push_back(X_left_col);
 		X_right.push_back(X_right_col);
-		orig_col_idxs_left.push_back(orig_col_idxs_left_col);
-		orig_col_idxs_right.push_back(orig_col_idxs_right_col);
 
 		// Delete all elements of col vectors.
 		X_left_col.clear();
 		X_right_col.clear();
-		orig_col_idxs_left_col.clear();
-		orig_col_idxs_right_col.clear();
 	}
+	std::vector<std::vector<int>> orig_col_idxs_left  = get_sorted_idxs(X_left, n_bins);
+	std::vector<std::vector<int>> orig_col_idxs_right = get_sorted_idxs(X_right, n_bins);
 
 	left_child = new Node(
 			X_left, 
 			orig_col_idxs_left,
-			gradient, 
-			hessian, 
+			gradient_left, 
+			hessian_left, 
 			tree_num,
 			l2_reg,
 			min_child_weight,
@@ -440,8 +449,8 @@ void Node::get_hist_split() {
 	right_child = new Node(
 			X_right, 
 			orig_col_idxs_right,
-			gradient, 
-			hessian, 
+			gradient_right, 
+			hessian_right, 
 			tree_num,
 			l2_reg,
 			min_child_weight,
@@ -609,3 +618,23 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	return preds;
 }
 
+std::vector<std::vector<int>> Node::get_sorted_idxs(
+		std::vector<std::vector<float>>& X_new, 
+		int n_bins
+		) {
+	std::vector<std::vector<int>> new_orig_col_idxs;
+	std::vector<float> X_col;
+	for (int col = 0; col < int(X.size()); col++) {
+		X_col = X_new[col];
+		std::vector<int> sorted_col_idxs(X_col.size());
+		std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
+
+		std::stable_sort(
+				sorted_col_idxs.begin(), 
+				sorted_col_idxs.end(), 
+				[&X_col](int i, int j) {return X_col[i] < X_col[j];}
+				);
+		new_orig_col_idxs.push_back(sorted_col_idxs);
+	} 
+	return new_orig_col_idxs;
+}

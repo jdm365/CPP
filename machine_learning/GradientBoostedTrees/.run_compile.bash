@@ -1,3 +1,3 @@
-g++ -Wall src/*.cpp -I include -std=c++14
+g++ -Wall -g src/*.cpp -I include -std=c++14
 mv a.out bin/debug/
-bin/debug/./a.out
+./bin/debug/a.out

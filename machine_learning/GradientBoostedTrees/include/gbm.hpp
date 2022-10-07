@@ -42,5 +42,5 @@ struct GBM {
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 	std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins);
-	std::vector<int>   get_sorted_idxs(std::vector<float> X_col, int n_bins);
+	void get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins);
 };

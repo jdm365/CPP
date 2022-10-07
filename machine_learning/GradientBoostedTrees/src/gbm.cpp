@@ -93,9 +93,7 @@ void GBM::train_hist(
 	float loss;
 
 	int max_bins = 255;
-	for (int col = 0; col < int(X.size()); col++) {
-		orig_col_idxs.push_back(get_sorted_idxs(X[col], max_bins));
-	} 
+	get_sorted_idxs(X, max_bins);
 
 	std::vector<float> preds;
 	trees.reserve(num_boosting_rounds);
@@ -216,14 +214,18 @@ std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
 }
 
 
-std::vector<int> GBM::get_sorted_idxs(std::vector<float> X_col, int n_bins) {
-	std::vector<int> sorted_col_idxs(X_col.size());
-	std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
+void GBM::get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins) {
+	std::vector<float> X_col;
+	for (int col = 0; col < int(X.size()); col++) {
+		X_col = X[col];
+		std::vector<int> sorted_col_idxs(X_col.size());
+		std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
 
-	std::stable_sort(
-			sorted_col_idxs.begin(), 
-			sorted_col_idxs.end(), 
-			[&X_col](int i, int j) {return X_col[i] < X_col[j];}
-			);
-	return sorted_col_idxs;
+		std::stable_sort(
+				sorted_col_idxs.begin(), 
+				sorted_col_idxs.end(), 
+				[&X_col](int i, int j) {return X_col[i] < X_col[j];}
+				);
+		orig_col_idxs.push_back(sorted_col_idxs);
+	} 
 }
