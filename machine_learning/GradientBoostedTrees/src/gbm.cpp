@@ -26,7 +26,7 @@ GBM::GBM(
 	num_boosting_rounds = num_boosting_rounds_new;
 }
 
-void GBM::train(
+void GBM::train_greedy(
 		std::vector<std::vector<float>>& X, 
 		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
@@ -51,9 +51,7 @@ void GBM::train(
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; round++) {
 		trees.emplace_back(
-				Tree(
 					X,
-					original_col_idxs,
 					split_vals,
 					gradient,
 					hessian,
@@ -62,7 +60,6 @@ void GBM::train(
 					l2_reg,
 					min_child_weight,
 					min_data_in_leaf
-				)
 			);
 
 		std::vector<float> round_preds = trees[round].predict(X_rowwise);
@@ -85,6 +82,59 @@ void GBM::train(
 	}
 }
 
+void GBM::train_hist(
+		std::vector<std::vector<float>>& X, 
+		std::vector<std::vector<float>>& X_rowwise, 
+		std::vector<float>& y
+		) {
+	std::vector<float> gradient(X[0].size());
+	std::vector<float> hessian(X[0].size());
+
+	float loss;
+
+	int max_bins = 255;
+	for (int col = 0; col < int(X.size()); col++) {
+		orig_col_idxs.push_back(get_sorted_idxs(X[col], max_bins));
+	} 
+
+	std::vector<float> preds;
+	trees.reserve(num_boosting_rounds);
+	auto start = std::chrono::high_resolution_clock::now();
+	for (int round = 0; round < num_boosting_rounds; round++) {
+		trees.emplace_back(
+					X,
+					orig_col_idxs,
+					gradient,
+					hessian,
+					round,
+					max_depth,
+					l2_reg,
+					min_child_weight,
+					min_data_in_leaf,
+					max_bins
+			);
+
+		std::vector<float> round_preds = trees[round].predict(X_rowwise);
+		for (int idx = 0; idx < int(round_preds.size()); idx++) {
+			if (round == 0) {
+				preds.push_back(lr * round_preds[idx]);
+			}
+			else {
+				preds[idx] += lr * round_preds[idx];
+			}
+		}
+		gradient = calculate_gradient(preds, y);
+		hessian  = calculate_hessian(preds, y);
+
+		loss = calculate_mse_loss(preds, y);
+		auto stop = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
+		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
+	}
+}
+
+
 std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowwise) {
 	std::vector<float> round_preds;
 	std::vector<float> tree_preds;
@@ -103,6 +153,7 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowwise) {
 	return round_preds;
 }
 
+
 std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> gradient;
 	// Assume MSE for now
@@ -112,6 +163,7 @@ std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vecto
 	return gradient;
 }
 
+
 std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> hessian;
 	// Assume MSE for now
@@ -120,6 +172,7 @@ std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector
 	}
 	return hessian;
 }
+
 
 float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) {
 	float loss = 0.00f;
@@ -141,10 +194,10 @@ std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
 			sorted_col_idxs.end(), 
 			[&X_col](int i, int j) {return X_col[i] < X_col[j];}
 			);
-	original_col_idxs.push_back(sorted_col_idxs);
+	orig_col_idxs.push_back(sorted_col_idxs);
 
-	// Init to random. Get unique quantiles.
-	float last_val = INFINITY;
+	//  Init to random. Get unique quantiles.
+	//  float last_val = INFINITY;
 	int   split_idx;
 	int   bin_size = int(int(X_col.size()) / n_bins);
 
@@ -155,9 +208,22 @@ std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
 		//if (X_col[split_idx] == last_val) {
 			//continue;
 		//}
+		//last_val = X_col[split_idx];
 
-		last_val = X_col[split_idx];
 		split_vals.push_back(X_col[split_idx]);
 	}
 	return split_vals;
+}
+
+
+std::vector<int> GBM::get_sorted_idxs(std::vector<float> X_col, int n_bins) {
+	std::vector<int> sorted_col_idxs(X_col.size());
+	std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
+
+	std::stable_sort(
+			sorted_col_idxs.begin(), 
+			sorted_col_idxs.end(), 
+			[&X_col](int i, int j) {return X_col[i] < X_col[j];}
+			);
+	return sorted_col_idxs;
 }
