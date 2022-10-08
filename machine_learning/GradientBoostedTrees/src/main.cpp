@@ -67,8 +67,8 @@ int main() {
 			20,				// min_data_in_leaf
 			500				// num_boosting_rounds
 			);
-	// model.train_greedy(X_train, X_train_rowwise, y_train);
-	model.train_hist(X_train, X_train_rowwise, y_train);
+	model.train_greedy(X_train, X_train_rowwise, y_train);
+	// model.train_hist(X_train, X_train_rowwise, y_train);
 	/*
 	std::vector<float> test_preds = model.predict(X_test_rowwise);
 	float test_loss = model.calculate_mse_loss(test_preds, y_test);

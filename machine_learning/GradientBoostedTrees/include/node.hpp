@@ -72,8 +72,4 @@ struct Node {
 
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
-	std::vector<std::vector<int>> get_sorted_idxs(
-			std::vector<std::vector<float>>& X, 
-			int n_bins
-			); 
 };

@@ -87,49 +87,6 @@ void GBM::train_hist(
 		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
 		) {
-	std::vector<float> gradient(X[0].size());
-	std::vector<float> hessian(X[0].size());
-
-	float loss;
-
-	int max_bins = 255;
-	get_sorted_idxs(X, max_bins);
-
-	std::vector<float> preds;
-	trees.reserve(num_boosting_rounds);
-	auto start = std::chrono::high_resolution_clock::now();
-	for (int round = 0; round < num_boosting_rounds; round++) {
-		trees.emplace_back(
-					X,
-					orig_col_idxs,
-					gradient,
-					hessian,
-					round,
-					max_depth,
-					l2_reg,
-					min_child_weight,
-					min_data_in_leaf,
-					max_bins
-			);
-
-		std::vector<float> round_preds = trees[round].predict(X_rowwise);
-		for (int idx = 0; idx < int(round_preds.size()); idx++) {
-			if (round == 0) {
-				preds.push_back(lr * round_preds[idx]);
-			}
-			else {
-				preds[idx] += lr * round_preds[idx];
-			}
-		}
-		gradient = calculate_gradient(preds, y);
-		hessian  = calculate_hessian(preds, y);
-
-		loss = calculate_mse_loss(preds, y);
-		auto stop = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
-		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
-	}
 }
 
 
