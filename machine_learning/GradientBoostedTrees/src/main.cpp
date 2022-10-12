@@ -7,10 +7,14 @@
 #include "utils.hpp"
 #include "gbm.hpp"
 
+
+
+
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/regression_dataset.csv";
 	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+
 	std::vector<std::vector<float>> X = read_csv(FILENAME);
 
 	std::cout << "Number of columns: " << int(X.size() - 1) << std::endl;
@@ -62,13 +66,13 @@ int main() {
 	GBM model(
 			6,				// max_depth
 			1.00f,			// l2_reg
-			0.20f,			// lr
-			1.00f,			// min_child_weight
+			0.10f,			// lr
+			0.01f,			// min_child_weight
 			20,				// min_data_in_leaf
-			500				// num_boosting_rounds
+			250				// num_boosting_rounds
 			);
-	model.train_greedy(X_train, X_train_rowwise, y_train);
-	// model.train_hist(X_train, X_train_rowwise, y_train);
+	// model.train_greedy(X_train, X_train_rowwise, y_train);
+	model.train_hist(X_train, X_train_rowwise, y_train);
 	/*
 	std::vector<float> test_preds = model.predict(X_test_rowwise);
 	float test_loss = model.calculate_mse_loss(test_preds, y_test);

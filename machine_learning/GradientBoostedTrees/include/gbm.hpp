@@ -43,4 +43,8 @@ struct GBM {
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 	std::vector<float> get_quantiles(std::vector<float> X_col, int n_bins);
 	void get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins);
+	std::vector<std::vector<int>> map_hist_bins(
+			std::vector<std::vector<float>>& X, 
+			int& n_bins
+			);
 };

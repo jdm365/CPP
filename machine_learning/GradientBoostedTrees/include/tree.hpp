@@ -8,6 +8,7 @@
 
 struct Tree {
 	std::vector<std::vector<float>> X;
+	std::vector<std::vector<int>> X_hist;
 	std::vector<std::vector<int>> orig_col_idxs;
 	std::vector<std::vector<float>> split_vals;
 	std::vector<float> gradient;
@@ -36,8 +37,7 @@ struct Tree {
 
 	// Histogram Constructor
 	Tree(
-			std::vector<std::vector<float>>& X_new,
-			std::vector<std::vector<int>>& orig_col_idxs_new,
+			std::vector<std::vector<int>>& X_hist_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			int&   tree_num_new,
@@ -49,4 +49,8 @@ struct Tree {
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
+	std::vector<std::vector<float>> calc_bin_statistics(
+			std::vector<std::vector<int>>& X_hist,
+			std::vector<float>& stat_vector
+			); 
 };

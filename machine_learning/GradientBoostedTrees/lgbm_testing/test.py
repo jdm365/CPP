@@ -2,7 +2,6 @@ import pandas as pd
 import lightgbm as lgb
 
 
-
 df = pd.read_csv('../data/housing_price_prediction_dataset.csv', header=None)
 params = {
         'num_threads': 1,
@@ -10,6 +9,8 @@ params = {
         'max_leaves': 1000,
         'is_enable_sparse': 'true',
         'enable_bundle': 'true',
+        'cegb_tradeoff': '0.0',
+        'verbosity': -1
         }
 train_cols = df.columns[:-1]
 target     = df.columns[-1]

@@ -87,6 +87,50 @@ void GBM::train_hist(
 		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
 		) {
+	std::vector<float> gradient(X[0].size());
+	std::vector<float> hessian(X[0].size());
+
+	int n_bins = 255;
+
+	std::vector<std::vector<int>> X_hist = map_hist_bins(X, n_bins);
+
+	float loss;
+	std::vector<float> preds;
+
+	trees.reserve(num_boosting_rounds);
+
+	auto start = std::chrono::high_resolution_clock::now();
+	for (int round = 0; round < num_boosting_rounds; ++round) {
+		trees.emplace_back(
+					X_hist,
+					gradient,
+					hessian,
+					round,
+					max_depth,
+					l2_reg,
+					min_child_weight,
+					min_data_in_leaf,
+					n_bins
+			);
+
+		std::vector<float> round_preds = trees[round].predict(X_rowwise);
+		for (int idx = 0; idx < int(round_preds.size()); ++idx) {
+			if (round == 0) {
+				preds.push_back(lr * round_preds[idx]);
+			}
+			else {
+				preds[idx] += lr * round_preds[idx];
+			}
+		}
+		gradient = calculate_gradient(preds, y);
+		hessian  = calculate_hessian(preds, y);
+
+		loss = calculate_mse_loss(preds, y);
+		auto stop = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
+		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
+	}
 }
 
 
@@ -185,4 +229,31 @@ void GBM::get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins) {
 				);
 		orig_col_idxs.push_back(sorted_col_idxs);
 	} 
+}
+
+std::vector<std::vector<int>> GBM::map_hist_bins(
+		std::vector<std::vector<float>>& X,
+		int& n_bins
+		) {
+	int n_rows = int(X[0].size());
+	int n_cols = int(X.size());
+
+	int bin_size = std::ceil(n_rows / n_bins);
+
+	std::vector<std::vector<int>> X_hist(n_cols, std::vector<int>(n_rows));
+	std::vector<float> X_col;
+	X_col.reserve(n_rows);
+
+	for (int col = 0; col < n_cols; col++) {
+		X_col = X[col];
+
+		std::vector<int> idxs(n_rows);
+		std::iota(idxs.begin(), idxs.end(), 0);
+		std::stable_sort(idxs.begin(), idxs.end(), [&X_col](int i, int j){return X_col[i] < X_col[j];});
+
+		for (int row = 0; row < n_rows; row++) {
+			X_hist[col][idxs[row]] = std::min(int(row / bin_size), n_bins - 1);
+		}
+	}
+	return X_hist;
 }
