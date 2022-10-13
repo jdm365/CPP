@@ -621,6 +621,8 @@ std::vector<std::vector<float>> Node::calc_bin_statistics(
 
 	for (int col = 0; col < n_cols; ++col) {
 		n_bins = *std::max_element(X_hist_child[col].begin(), X_hist_child[col].end());
+		n_bins++;
+
 		std::vector<float> stat_mapping_col(n_bins);
 		for (int row = 0; row < n_rows; ++row) {
 			stat_mapping_col[X_hist_child[col][row]] += stat_vector[row];
@@ -642,6 +644,8 @@ std::vector<std::vector<float>> Node::calc_diff_hist(
 
 	for (int col = 0; col < n_cols; ++col) {
 		n_bins = *std::max_element(orig[col].begin(), orig[col].end());
+		n_bins++;
+
 		std::vector<float> other_child_col(n_bins);
 		for (int bin = 0; bin < n_bins; bin++) {
 			other_child_col[bin] = orig[col][bin] - child[col][bin];

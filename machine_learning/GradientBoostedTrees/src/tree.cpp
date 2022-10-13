@@ -117,8 +117,11 @@ std::vector<std::vector<float>> Tree::calc_bin_statistics(
 	std::vector<std::vector<float>> stat_mapping;
 	stat_mapping.reserve(n_cols);
 
+
 	for (int col = 0; col < n_cols; ++col) {
 		n_bins = *std::max_element(X_hist[col].begin(), X_hist[col].end());
+		n_bins++;
+
 		std::vector<float> stat_mapping_col(n_bins);
 		for (int row = 0; row < n_rows; ++row) {
 			stat_mapping_col[X_hist[col][row]] += stat_vector[row];
