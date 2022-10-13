@@ -90,9 +90,9 @@ void GBM::train_hist(
 	std::vector<float> gradient(X[0].size());
 	std::vector<float> hessian(X[0].size());
 
-	int n_bins = 255;
+	int max_bin = 255;
 
-	std::vector<std::vector<int>> X_hist = map_hist_bins(X, n_bins);
+	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
 
 	float loss;
 	std::vector<float> preds;
@@ -110,7 +110,7 @@ void GBM::train_hist(
 					l2_reg,
 					min_child_weight,
 					min_data_in_leaf,
-					n_bins
+					max_bin
 			);
 
 		std::vector<float> round_preds = trees[round].predict(X_rowwise);
@@ -215,7 +215,7 @@ std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
 }
 
 
-void GBM::get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins) {
+void GBM::get_sorted_idxs(std::vector<std::vector<float>> X) {
 	std::vector<float> X_col;
 	for (int col = 0; col < int(X.size()); col++) {
 		X_col = X[col];
@@ -233,12 +233,12 @@ void GBM::get_sorted_idxs(std::vector<std::vector<float>> X, int n_bins) {
 
 std::vector<std::vector<int>> GBM::map_hist_bins(
 		std::vector<std::vector<float>>& X,
-		int& n_bins
+		int& max_bin
 		) {
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
 
-	int bin_size = std::ceil(n_rows / n_bins);
+	int bin_size = std::ceil(n_rows / max_bin);
 
 	std::vector<std::vector<int>> X_hist(n_cols, std::vector<int>(n_rows));
 	std::vector<float> X_col;
@@ -246,13 +246,24 @@ std::vector<std::vector<int>> GBM::map_hist_bins(
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
+		float last_X = 0.00f;
+		int   cntr 	 = 0;
+		int   bin  	 = 0;
 
 		std::vector<int> idxs(n_rows);
 		std::iota(idxs.begin(), idxs.end(), 0);
 		std::stable_sort(idxs.begin(), idxs.end(), [&X_col](int i, int j){return X_col[i] < X_col[j];});
 
 		for (int row = 0; row < n_rows; row++) {
-			X_hist[col][idxs[row]] = std::min(int(row / bin_size), n_bins - 1);
+			X_hist[col][idxs[row]] = std::min(bin, max_bin - 1);
+			if (cntr >= bin_size && last_X != X_col[idxs[row]]) {
+				cntr = 0;
+				bin++;
+			}
+			else {
+				cntr++;
+			}
+			last_X = X_col[idxs[row]];
 		}
 	}
 	return X_hist;

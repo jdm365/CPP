@@ -75,12 +75,10 @@ struct Node {
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
 	std::vector<std::vector<float>> calc_bin_statistics(
 			std::vector<std::vector<int>>& X_hist_child,
-			std::vector<float>& stat_vector,
-			int& n_bins
+			std::vector<float>& stat_vector
 			);
 	std::vector<std::vector<float>> calc_diff_hist(
 			std::vector<std::vector<float>>& orig,
-			std::vector<std::vector<float>>& child,
-			int& n_bins
+			std::vector<std::vector<float>>& child
 			); 
 };

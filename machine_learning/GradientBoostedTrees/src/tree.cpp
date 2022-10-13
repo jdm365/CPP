@@ -62,7 +62,7 @@ Tree::Tree(
 		float& l2_reg_new,
 		float& min_child_weight_new,
 		int&   min_data_in_leaf_new,
-		int&   n_bins_new
+		int&   max_bin_new
 		) {
 
 	X_hist 		   	 = X_hist_new;
@@ -73,7 +73,7 @@ Tree::Tree(
 	l2_reg	         = l2_reg_new;
 	min_child_weight = min_child_weight_new;
 	min_data_in_leaf = min_data_in_leaf_new;
-	n_bins 			 = n_bins_new;
+	max_bin 		 = max_bin_new;
 
 	std::vector<std::vector<float>> gradient_hist = calc_bin_statistics(
 			X_hist,
@@ -112,13 +112,18 @@ std::vector<std::vector<float>> Tree::calc_bin_statistics(
 		) {
 	int n_rows = int(X_hist[0].size());
 	int n_cols = int(X_hist.size());
+	int n_bins;
 
-	std::vector<std::vector<float>> stat_mapping(n_cols, std::vector<float>(n_bins));
+	std::vector<std::vector<float>> stat_mapping;
+	stat_mapping.reserve(n_cols);
 
 	for (int col = 0; col < n_cols; ++col) {
+		n_bins = *std::max_element(X_hist[col].begin(), X_hist[col].end());
+		std::vector<float> stat_mapping_col(n_bins);
 		for (int row = 0; row < n_rows; ++row) {
-			stat_mapping[col][X_hist[col][row]] += stat_vector[row];
+			stat_mapping_col[X_hist[col][row]] += stat_vector[row];
 		}
+		stat_mapping.push_back(stat_mapping_col);
 	}
 	return stat_mapping;
 }

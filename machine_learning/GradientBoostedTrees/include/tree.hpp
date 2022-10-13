@@ -15,7 +15,7 @@ struct Tree {
 	std::vector<float> hessian;
 	int   tree_num;
 	int   max_depth;
-	int   n_bins;
+	int   max_bin;
 	float l2_reg;
 	float min_child_weight;
 	int   min_data_in_leaf;
@@ -45,7 +45,7 @@ struct Tree {
 			float& l2_reg_new,
 			float& min_child_weight_new,
 			int&   min_data_in_leaf_new,
-			int&   n_bins_new
+			int&   max_bin_new
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);

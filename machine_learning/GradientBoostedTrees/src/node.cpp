@@ -288,8 +288,8 @@ void Node::get_hist_split() {
 	int n_cols = int(X_hist.size());
 	int n_rows = int(X_hist[0].size());
 
-	int n_bins   = int(gradient_hist[0].size());
-	int bin_size = std::ceil(n_rows / n_bins);
+	int n_bins;
+	int bin_size;
 
 	int   left_sum;
 	int   right_sum;
@@ -303,6 +303,9 @@ void Node::get_hist_split() {
 	float best_score = -INFINITY;
 
 	for (int col = 0; col < n_cols; ++col) {
+		n_bins   = int(gradient_hist[col].size());
+		bin_size = std::ceil(n_rows / n_bins);
+
 		for (int bin = 0; bin < n_bins; ++bin) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
@@ -402,23 +405,19 @@ void Node::get_hist_split() {
 
 	std::vector<std::vector<float>> gradient_hist_left = calc_bin_statistics(
 			X_hist_left,
-			gradient_left,
-			n_bins
+			gradient_left
 			);
 	std::vector<std::vector<float>> hessian_hist_left = calc_bin_statistics(
 			X_hist_left,
-			hessian_left,
-			n_bins
+			hessian_left
 			);
 	std::vector<std::vector<float>> gradient_hist_right = calc_diff_hist(
 			gradient_hist,
-			gradient_hist_left,
-			n_bins
+			gradient_hist_left
 			);
 	std::vector<std::vector<float>> hessian_hist_right = calc_diff_hist(
 			hessian_hist,
-			hessian_hist_left,
-			n_bins
+			hessian_hist_left
 			);
 
 	left_child = new Node(
@@ -610,36 +609,44 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 
 std::vector<std::vector<float>> Node::calc_bin_statistics(
 		std::vector<std::vector<int>>& X_hist_child,
-		std::vector<float>& stat_vector,
-		int& n_bins
+		std::vector<float>& stat_vector
 		) {
 	int n_rows = int(X_hist_child[0].size());
 	int n_cols = int(X_hist_child.size());
 
-	std::vector<std::vector<float>> stat_mapping(n_cols, std::vector<float>(n_bins));
+	int n_bins;
+
+	std::vector<std::vector<float>> stat_mapping;
+	stat_mapping.reserve(n_cols);
 
 	for (int col = 0; col < n_cols; ++col) {
+		n_bins = *std::max_element(X_hist_child[col].begin(), X_hist_child[col].end());
+		std::vector<float> stat_mapping_col(n_bins);
 		for (int row = 0; row < n_rows; ++row) {
-			stat_mapping[col][X_hist_child[col][row]] += stat_vector[row];
+			stat_mapping_col[X_hist_child[col][row]] += stat_vector[row];
 		}
+		stat_mapping.push_back(stat_mapping_col);
 	}
 	return stat_mapping;
 }
 
 std::vector<std::vector<float>> Node::calc_diff_hist(
 		std::vector<std::vector<float>>& orig,
-		std::vector<std::vector<float>>& child,
-		int& n_bins
+		std::vector<std::vector<float>>& child
 		) {
 	int n_cols = int(orig.size());
+	int n_bins;
 
-	std::vector<std::vector<float>> other_child(n_cols, std::vector<float>(n_bins)); 
-
+	std::vector<std::vector<float>> other_child;
+	other_child.reserve(n_cols);
 
 	for (int col = 0; col < n_cols; ++col) {
+		n_bins = *std::max_element(orig[col].begin(), orig[col].end());
+		std::vector<float> other_child_col(n_bins);
 		for (int bin = 0; bin < n_bins; bin++) {
-			other_child[col][bin] = orig[col][bin] - child[col][bin];
+			other_child_col[bin] = orig[col][bin] - child[col][bin];
 		}
+		other_child.push_back(other_child_col);
 	}
 	return other_child;
 }
