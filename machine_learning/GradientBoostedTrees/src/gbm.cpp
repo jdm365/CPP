@@ -82,22 +82,31 @@ void GBM::train_greedy(
 	}
 }
 
+
 void GBM::train_hist(
 		std::vector<std::vector<float>>& X, 
 		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
 		) {
 	std::vector<float> gradient(X[0].size());
-	std::vector<float> hessian(X[0].size());
+	std::vector<float> hessian(X[0].size(), 2.00f);
 
-	int max_bin = 255;
+	int max_bin = 256;
 
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
+	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
 
 	float loss;
 	std::vector<float> preds;
 
 	trees.reserve(num_boosting_rounds);
+
+	// Add mean for better start.
+	float y_mean = 0.00f;
+	for (int row = 0; row < int(y.size()); ++row) {
+		y_mean += y[row];
+	}
+	y_mean /= float(y.size());
 
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
@@ -113,10 +122,11 @@ void GBM::train_hist(
 					max_bin
 			);
 
-		std::vector<float> round_preds = trees[round].predict(X_rowwise);
+		std::vector<float> round_preds = trees[round].predict_hist(X_hist_rowwise);
+
 		for (int idx = 0; idx < int(round_preds.size()); ++idx) {
 			if (round == 0) {
-				preds.push_back(lr * round_preds[idx]);
+				preds.push_back(y_mean + lr * round_preds[idx]);
 			}
 			else {
 				preds[idx] += lr * round_preds[idx];
@@ -157,7 +167,7 @@ std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vecto
 	std::vector<float> gradient;
 	// Assume MSE for now
 	for (int idx = 0; idx < int(y.size()); idx++) {
-		gradient.push_back(2 * (preds[idx] - y[idx]));
+		gradient.push_back(2.00f * (preds[idx] - y[idx]));
 	}
 	return gradient;
 }
@@ -238,7 +248,8 @@ std::vector<std::vector<int>> GBM::map_hist_bins(
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
 
-	int bin_size = std::ceil(n_rows / max_bin);
+	int bin_size   = std::ceil(n_rows / max_bin);
+	int total_bins = 0;
 
 	std::vector<std::vector<int>> X_hist(n_cols, std::vector<int>(n_rows));
 	std::vector<float> X_col;
@@ -265,6 +276,26 @@ std::vector<std::vector<int>> GBM::map_hist_bins(
 			}
 			last_X = X_col[idxs[row]];
 		}
+		total_bins += std::min(bin, max_bin - 1);
 	}
+	std::cout << "Total bins used: " << total_bins << std::endl;
+	std::cout << std::endl;
 	return X_hist;
+}
+
+
+std::vector<std::vector<int>> GBM::get_hist_bins_rowwise(
+		std::vector<std::vector<int>>& X_hist
+		) {
+	std::vector<std::vector<int>> X_hist_rowwise(
+			X_hist[0].size(),
+			std::vector<int>(X_hist.size())
+			);
+
+	for (int row = 0; row < X_hist[0].size(); ++row) {
+		for (int col = 0; col < X_hist.size(); ++col) {
+			X_hist_rowwise[row][col] = X_hist[col][row];
+		}
+	}
+	return X_hist_rowwise;
 }

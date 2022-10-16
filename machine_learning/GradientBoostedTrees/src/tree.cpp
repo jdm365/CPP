@@ -105,6 +105,9 @@ std::vector<float> Tree::predict(std::vector<std::vector<float>>& X_pred) {
 	return (*root).predict(X_pred);
 }
 
+std::vector<float> Tree::predict_hist(std::vector<std::vector<int>>& X_hist_pred) {
+	return (*root).predict_hist(X_hist_pred);
+}
 
 std::vector<std::vector<float>> Tree::calc_bin_statistics(
 		std::vector<std::vector<int>>& X_hist,
@@ -112,21 +115,16 @@ std::vector<std::vector<float>> Tree::calc_bin_statistics(
 		) {
 	int n_rows = int(X_hist[0].size());
 	int n_cols = int(X_hist.size());
-	int n_bins;
 
-	std::vector<std::vector<float>> stat_mapping;
-	stat_mapping.reserve(n_cols);
-
+	std::vector<std::vector<float>> stat_mapping(
+			n_cols,
+			std::vector<float>(max_bin, 0.00f)
+			);
 
 	for (int col = 0; col < n_cols; ++col) {
-		n_bins = *std::max_element(X_hist[col].begin(), X_hist[col].end());
-		n_bins++;
-
-		std::vector<float> stat_mapping_col(n_bins);
 		for (int row = 0; row < n_rows; ++row) {
-			stat_mapping_col[X_hist[col][row]] += stat_vector[row];
+			stat_mapping[col][X_hist[col][row]] += stat_vector[row];
 		}
-		stat_mapping.push_back(stat_mapping_col);
 	}
 	return stat_mapping;
 }

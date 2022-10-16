@@ -62,6 +62,8 @@ struct Node {
 	void get_hist_split();
 
 	float calc_gamma();
+	float calc_gamma_hist();
+
 	float calc_score(
 			float& left_gradient_sum, 
 			float& right_gradient_sum, 
@@ -73,12 +75,18 @@ struct Node {
 
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
+
+	float predict_obs_hist(std::vector<int> &obs);
+	std::vector<float> predict_hist(std::vector<std::vector<int>> &X_hist_pred);
+
 	std::vector<std::vector<float>> calc_bin_statistics(
 			std::vector<std::vector<int>>& X_hist_child,
-			std::vector<float>& stat_vector
+			std::vector<float>& stat_vector,
+			int& n_bins
 			);
 	std::vector<std::vector<float>> calc_diff_hist(
 			std::vector<std::vector<float>>& orig,
-			std::vector<std::vector<float>>& child
+			std::vector<std::vector<float>>& child,
+			int& n_bins
 			); 
 };

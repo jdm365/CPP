@@ -47,4 +47,7 @@ struct GBM {
 			std::vector<std::vector<float>>& X, 
 			int& max_bins
 			);
+	std::vector<std::vector<int>> get_hist_bins_rowwise(
+			std::vector<std::vector<int>>& X_hist
+			);
 };
