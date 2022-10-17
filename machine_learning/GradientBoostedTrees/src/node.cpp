@@ -140,8 +140,9 @@ float Node::calc_score(
 		) {
 	float expr_0 = left_gradient_sum * left_gradient_sum / (left_hessian_sum + l2_reg);
 	float expr_1 = right_gradient_sum * right_gradient_sum / (right_hessian_sum + l2_reg);
-	float expr_2 = (left_gradient_sum + right_gradient_sum) *  (left_gradient_sum + right_gradient_sum)
-							 / (left_hessian_sum + right_hessian_sum + l2_reg);
+	float expr_2 = (left_gradient_sum + right_gradient_sum) * 
+				   (left_gradient_sum + right_gradient_sum) / 
+				   (left_hessian_sum + right_hessian_sum + l2_reg);
 
 	float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma;
 	return score;
@@ -301,44 +302,71 @@ void Node::get_greedy_split() {
 void Node::get_hist_split() {
 	int n_cols = int(X_hist.size());
 	int n_rows = int(X_hist[0].size());
-	int n_bins;
+	int min_bin;
+	int max_bin;
 
 	float left_gradient_sum;
 	float right_gradient_sum;
 	float left_hessian_sum;
 	float right_hessian_sum;
 
-	bool  cond_0, cond_1;
 	float score;
 	float best_score = -INFINITY;
 
-	for (int col = 0; col < n_cols; ++col) {
-		n_bins = *std::max_element(X_hist[col].begin(), X_hist[col].end());
-		++n_bins;
+	int mid_pt;
 
-		for (int bin = 0; bin < n_bins; ++bin) {
+	float grad_sum = 0.00f;
+	float hess_sum = 0.00f;
+	for (int idx = 0; idx < int(gradient_hist[0].size()); ++idx) {
+		grad_sum += gradient_hist[0][idx];
+		hess_sum += hessian_hist[0][idx];
+	}
+
+	for (int col = 0; col < n_cols; ++col) {
+		min_bin = *std::min_element(X_hist[col].begin(), X_hist[col].end());
+		max_bin = *std::max_element(X_hist[col].begin(), X_hist[col].end());
+		++max_bin;
+
+		mid_pt = int((max_bin - min_bin) / 2) + min_bin;
+
+		for (int bin = min_bin + 1; bin < mid_pt; ++bin) {
 			// Reset summary statistics.
-			left_gradient_sum  = 0.00f;
-			right_gradient_sum = 0.00f;
-			left_hessian_sum   = 0.00f;
-			right_hessian_sum  = 0.00f;
+			left_gradient_sum = 0.00f;
+			left_hessian_sum  = 0.00f;
 
 			// Look at each potential split point.
-			for (int idx = 0; idx < bin; ++idx) {
+			for (int idx = min_bin; idx < bin; ++idx) {
 				left_gradient_sum += gradient_hist[col][idx];
 				left_hessian_sum  += hessian_hist[col][idx];
 			}
-			for (int idx = bin; idx < n_bins; ++idx) {
+			right_gradient_sum = grad_sum - left_gradient_sum;
+			right_hessian_sum  = hess_sum - left_hessian_sum;
+
+			score = calc_score(
+					left_gradient_sum,
+					right_gradient_sum,
+					left_hessian_sum, 
+					right_hessian_sum
+					);
+			if (score > best_score) {
+				split_bin  = bin;
+				split_col  = col;
+				best_score = score;
+			}
+		}
+
+		for (int bin = mid_pt + 1; bin < max_bin; ++bin) {
+			// Reset summary statistics.
+			right_gradient_sum = 0.00f;
+			right_hessian_sum  = 0.00f;
+
+			// Look at each potential split point.
+			for (int idx = mid_pt; idx < bin; ++idx) {
 				right_gradient_sum += gradient_hist[col][idx];
 				right_hessian_sum  += hessian_hist[col][idx];
 			}
-
-			cond_0 = (left_hessian_sum  < min_child_weight);
-			cond_1 = (right_hessian_sum < min_child_weight);
-
-			if (cond_0 || cond_1) {
-				continue;
-			}
+			left_gradient_sum = grad_sum - right_gradient_sum;
+			left_hessian_sum  = hess_sum - right_hessian_sum;
 
 			score = calc_score(
 					left_gradient_sum,
@@ -353,12 +381,13 @@ void Node::get_hist_split() {
 			}
 		}
 	}
+
 	if (best_score == -INFINITY) {
 		// If no split was found then node is leaf.
 		is_leaf = true;
 		return;
 	}
-	n_bins = int(gradient_hist[0].size());
+	int n_bins = int(gradient_hist[0].size());
 
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;

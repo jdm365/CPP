@@ -8,8 +8,6 @@
 #include "gbm.hpp"
 
 
-
-
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/regression_dataset.csv";
@@ -64,14 +62,19 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			4,				// max_depth
+			8,				// max_depth
 			1.00f,			// l2_reg
 			0.10f,			// lr
-			1.00f,			// min_child_weight
-			20,				// min_data_in_leaf
-			250				// num_boosting_rounds
+			1.00f,			// min_child_weight (NOT USED IN HIST)
+			20,				// min_data_in_leaf (NOT USED IN HIST)
+			50,				// num_boosting_rounds
+			256				// max_bins
 			);
 	// model.train_greedy(X_train, X_train_rowwise, y_train);
 	model.train_hist(X_train, X_train_rowwise, y_train);
+
+	std::vector<float> y_preds = model.predict_hist(X_test);
+	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
+
 	return 0;
 }

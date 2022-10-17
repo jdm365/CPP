@@ -13,8 +13,10 @@ struct GBM {
 	float l2_reg;
 	float lr;
 	float min_child_weight;
+	float y_mean_train;
 	int   min_data_in_leaf;
 	int   num_boosting_rounds;
+	int   max_bin;
 	std::vector<std::vector<int>> orig_col_idxs;
 	std::vector<Tree> trees;
 
@@ -24,7 +26,8 @@ struct GBM {
 			float lr_new,
 			float min_child_weight_new,
 			int   min_data_in_leaf_new,
-			int   num_boosting_rounds_new
+			int   num_boosting_rounds_new,
+			int   max_bin_new
 		);
 
 	void train_greedy(
@@ -37,7 +40,8 @@ struct GBM {
 			std::vector<std::vector<float>>& X_rowwise, 
 			std::vector<float>& y
 			);
-	std::vector<float> predict(std::vector<std::vector<float>>& X);
+	std::vector<float> predict(std::vector<std::vector<float>>& X_rowwise);
+	std::vector<float> predict_hist(std::vector<std::vector<float>>& X);
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 

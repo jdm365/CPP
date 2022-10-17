@@ -16,7 +16,8 @@ GBM::GBM(
 		float lr_new,
 		float min_child_weight_new,
 		int   min_data_in_leaf_new,
-		int   num_boosting_rounds_new
+		int   num_boosting_rounds_new,
+		int   max_bin_new
 		) {
 	max_depth 			= max_depth_new;
 	l2_reg 				= l2_reg_new;
@@ -24,6 +25,7 @@ GBM::GBM(
 	min_child_weight 	= min_child_weight_new;
 	min_data_in_leaf 	= min_data_in_leaf_new;
 	num_boosting_rounds = num_boosting_rounds_new;
+	max_bin				= max_bin_new;
 }
 
 void GBM::train_greedy(
@@ -36,10 +38,9 @@ void GBM::train_greedy(
 
 	std::vector<std::vector<float>> split_vals;
 
-	int max_bins 	 = 64;
 	int n_total_bins = 0;
 	for (int col = 0; col < int(X.size()); col++) {
-		split_vals.push_back(get_quantiles(X[col], max_bins));
+		split_vals.push_back(get_quantiles(X[col], max_bin));
 		n_total_bins += int(split_vals.size());
 	}
 	std::cout << "Num bins: " << n_total_bins << std::endl;
@@ -91,8 +92,6 @@ void GBM::train_hist(
 	std::vector<float> gradient(X[0].size());
 	std::vector<float> hessian(X[0].size(), 2.00f);
 
-	int max_bin = 256;
-
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
 	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
 
@@ -102,11 +101,11 @@ void GBM::train_hist(
 	trees.reserve(num_boosting_rounds);
 
 	// Add mean for better start.
-	float y_mean = 0.00f;
+	y_mean_train = 0.00f;
 	for (int row = 0; row < int(y.size()); ++row) {
-		y_mean += y[row];
+		y_mean_train += y[row];
 	}
-	y_mean /= float(y.size());
+	y_mean_train /= float(y.size());
 
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
@@ -126,7 +125,7 @@ void GBM::train_hist(
 
 		for (int idx = 0; idx < int(round_preds.size()); ++idx) {
 			if (round == 0) {
-				preds.push_back(y_mean + lr * round_preds[idx]);
+				preds.push_back(y_mean_train + lr * round_preds[idx]);
 			}
 			else {
 				preds[idx] += lr * round_preds[idx];
@@ -162,6 +161,26 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowwise) {
 	return round_preds;
 }
 
+std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
+	std::vector<float> preds;
+	std::vector<float> tree_preds;
+
+	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
+	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
+
+	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
+		tree_preds = trees[tree_num].predict_hist(X_hist_rowwise);
+		for (int row = 0; row < int(X_hist_rowwise.size()); ++row) {
+			if (tree_num == 0) {
+				preds.emplace_back(y_mean_train + lr * tree_preds[row]);
+			}
+			else {
+				preds[row] += lr * tree_preds[row];
+			}
+		}
+	}
+	return preds;
+}
 
 std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> gradient;
