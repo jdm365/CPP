@@ -186,7 +186,7 @@ std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vecto
 	std::vector<float> gradient;
 	// Assume MSE for now
 	for (int idx = 0; idx < int(y.size()); idx++) {
-		gradient.push_back(2.00f * (preds[idx] - y[idx]));
+		gradient.emplace_back(2.00f * (preds[idx] - y[idx]));
 	}
 	return gradient;
 }
@@ -196,7 +196,7 @@ std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector
 	std::vector<float> hessian;
 	// Assume MSE for now
 	for (int idx = 0; idx < int(y.size()); idx++) {
-		hessian.push_back(2.00f);
+		hessian.emplace_back(2.00f);
 	}
 	return hessian;
 }

@@ -63,7 +63,7 @@ int main() {
 
 	GBM model(
 			8,				// max_depth
-			1.00f,			// l2_reg
+			2.00f,			// l2_reg
 			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf (NOT USED IN HIST)
