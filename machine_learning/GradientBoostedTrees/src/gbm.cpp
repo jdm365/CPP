@@ -311,8 +311,8 @@ std::vector<std::vector<int>> GBM::get_hist_bins_rowwise(
 			std::vector<int>(X_hist.size())
 			);
 
-	for (int row = 0; row < X_hist[0].size(); ++row) {
-		for (int col = 0; col < X_hist.size(); ++col) {
+	for (int row = 0; row < int(X_hist[0].size()); ++row) {
+		for (int col = 0; col < int(X_hist.size()); ++col) {
 			X_hist_rowwise[row][col] = X_hist[col][row];
 		}
 	}
