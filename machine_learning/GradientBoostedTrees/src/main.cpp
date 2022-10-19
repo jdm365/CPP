@@ -62,12 +62,12 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			6,				// max_depth
+			8,				// max_depth
 			2.00f,			// l2_reg
-			0.10f,			// lr
+			0.50f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
-			20,				// min_data_in_leaf (NOT USED IN HIST)
-			50,				// num_boosting_rounds
+			20,				// min_data_in_leaf
+			25,				// num_boosting_rounds
 			256				// max_bins
 			);
 	// model.train_greedy(X_train, X_train_rowwise, y_train);

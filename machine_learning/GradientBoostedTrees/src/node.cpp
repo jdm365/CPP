@@ -87,17 +87,15 @@ Node::Node(
 	min_data_in_leaf  = min_data_in_leaf_new;
 	max_depth	 	  = max_depth_new;
 	depth	 		  = depth_new;
-	is_leaf			  = (depth >= max_depth);
+	is_leaf			  = (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
 	split_bin		  = 0;
 	split_col		  = 0;
+	gamma 			  = calc_gamma_hist();
 
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
 		get_hist_split();
-	}
-	else {
-		gamma = calc_gamma_hist();
 	}
 }
 
