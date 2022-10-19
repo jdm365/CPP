@@ -12,7 +12,6 @@ Greedy Constructor
 */
 Tree::Tree(
 		std::vector<std::vector<float>>& X_new,
-		std::vector<std::vector<float>>& split_vals_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
 		int&   tree_num_new,
@@ -23,7 +22,6 @@ Tree::Tree(
 		) {
 
 	X 		   = X_new;
-	split_vals = split_vals_new;
 	gradient   = gradient_new;
 	hessian    = hessian_new;
 	tree_num   = tree_num_new;
@@ -35,7 +33,6 @@ Tree::Tree(
 	// Creating the root node will recursively create nodes and build the tree.
 	root = new Node(
 			X,
-			split_vals,
 			gradient,
 			hessian,
 			tree_num,

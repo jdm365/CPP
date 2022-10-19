@@ -27,7 +27,6 @@ Greedy Constructor
 */
 Node::Node(
 		std::vector<std::vector<float>>& X_new,
-		std::vector<std::vector<float>>& split_vals_new,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
 		int&   tree_num_new,
@@ -39,7 +38,6 @@ Node::Node(
 		) {
 
 	X 		 		  = X_new;
-	split_vals 		  = split_vals_new;
 	gradient 		  = gradient_new;
 	hessian  		  = hessian_new;
 	tree_num		  = tree_num_new;
@@ -92,12 +90,14 @@ Node::Node(
 	is_leaf			  = (depth >= max_depth);
 	split_bin		  = 0;
 	split_col		  = 0;
-	gamma 			  = calc_gamma_hist();
 
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
 		get_hist_split();
+	}
+	else {
+		gamma = calc_gamma_hist();
 	}
 }
 
@@ -391,6 +391,7 @@ float Node::predict_obs_hist(std::vector<int>& obs) {
 	return (*right_child).predict_obs_hist(obs);
 }
 
+
 std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred) {
 	std::vector<float> preds;
 	// X_pred is rowwise storage.
@@ -399,6 +400,7 @@ std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred
 	}
 	return preds;
 }
+
 
 std::vector<std::vector<float>> Node::calc_bin_statistics(
 		std::vector<std::vector<int>>& X_hist_child,
@@ -420,6 +422,7 @@ std::vector<std::vector<float>> Node::calc_bin_statistics(
 	}
 	return stat_mapping;
 }
+
 
 std::vector<std::vector<float>> Node::calc_diff_hist(
 		std::vector<std::vector<float>>& orig,
@@ -550,7 +553,6 @@ void Node::get_greedy_split() {
 
 	left_child = new Node(
 			X_left, 
-			split_vals,
 			gradient_left, 
 			hessian_left, 
 			tree_num,
@@ -562,7 +564,6 @@ void Node::get_greedy_split() {
 			);
 	right_child = new Node(
 			X_right, 
-			split_vals,
 			gradient_right, 
 			hessian_right, 
 			tree_num,

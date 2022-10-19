@@ -36,15 +36,6 @@ void GBM::train_greedy(
 	std::vector<float> gradient(X[0].size());
 	std::vector<float> hessian(X[0].size());
 
-	std::vector<std::vector<float>> split_vals;
-
-	int n_total_bins = 0;
-	for (int col = 0; col < int(X.size()); col++) {
-		split_vals.push_back(get_quantiles(X[col], max_bin));
-		n_total_bins += int(split_vals.size());
-	}
-	std::cout << "Num bins: " << n_total_bins << std::endl;
-
 	float loss;
 
 	std::vector<float> preds;
@@ -53,7 +44,6 @@ void GBM::train_greedy(
 	for (int round = 0; round < num_boosting_rounds; round++) {
 		trees.emplace_back(
 					X,
-					split_vals,
 					gradient,
 					hessian,
 					round,

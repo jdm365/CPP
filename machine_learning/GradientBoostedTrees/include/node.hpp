@@ -8,7 +8,6 @@
 struct Node {
 	std::vector<std::vector<float>> X;
 	std::vector<std::vector<int>> X_hist;
-	std::vector<std::vector<float>> split_vals;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
 	std::vector<std::vector<float>> gradient_hist;
@@ -34,7 +33,6 @@ struct Node {
 	// Greedy Constructor
 	Node(
 			std::vector<std::vector<float>>& X_new,
-			std::vector<std::vector<float>>& split_vals_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			int&   tree_num_new,

@@ -62,7 +62,7 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			8,				// max_depth
+			6,				// max_depth
 			2.00f,			// l2_reg
 			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
