@@ -148,8 +148,8 @@ float Node::calc_score(
 void Node::get_hist_split() {
 	int n_cols = int(X_hist.size());
 	int n_rows = int(X_hist[0].size());
-	int min_bin;
-	int max_bin;
+	int min_bin = 0;
+	int max_bin = 0;
 
 	float left_gradient_sum;
 	float right_gradient_sum;
@@ -169,10 +169,22 @@ void Node::get_hist_split() {
 	}
 
 	for (int col = 0; col < n_cols; ++col) {
-		min_bin = *std::min_element(X_hist[col].begin(), X_hist[col].end());
-		max_bin = *std::max_element(X_hist[col].begin(), X_hist[col].end());
-		++max_bin;
 
+		// Get min and max bin in hist col and only iterate over those buckets.
+		for (int bin = 0; bin < int(gradient_hist[col].size()); ++bin) {
+			if (gradient_hist[col][bin] != 0.00f) {
+				min_bin = bin;
+				break;
+			}
+		}
+		for (int bin = int(gradient_hist[col].size()); bin >= 0; --bin) {
+			if (gradient_hist[col][bin] != 0.00f) {
+				max_bin = bin + 1;
+				break;
+			}
+		}
+
+		// Use subtraction trick to get other side grad/hist sum.
 		mid_pt = int((max_bin - min_bin) / 2) + min_bin;
 
 		for (int bin = min_bin + 1; bin < mid_pt; ++bin) {

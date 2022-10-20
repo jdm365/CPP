@@ -11,8 +11,8 @@
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/regression_dataset.csv";
-	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "data/hpx10.csv";
+	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+	// const char* FILENAME = "data/hpx10.csv";
 
 	std::vector<std::vector<float>> X = read_csv(FILENAME);
 
@@ -63,7 +63,7 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			5,				// max_depth
+			6,				// max_depth
 			2.00f,			// l2_reg
 			0.50f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
