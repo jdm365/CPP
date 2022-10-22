@@ -30,7 +30,7 @@ GBM::GBM(
 
 void GBM::train_greedy(
 		std::vector<std::vector<float>>& X, 
-		std::vector<std::vector<float>>& X_rowwise, 
+		std::vector<std::vector<float>>& X_rowmajor, 
 		std::vector<float>& y
 		) {
 	std::vector<float> gradient(X[0].size());
@@ -53,7 +53,7 @@ void GBM::train_greedy(
 					min_data_in_leaf
 			);
 
-		std::vector<float> round_preds = trees[round].predict(X_rowwise);
+		std::vector<float> round_preds = trees[round].predict(X_rowmajor);
 		for (int idx = 0; idx < int(round_preds.size()); idx++) {
 			if (round == 0) {
 				preds.push_back(lr * round_preds[idx]);
@@ -81,8 +81,9 @@ void GBM::train_hist(
 	std::vector<float> gradient(X[0].size());
 	std::vector<float> hessian(X[0].size(), 2.00f);
 
+	auto start_0 = std::chrono::high_resolution_clock::now();
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
-	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
+	std::vector<std::vector<int>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	std::vector<std::vector<int>> min_max_rem;
 	for (int col = 0; col < int(X.size()); ++col) {
@@ -90,11 +91,12 @@ void GBM::train_hist(
 				{0, 1 + *std::max_element(X_hist[col].begin(), X_hist[col].end())}
 				);
 	}
+	auto stop_0 = std::chrono::high_resolution_clock::now();
+	auto duration_0 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_0 - start_0);
+	std::cout << "Hist constructed in " << duration_0.count() << " milliseconds" << std::endl;
 
 	float loss;
 	std::vector<float> preds;
-
-	trees.reserve(num_boosting_rounds);
 
 	// Add mean for better start.
 	y_mean_train = 0.00f;
@@ -103,10 +105,11 @@ void GBM::train_hist(
 	}
 	y_mean_train /= float(y.size());
 
+	trees.reserve(num_boosting_rounds);
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(
-					X_hist_rowwise,
+					X_hist_rowmajor,
 					gradient,
 					hessian,
 					round,
@@ -118,7 +121,7 @@ void GBM::train_hist(
 					min_max_rem	
 			);
 
-		std::vector<float> round_preds = trees[round].predict_hist(X_hist_rowwise);
+		std::vector<float> round_preds = trees[round].predict_hist(X_hist_rowmajor);
 
 		for (int idx = 0; idx < int(round_preds.size()); ++idx) {
 			if (round == 0) {
@@ -140,13 +143,13 @@ void GBM::train_hist(
 }
 
 
-std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowwise) {
+std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowmajor) {
 	std::vector<float> round_preds;
 	std::vector<float> tree_preds;
 
 	for (int tree_num = 0; tree_num < int(trees.size()); tree_num++) {
-		tree_preds = trees[tree_num].predict(X_rowwise);
-		for (int row = 0; row < int(X_rowwise.size()); row++) {
+		tree_preds = trees[tree_num].predict(X_rowmajor);
+		for (int row = 0; row < int(X_rowmajor.size()); row++) {
 			if (tree_num == 0) {
 				round_preds.push_back(lr * tree_preds[row]);
 			}
@@ -163,11 +166,11 @@ std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
 	std::vector<float> tree_preds;
 
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
-	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
+	std::vector<std::vector<int>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
-		tree_preds = trees[tree_num].predict_hist(X_hist_rowwise);
-		for (int row = 0; row < int(X_hist_rowwise.size()); ++row) {
+		tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
+		for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
 			if (tree_num == 0) {
 				preds.emplace_back(y_mean_train + lr * tree_preds[row]);
 			}
@@ -252,18 +255,18 @@ std::vector<std::vector<int>> GBM::map_hist_bins(
 }
 
 
-std::vector<std::vector<int>> GBM::get_hist_bins_rowwise(
+std::vector<std::vector<int>> GBM::get_hist_bins_rowmajor(
 		std::vector<std::vector<int>>& X_hist
 		) {
-	std::vector<std::vector<int>> X_hist_rowwise(
+	std::vector<std::vector<int>> X_hist_rowmajor(
 			X_hist[0].size(),
 			std::vector<int>(X_hist.size())
 			);
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {
 		for (int col = 0; col < int(X_hist.size()); ++col) {
-			X_hist_rowwise[row][col] = X_hist[col][row];
+			X_hist_rowmajor[row][col] = X_hist[col][row];
 		}
 	}
-	return X_hist_rowwise;
+	return X_hist_rowmajor;
 }

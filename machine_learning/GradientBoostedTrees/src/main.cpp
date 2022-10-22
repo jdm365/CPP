@@ -30,11 +30,11 @@ int main() {
 	std::vector<float> y_train;
 	std::vector<float> y_test;
 	
-	std::vector<std::vector<float>> X_train_rowwise;
-	std::vector<std::vector<float>> X_test_rowwise;
+	std::vector<std::vector<float>> X_train_rowmajor;
+	std::vector<std::vector<float>> X_test_rowmajor;
 
-	std::vector<float> X_train_rowwise_row;
-	std::vector<float> X_test_rowwise_row;
+	std::vector<float> X_train_rowmajor_row;
+	std::vector<float> X_test_rowmajor_row;
 
 	for (int idx = 0; idx < (int(X.size()) - 1); idx++) {
 		X_train.push_back(data_train[idx]);
@@ -45,22 +45,22 @@ int main() {
 
 	for (int row = 0; row < int(y_train.size()); row++) {
 		for (int col = 0; col < int(X_train.size()); col++) {
-			X_train_rowwise_row.push_back(X_train[col][row]);
+			X_train_rowmajor_row.push_back(X_train[col][row]);
 			if (row < int(y_test.size())) {
-				X_test_rowwise_row.push_back(X_test[col][row]);
+				X_test_rowmajor_row.push_back(X_test[col][row]);
 			}
 		}
-		X_train_rowwise.push_back(X_train_rowwise_row);
-		X_test_rowwise.push_back(X_test_rowwise_row);
+		X_train_rowmajor.push_back(X_train_rowmajor_row);
+		X_test_rowmajor.push_back(X_test_rowmajor_row);
 
 		// Empty elements of array.
-		X_train_rowwise_row.clear();
-		X_test_rowwise_row.clear();
+		X_train_rowmajor_row.clear();
+		X_test_rowmajor_row.clear();
 	}
 
-	assert (X_train_rowwise[2][1] == X_train[1][2]);
-	assert (X_train_rowwise[3][0] == X_train[0][3]);
-	assert (X_train_rowwise[1][1] == X_train[1][1]);
+	assert (X_train_rowmajor[2][1] == X_train[1][2]);
+	assert (X_train_rowmajor[3][0] == X_train[0][3]);
+	assert (X_train_rowmajor[1][1] == X_train[1][1]);
 
 	GBM model(
 			8,				// max_depth
@@ -71,7 +71,7 @@ int main() {
 			25,				// num_boosting_rounds
 			256				// max_bins
 			);
-	// model.train_greedy(X_train, X_train_rowwise, y_train);
+	// model.train_greedy(X_train, X_train_rowmajor, y_train);
 	model.train_hist(X_train, y_train);
 
 	std::vector<float> y_preds = model.predict_hist(X_test);

@@ -64,33 +64,31 @@ Tree::Tree(
 		std::vector<std::vector<int>>& min_max_rem_in 
 		) {
 
-	X_hist			  = X_hist_in;
-	gradient		  = gradient_in;	
-	hessian			  = hessian_in;
-	tree_num          = tree_num_in;
-	max_depth		  = max_depth_in;	
-	l2_reg		  	  = l2_reg_in;	
-	min_child_weight  = min_child_weight_in;	
-	min_data_in_leaf  = min_data_in_leaf_in;	
-	max_bin			  = max_bin_in;
-
-	std::vector<std::vector<float>> gradient_hist = calc_bin_statistics(gradient);
-	std::vector<std::vector<float>> hessian_hist  = calc_bin_statistics(hessian);
+	std::vector<std::vector<float>> gradient_hist = calc_bin_statistics(
+			X_hist_in, 
+			gradient_in,
+			max_bin_in
+			);
+	std::vector<std::vector<float>> hessian_hist  = calc_bin_statistics(
+			X_hist_in, 
+			hessian_in,
+			max_bin_in
+			);
 
 	int depth = 0;
 
 	// Creating the root node will recursively create nodes and build the tree.
 	root = new Node(
-			X_hist,
-			gradient,
-			hessian,
+			X_hist_in,
+			gradient_in,
+			hessian_in,
 			gradient_hist,
 			hessian_hist,
-			tree_num,
-			l2_reg,
-			min_child_weight,
-			min_data_in_leaf,
-			max_depth,
+			tree_num_in,
+			l2_reg_in,
+			min_child_weight_in,
+			min_data_in_leaf_in,
+			max_depth_in,
 			depth,
 			min_max_rem_in
 		);
@@ -105,15 +103,22 @@ std::vector<float> Tree::predict_hist(std::vector<std::vector<int>>& X_hist_pred
 	return (*root).predict_hist(X_hist_pred);
 }
 
-std::vector<std::vector<float>> Tree::calc_bin_statistics(std::vector<float>& stat_vector) {
-	int n_rows = int(X_hist.size());
-	int n_cols = int(X_hist[0].size());
+std::vector<std::vector<float>> Tree::calc_bin_statistics(
+		std::vector<std::vector<int>>& X_hist_in, 
+		std::vector<float>& stat_vector,
+		int& max_bin_in
+		) {
+	int n_rows = int(X_hist_in.size());
+	int n_cols = int(X_hist_in[0].size());
 
-	std::vector<std::vector<float>> stat_hist(n_cols, std::vector<float>(max_bin, 0.00f));
+	std::vector<std::vector<float>> stat_hist(
+			n_cols, 
+			std::vector<float>(max_bin_in, 0.00f)
+			);
 
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
-			stat_hist[col][X_hist[row][col]] += stat_vector[row];
+			stat_hist[col][X_hist_in[row][col]] += stat_vector[row];
 		}
 	}
 	return stat_hist;

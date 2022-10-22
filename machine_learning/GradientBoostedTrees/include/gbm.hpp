@@ -32,14 +32,14 @@ struct GBM {
 
 	void train_greedy(
 			std::vector<std::vector<float>>& X, 
-			std::vector<std::vector<float>>& X_rowwise, 
+			std::vector<std::vector<float>>& X_rowmajor, 
 			std::vector<float>& y
 			);
 	void train_hist(
 			std::vector<std::vector<float>>& X, 
 			std::vector<float>& y
 			);
-	std::vector<float> predict(std::vector<std::vector<float>>& X_rowwise);
+	std::vector<float> predict(std::vector<std::vector<float>>& X_rowmajor);
 	std::vector<float> predict_hist(std::vector<std::vector<float>>& X);
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
@@ -48,7 +48,7 @@ struct GBM {
 			std::vector<std::vector<float>>& X, 
 			int& max_bins
 			);
-	std::vector<std::vector<int>> get_hist_bins_rowwise(
+	std::vector<std::vector<int>> get_hist_bins_rowmajor(
 			std::vector<std::vector<int>>& X_hist
 			);
 };

@@ -361,7 +361,7 @@ float Node::predict_obs(std::vector<float>& obs) {
 
 std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	std::vector<float> preds;
-	// X_pred is rowwise storage.
+	// X_pred is rowmajor storage.
 	for (int row = 0; row < int(X_pred.size()); row++) {
 		preds.push_back(predict_obs(X_pred[row]));
 	}
@@ -381,7 +381,7 @@ float Node::predict_obs_hist(std::vector<int>& obs) {
 
 std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred) {
 	std::vector<float> preds;
-	// X_pred is rowwise storage.
+	// X_pred is rowmajor storage.
 	for (int row = 0; row < int(X_hist_pred.size()); row++) {
 		preds.push_back(predict_obs_hist(X_hist_pred[row]));
 	}

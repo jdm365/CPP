@@ -51,6 +51,8 @@ struct Tree {
 	std::vector<float> predict_hist(std::vector<std::vector<int>>& X_hist_pred); 
 
 	std::vector<std::vector<float>> calc_bin_statistics(
-			std::vector<float>& stat_vector
+			std::vector<std::vector<int>>& X_hist_in, 
+			std::vector<float>& stat_vector,
+			int& max_bin_in
 			); 
 };
