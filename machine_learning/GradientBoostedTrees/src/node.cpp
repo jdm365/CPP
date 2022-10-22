@@ -73,7 +73,8 @@ Node::Node(
 		float& min_child_weight_new,
 		int&   min_data_in_leaf_new,
 		int&   max_depth_new,
-		int    depth_new
+		int&   depth_new,
+		std::vector<std::vector<int>>& min_max_rem_new
 		) {
 
 	X_hist 		 	  = X_hist_new;
@@ -87,9 +88,11 @@ Node::Node(
 	min_data_in_leaf  = min_data_in_leaf_new;
 	max_depth	 	  = max_depth_new;
 	depth	 		  = depth_new;
-	is_leaf			  = (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
+	min_max_rem	 	  = min_max_rem_new;
+	is_leaf			  = (depth >= max_depth) || (int(X_hist.size()) < min_data_in_leaf);
 	split_bin		  = 0;
 	split_col		  = 0;
+	max_bin			  = int(gradient_hist[0].size());
 	gamma 			  = calc_gamma_hist();
 
 
@@ -98,6 +101,7 @@ Node::Node(
 		get_hist_split();
 	}
 }
+
 
 float Node::calc_gamma() {
 	float gradient_sum = 0.00f;
@@ -114,16 +118,13 @@ float Node::calc_gamma() {
 
 
 float Node::calc_gamma_hist() {
-	float gradient_sum = 0.00f;
-	float hessian_sum  = 0.00f;
-
 	float eps = 0.00001f;
 
 	for (int idx = 0; idx < int(gradient_hist[0].size()); ++idx) {
-		gradient_sum += gradient_hist[0][idx];
-		hessian_sum  += hessian_hist[0][idx];
+		grad_sum += gradient_hist[0][idx];
+		hess_sum += hessian_hist[0][idx];
 	}
-	float gamma = -gradient_sum / (hessian_sum + l2_reg + eps);
+	float gamma = -grad_sum / (hess_sum + l2_reg + eps);
 	return gamma;
 }
 
@@ -136,9 +137,7 @@ float Node::calc_score(
 		) {
 	float expr_0 = left_gradient_sum * left_gradient_sum / (left_hessian_sum + l2_reg);
 	float expr_1 = right_gradient_sum * right_gradient_sum / (right_hessian_sum + l2_reg);
-	float expr_2 = (left_gradient_sum + right_gradient_sum) * 
-				   (left_gradient_sum + right_gradient_sum) / 
-				   (left_hessian_sum + right_hessian_sum + l2_reg);
+	float expr_2 = (grad_sum) * (grad_sum) / (hess_sum + l2_reg);
 
 	float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma;
 	return score;
@@ -146,10 +145,11 @@ float Node::calc_score(
 
 
 void Node::get_hist_split() {
-	int n_cols = int(X_hist.size());
-	int n_rows = int(X_hist[0].size());
-	int min_bin = 0;
-	int max_bin = 0;
+	int n_cols = int(X_hist[0].size());
+	int n_rows = int(X_hist.size());
+
+	int min_bin_col;
+	int max_bin_col;
 
 	float left_gradient_sum;
 	float right_gradient_sum;
@@ -161,44 +161,36 @@ void Node::get_hist_split() {
 
 	int mid_pt;
 
-	float grad_sum = 0.00f;
-	float hess_sum = 0.00f;
-	for (int idx = 0; idx < int(gradient_hist[0].size()); ++idx) {
-		grad_sum += gradient_hist[0][idx];
-		hess_sum += hessian_hist[0][idx];
-	}
-
 	for (int col = 0; col < n_cols; ++col) {
-
 		// Get min and max bin in hist col and only iterate over those buckets.
-		for (int bin = 0; bin < int(gradient_hist[col].size()); ++bin) {
-			if (gradient_hist[col][bin] != 0.00f) {
-				min_bin = bin;
-				break;
-			}
-		}
-		for (int bin = int(gradient_hist[col].size()); bin >= 0; --bin) {
-			if (gradient_hist[col][bin] != 0.00f) {
-				max_bin = bin + 1;
-				break;
-			}
+		min_bin_col = min_max_rem[col][0];
+		max_bin_col = min_max_rem[col][1];
+		
+		// If only one bin remaining then skip.
+		if (max_bin_col - min_bin_col == 1) {
+			continue;
 		}
 
 		// Use subtraction trick to get other side grad/hist sum.
-		mid_pt = int((max_bin - min_bin) / 2) + min_bin;
+		mid_pt = int((max_bin_col - min_bin_col) / 2) + min_bin_col;
 
-		for (int bin = min_bin + 1; bin < mid_pt; ++bin) {
+		for (int bin = min_bin_col; bin < mid_pt; ++bin) {
 			// Reset summary statistics.
 			left_gradient_sum = 0.00f;
 			left_hessian_sum  = 0.00f;
 
 			// Look at each potential split point.
-			for (int idx = min_bin; idx < bin; ++idx) {
+			for (int idx = min_bin_col; idx < bin; ++idx) {
 				left_gradient_sum += gradient_hist[col][idx];
 				left_hessian_sum  += hessian_hist[col][idx];
 			}
+
 			right_gradient_sum = grad_sum - left_gradient_sum;
 			right_hessian_sum  = hess_sum - left_hessian_sum;
+
+			if (left_hessian_sum <= float(2 * min_data_in_leaf) || right_hessian_sum <= float(2 * min_data_in_leaf)) {
+				continue;
+			}
 
 			score = calc_score(
 					left_gradient_sum,
@@ -213,18 +205,23 @@ void Node::get_hist_split() {
 			}
 		}
 
-		for (int bin = mid_pt + 1; bin < max_bin; ++bin) {
+		for (int bin = mid_pt; bin < max_bin_col; ++bin) {
 			// Reset summary statistics.
 			right_gradient_sum = 0.00f;
 			right_hessian_sum  = 0.00f;
 
 			// Look at each potential split point.
-			for (int idx = mid_pt; idx < bin; ++idx) {
+			for (int idx = bin; idx < max_bin_col; ++idx) {
 				right_gradient_sum += gradient_hist[col][idx];
 				right_hessian_sum  += hessian_hist[col][idx];
 			}
+
 			left_gradient_sum = grad_sum - right_gradient_sum;
 			left_hessian_sum  = hess_sum - right_hessian_sum;
+
+			if (left_hessian_sum <= float(2 * min_data_in_leaf) || right_hessian_sum <= float(2 * min_data_in_leaf)) {
+				continue;
+			}
 
 			score = calc_score(
 					left_gradient_sum,
@@ -245,53 +242,63 @@ void Node::get_hist_split() {
 		is_leaf = true;
 		return;
 	}
-	int n_bins = int(gradient_hist[0].size());
+
+	std::vector<int> left_idxs;
+	std::vector<int> right_idxs;
+
+	for (int row = 0; row < n_rows; ++row) {
+		if (X_hist[row][split_col] < split_bin) {
+			left_idxs.push_back(row);
+		}
+		else {
+			right_idxs.push_back(row);
+		}
+	}
+
+	assert(left_idxs.size()  != 0);
+	assert(right_idxs.size() != 0);
+
+	std::vector<std::vector<int>> min_max_rem_left  = min_max_rem;
+	std::vector<std::vector<int>> min_max_rem_right = min_max_rem;
+
+	min_max_rem_left[split_col][1]  = split_bin;
+	min_max_rem_right[split_col][0] = split_bin;
+
+	std::vector<std::vector<int>> X_hist_left;
+	std::vector<std::vector<int>> X_hist_right;
+	X_hist_left.reserve(left_idxs.size());
+	X_hist_right.reserve(right_idxs.size());
+	std::for_each(
+			X_hist_left.begin(), 
+			X_hist_left.end(), 
+			[n_cols](std::vector<int>& row) {row.reserve(n_cols);}
+			);
+	std::for_each(
+			X_hist_right.begin(), 
+			X_hist_right.end(), 
+			[n_cols](std::vector<int>& row) {row.reserve(n_cols);}
+			);
 
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;
 	std::vector<float> hessian_left;
 	std::vector<float> hessian_right;
 
-	std::vector<int> left_idxs;
-	std::vector<int> right_idxs;
+	gradient_left.reserve(left_idxs.size());
+	gradient_right.reserve(right_idxs.size());
+	hessian_left.reserve(left_idxs.size());
+	hessian_right.reserve(right_idxs.size());
 
-	for (int row = 0; row < n_rows; ++row) {
-		if (X_hist[split_col][row] < split_bin) {
-			left_idxs.push_back(row);
-			gradient_left.push_back(gradient[row]);
-			hessian_left.push_back(hessian[row]);
-		}
-		else {
-			right_idxs.push_back(row);
-			gradient_right.push_back(gradient[row]);
-			hessian_right.push_back(hessian[row]);
-		}
+	for (const int& row: left_idxs) { 
+		X_hist_left.emplace_back(X_hist[row]);
+		gradient_left.push_back(gradient[row]);
+		hessian_left.push_back(hessian[row]);
 	}
 
-	std::vector<std::vector<int>> X_hist_left(
-			n_cols,
-			std::vector<int>(left_idxs.size())
-			);
-	std::vector<std::vector<int>> X_hist_right(
-			n_cols,
-			std::vector<int>(right_idxs.size())
-			);
-
-	int idx;
-	for (int col = 0; col < n_cols; ++col) {
-		idx = 0;
-		for (const int& row: left_idxs) { 
-			X_hist_left[col][idx] = X_hist[col][row];
-			++idx;
-		}
-	}
-
-	for (int col = 0; col < n_cols; ++col) {
-		idx = 0;
-		for (const int& row: right_idxs) { 
-			X_hist_right[col][idx] = X_hist[col][row];
-			++idx;
-		}
+	for (const int& row: right_idxs) { 
+		X_hist_right.emplace_back(X_hist[row]);
+		gradient_right.push_back(gradient[row]);
+		hessian_right.push_back(hessian[row]);
 	}
 	
 	std::vector<std::vector<float>> gradient_hist_left;
@@ -300,48 +307,16 @@ void Node::get_hist_split() {
 	std::vector<std::vector<float>> hessian_hist_right;
 
 	if (left_idxs.size() > right_idxs.size()) {
-		gradient_hist_right = calc_bin_statistics(
-				X_hist_right,
-				gradient_right,
-				n_bins
-				);
-		hessian_hist_right = calc_bin_statistics(
-				X_hist_right,
-				hessian_right,
-				n_bins
-				);
-		gradient_hist_left = calc_diff_hist(
-				gradient_hist,
-				gradient_hist_right,
-				n_bins
-				);
-		hessian_hist_left = calc_diff_hist(
-				hessian_hist,
-				hessian_hist_right,
-				n_bins
-				);
+		gradient_hist_right = calc_bin_statistics(X_hist_right, gradient_right);
+		hessian_hist_right  = calc_bin_statistics(X_hist_right, hessian_right);
+		gradient_hist_left  = calc_diff_hist(gradient_hist, gradient_hist_right);
+		hessian_hist_left   = calc_diff_hist(hessian_hist, hessian_hist_right);
 	}
 	else {
-		gradient_hist_left = calc_bin_statistics(
-				X_hist_left,
-				gradient_left,
-				n_bins
-				);
-		hessian_hist_left = calc_bin_statistics(
-				X_hist_left,
-				hessian_left,
-				n_bins
-				);
-		gradient_hist_right = calc_diff_hist(
-				gradient_hist,
-				gradient_hist_left,
-				n_bins
-				);
-		hessian_hist_right = calc_diff_hist(
-				hessian_hist,
-				hessian_hist_left,
-				n_bins
-				);
+		gradient_hist_left  = calc_bin_statistics(X_hist_left, gradient_left);
+		hessian_hist_left   = calc_bin_statistics(X_hist_left, hessian_left);
+		gradient_hist_right = calc_diff_hist(gradient_hist, gradient_hist_left);
+		hessian_hist_right  = calc_diff_hist(hessian_hist, hessian_hist_left);
 	}
 
 	left_child = new Node(
@@ -355,7 +330,8 @@ void Node::get_hist_split() {
 			min_child_weight,
 			min_data_in_leaf,
 			max_depth,
-			depth + 1
+			++depth,
+			min_max_rem_left
 			);
 	right_child = new Node(
 			X_hist_right, 
@@ -368,7 +344,8 @@ void Node::get_hist_split() {
 			min_child_weight,
 			min_data_in_leaf,
 			max_depth,
-			depth + 1
+			++depth,
+			min_max_rem_right
 			);
 }
 
@@ -414,44 +391,37 @@ std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred
 
 std::vector<std::vector<float>> Node::calc_bin_statistics(
 		std::vector<std::vector<int>>& X_hist_child,
-		std::vector<float>& stat_vector,
-		int& n_bins
+		std::vector<float>& stat_vector
 		) {
-	int n_rows = int(stat_vector.size());
-	int n_cols = int(X_hist_child.size());
+	int n_rows = int(X_hist_child.size());
+	int n_cols = int(X_hist_child[0].size());
 
-	std::vector<std::vector<float>> stat_mapping(
+	std::vector<std::vector<float>> stat_hist(
 			n_cols,
-			std::vector<float>(n_bins, 0.00f)
+			std::vector<float>(max_bin, 0.00f)
 			);
 
-	for (int col = 0; col < n_cols; ++col) {
-		for (int row = 0; row < n_rows; ++row) {
-			stat_mapping[col][X_hist_child[col][row]] += stat_vector[row];
+	for (int row = 0; row < n_rows; ++row) {
+		for (int col = 0; col < n_cols; ++col) {
+			stat_hist[col][X_hist_child[row][col]] += stat_vector[row];
 		}
 	}
-	return stat_mapping;
+	return stat_hist;
 }
 
 
 std::vector<std::vector<float>> Node::calc_diff_hist(
 		std::vector<std::vector<float>>& orig,
-		std::vector<std::vector<float>>& child,
-		int& n_bins
+		std::vector<std::vector<float>>& child
 		) {
 	int n_cols = int(orig.size());
 
-	std::vector<std::vector<float>> other_child(
-			n_cols,
-			std::vector<float>(n_bins, 0.00f)
-			);
-
 	for (int col = 0; col < n_cols; ++col) {
-		for (int bin = 0; bin < n_bins; bin++) {
-			other_child[col][bin] = orig[col][bin] - child[col][bin];
+		for (int bin = 0; bin < max_bin; bin++) {
+			orig[col][bin] -= child[col][bin];
 		}
 	}
-	return other_child;
+	return orig;
 }
 
 

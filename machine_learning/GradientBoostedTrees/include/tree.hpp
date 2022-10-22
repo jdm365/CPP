@@ -35,22 +35,22 @@ struct Tree {
 
 	// Histogram Constructor
 	Tree(
-			std::vector<std::vector<int>>& X_hist_new,
-			std::vector<float>& gradient_new,
-			std::vector<float>& hessian_new,
-			int&   tree_num_new,
-			int&   max_depth_new,
-			float& l2_reg_new,
-			float& min_child_weight_new,
-			int&   min_data_in_leaf_new,
-			int&   max_bin_new
+			std::vector<std::vector<int>>& X_hist_in,
+			std::vector<float>& gradient_in,
+			std::vector<float>& hessian_in,
+			int&   tree_num_in,
+			int&   max_depth_in,
+			float& l2_reg_in,
+			float& min_child_weight_in,
+			int&   min_data_in_leaf_in,
+			int&   max_bin_in,
+			std::vector<std::vector<int>>& min_max_rem_in 
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 	std::vector<float> predict_hist(std::vector<std::vector<int>>& X_hist_pred); 
 
 	std::vector<std::vector<float>> calc_bin_statistics(
-			std::vector<std::vector<int>>& X_hist,
 			std::vector<float>& stat_vector
 			); 
 };

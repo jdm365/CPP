@@ -63,7 +63,7 @@ int main() {
 	assert (X_train_rowwise[1][1] == X_train[1][1]);
 
 	GBM model(
-			6,				// max_depth
+			8,				// max_depth
 			2.00f,			// l2_reg
 			0.50f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
@@ -72,7 +72,7 @@ int main() {
 			256				// max_bins
 			);
 	// model.train_greedy(X_train, X_train_rowwise, y_train);
-	model.train_hist(X_train, X_train_rowwise, y_train);
+	model.train_hist(X_train, y_train);
 
 	std::vector<float> y_preds = model.predict_hist(X_test);
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;

@@ -12,6 +12,9 @@ struct Node {
 	std::vector<float> hessian;
 	std::vector<std::vector<float>> gradient_hist;
 	std::vector<std::vector<float>> hessian_hist;
+	std::vector<std::vector<int>> min_max_rem;
+	float 	grad_sum = 0.00f;
+	float 	hess_sum = 0.00f;
 	int   	tree_num;
 	int   	max_depth;
 	int   	depth;
@@ -21,7 +24,7 @@ struct Node {
 	int   	min_data_in_leaf;
 	int     split_col;
 	int		split_bin;
-	int   	n_bins;
+	int   	max_bin;
 	bool  	is_leaf;
 	float 	split_val;
 	Node* 	left_child;
@@ -55,7 +58,8 @@ struct Node {
 			float& min_child_weight_new,
 			int& min_data_in_leaf_new,
 			int& max_depth_new,
-			int depth_new
+			int& depth_new,
+			std::vector<std::vector<int>>& min_max_rem
 		);
 	void get_hist_split();
 
@@ -78,12 +82,10 @@ struct Node {
 
 	std::vector<std::vector<float>> calc_bin_statistics(
 			std::vector<std::vector<int>>& X_hist_child,
-			std::vector<float>& stat_vector,
-			int& n_bins
+			std::vector<float>& stat_vector
 			);
 	std::vector<std::vector<float>> calc_diff_hist(
 			std::vector<std::vector<float>>& orig,
-			std::vector<std::vector<float>>& child,
-			int& n_bins
+			std::vector<std::vector<float>>& child
 			); 
 };

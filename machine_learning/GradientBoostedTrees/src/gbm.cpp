@@ -76,7 +76,6 @@ void GBM::train_greedy(
 
 void GBM::train_hist(
 		std::vector<std::vector<float>>& X, 
-		std::vector<std::vector<float>>& X_rowwise, 
 		std::vector<float>& y
 		) {
 	std::vector<float> gradient(X[0].size());
@@ -84,6 +83,13 @@ void GBM::train_hist(
 
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
 	std::vector<std::vector<int>> X_hist_rowwise = get_hist_bins_rowwise(X_hist);
+
+	std::vector<std::vector<int>> min_max_rem;
+	for (int col = 0; col < int(X.size()); ++col) {
+		min_max_rem.push_back(
+				{0, 1 + *std::max_element(X_hist[col].begin(), X_hist[col].end())}
+				);
+	}
 
 	float loss;
 	std::vector<float> preds;
@@ -100,7 +106,7 @@ void GBM::train_hist(
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(
-					X_hist,
+					X_hist_rowwise,
 					gradient,
 					hessian,
 					round,
@@ -108,7 +114,8 @@ void GBM::train_hist(
 					l2_reg,
 					min_child_weight,
 					min_data_in_leaf,
-					max_bin
+					max_bin,
+					min_max_rem	
 			);
 
 		std::vector<float> round_preds = trees[round].predict_hist(X_hist_rowwise);
@@ -122,7 +129,7 @@ void GBM::train_hist(
 			}
 		}
 		gradient = calculate_gradient(preds, y);
-		hessian  = calculate_hessian(preds, y);
+		// hessian  = calculate_hessian(preds, y); // CONST HESS
 
 		loss = calculate_mse_loss(preds, y);
 		auto stop = std::chrono::high_resolution_clock::now();
@@ -186,7 +193,7 @@ std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector
 	std::vector<float> hessian;
 	// Assume MSE for now
 	for (int idx = 0; idx < int(y.size()); idx++) {
-		hessian.emplace_back(2.00f);
+		hessian.push_back(2.00f);
 	}
 	return hessian;
 }
@@ -200,54 +207,6 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 	}
 	loss = loss / float(preds.size());	
 	return loss;
-}
-
-std::vector<float> GBM::get_quantiles(std::vector<float> X_col, int n_bins) {
-	std::vector<float> split_vals;
-	std::vector<int> sorted_col_idxs(X_col.size());
-	std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
-
-	std::stable_sort(
-			sorted_col_idxs.begin(), 
-			sorted_col_idxs.end(), 
-			[&X_col](int i, int j) {return X_col[i] < X_col[j];}
-			);
-	orig_col_idxs.push_back(sorted_col_idxs);
-
-	//  Init to random. Get unique quantiles.
-	//  float last_val = INFINITY;
-	int   split_idx;
-	int   bin_size = int(int(X_col.size()) / n_bins);
-
-	for (int idx = 0; idx < n_bins; idx++) {
-		split_idx = idx * bin_size;
-
-		// Only get unique quantiles.
-		//if (X_col[split_idx] == last_val) {
-			//continue;
-		//}
-		//last_val = X_col[split_idx];
-
-		split_vals.push_back(X_col[split_idx]);
-	}
-	return split_vals;
-}
-
-
-void GBM::get_sorted_idxs(std::vector<std::vector<float>> X) {
-	std::vector<float> X_col;
-	for (int col = 0; col < int(X.size()); col++) {
-		X_col = X[col];
-		std::vector<int> sorted_col_idxs(X_col.size());
-		std::iota(sorted_col_idxs.begin(), sorted_col_idxs.end(), 0);
-
-		std::stable_sort(
-				sorted_col_idxs.begin(), 
-				sorted_col_idxs.end(), 
-				[&X_col](int i, int j) {return X_col[i] < X_col[j];}
-				);
-		orig_col_idxs.push_back(sorted_col_idxs);
-	} 
 }
 
 std::vector<std::vector<int>> GBM::map_hist_bins(
