@@ -97,6 +97,8 @@ void GBM::train_hist(
 
 	float loss;
 	std::vector<float> preds;
+	std::vector<float> round_preds;
+	round_preds.reserve(y.size());
 
 	// Add mean for better start.
 	y_mean_train = 0.00f;
@@ -121,7 +123,7 @@ void GBM::train_hist(
 					min_max_rem	
 			);
 
-		std::vector<float> round_preds = trees[round].predict_hist(X_hist_rowmajor);
+		round_preds = trees[round].predict_hist(X_hist_rowmajor);
 
 		for (int idx = 0; idx < int(round_preds.size()); ++idx) {
 			if (round == 0) {

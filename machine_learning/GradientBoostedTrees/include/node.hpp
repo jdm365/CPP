@@ -67,10 +67,10 @@ struct Node {
 	float calc_gamma_hist();
 
 	float calc_score(
-			float& left_gradient_sum, 
-			float& right_gradient_sum, 
-			float& left_hessian_sum, 
-			float& right_hessian_sum
+			float& lgs, // Left gradient sum
+			float& rgs, // Right gradient sum
+			float& lhs, // Left hessian sum
+			float& rhs  // Right hessian sum
 			);
 	void get_greedy_split();
 

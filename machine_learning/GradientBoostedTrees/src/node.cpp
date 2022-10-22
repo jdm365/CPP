@@ -130,23 +130,27 @@ float Node::calc_gamma_hist() {
 
 
 float Node::calc_score(
-		float& left_gradient_sum,
-		float& right_gradient_sum,
-		float& left_hessian_sum,
-		float& right_hessian_sum
+		float& lgs,
+		float& rgs,
+		float& lhs,
+		float& rhs 
 		) {
-	float expr_0 = left_gradient_sum * left_gradient_sum / (left_hessian_sum + l2_reg);
-	float expr_1 = right_gradient_sum * right_gradient_sum / (right_hessian_sum + l2_reg);
-	float expr_2 = (grad_sum) * (grad_sum) / (hess_sum + l2_reg);
+	// float expr_0 = lgs * lgs / (lhs + l2_reg);
+	// float expr_1 = rgs * rgs / (rhs + l2_reg);
+	// float expr_2 = (grad_sum) * (grad_sum) / (hess_sum + l2_reg);
 
-	float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma;
-	return score;
+	// float score = 0.50f * (expr_0 + expr_1 - expr_2) - gamma; // Actual score
+	
+
+	// This returns the relative score (minus constant factors). Might want
+	// absolute if implementing `min_gain_to_split`.
+	return (lgs * lgs / (lhs + l2_reg)) + (rgs * rgs / (rhs + l2_reg));
 }
 
 
 void Node::get_hist_split() {
-	int n_cols = int(X_hist[0].size());
 	int n_rows = int(X_hist.size());
+	int n_cols = int(X_hist[0].size());
 
 	int min_bin_col;
 	int max_bin_col;
@@ -188,7 +192,8 @@ void Node::get_hist_split() {
 			right_gradient_sum = grad_sum - left_gradient_sum;
 			right_hessian_sum  = hess_sum - left_hessian_sum;
 
-			if (left_hessian_sum <= float(2 * min_data_in_leaf) || right_hessian_sum <= float(2 * min_data_in_leaf)) {
+			if (left_hessian_sum <= float(2 * min_data_in_leaf) ||
+				right_hessian_sum <= float(2 * min_data_in_leaf)) {
 				continue;
 			}
 
@@ -219,7 +224,8 @@ void Node::get_hist_split() {
 			left_gradient_sum = grad_sum - right_gradient_sum;
 			left_hessian_sum  = hess_sum - right_hessian_sum;
 
-			if (left_hessian_sum <= float(2 * min_data_in_leaf) || right_hessian_sum <= float(2 * min_data_in_leaf)) {
+			if (left_hessian_sum <= float(2 * min_data_in_leaf) ||
+				right_hessian_sum <= float(2 * min_data_in_leaf)) {
 				continue;
 			}
 
@@ -266,18 +272,9 @@ void Node::get_hist_split() {
 
 	std::vector<std::vector<int>> X_hist_left;
 	std::vector<std::vector<int>> X_hist_right;
-	X_hist_left.reserve(left_idxs.size());
-	X_hist_right.reserve(right_idxs.size());
-	std::for_each(
-			X_hist_left.begin(), 
-			X_hist_left.end(), 
-			[n_cols](std::vector<int>& row) {row.reserve(n_cols);}
-			);
-	std::for_each(
-			X_hist_right.begin(), 
-			X_hist_right.end(), 
-			[n_cols](std::vector<int>& row) {row.reserve(n_cols);}
-			);
+
+	vector_reserve_2d(X_hist_left,  int(left_idxs.size()), n_cols);
+	vector_reserve_2d(X_hist_right, int(right_idxs.size()), n_cols);
 
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;
@@ -305,6 +302,11 @@ void Node::get_hist_split() {
 	std::vector<std::vector<float>> gradient_hist_right;
 	std::vector<std::vector<float>> hessian_hist_left;
 	std::vector<std::vector<float>> hessian_hist_right;
+
+	vector_reserve_2d(gradient_hist_left,  n_cols, max_bin);
+	vector_reserve_2d(gradient_hist_right, n_cols, max_bin);
+	vector_reserve_2d(hessian_hist_left,   n_cols, max_bin);
+	vector_reserve_2d(hessian_hist_right,  n_cols, max_bin);
 
 	if (left_idxs.size() > right_idxs.size()) {
 		gradient_hist_right = calc_bin_statistics(X_hist_right, gradient_right);
