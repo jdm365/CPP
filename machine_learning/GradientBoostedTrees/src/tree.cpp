@@ -58,7 +58,6 @@ Tree::Tree(
 		int&   tree_num_in,
 		int&   max_depth_in,
 		float& l2_reg_in,
-		float& min_child_weight_in,
 		int&   min_data_in_leaf_in,
 		int&   max_bin_in,
 		std::vector<std::vector<int>>& min_max_rem_in 
@@ -96,7 +95,6 @@ Tree::Tree(
 			hessian_hist,
 			tree_num_in,
 			l2_reg_in,
-			min_child_weight_in,
 			min_data_in_leaf_in,
 			max_depth_in,
 			depth,

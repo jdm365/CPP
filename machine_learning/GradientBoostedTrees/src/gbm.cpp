@@ -39,7 +39,7 @@ void GBM::train_greedy(
 	float loss;
 
 	std::vector<float> preds;
-	trees.reserve(num_boosting_rounds);
+
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; round++) {
 		trees.emplace_back(
@@ -85,8 +85,11 @@ void GBM::train_hist(
 	std::vector<std::vector<int>> X_hist = map_hist_bins(X, max_bin);
 	std::vector<std::vector<int>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
+	X.clear();
+	X.shrink_to_fit();
+
 	std::vector<std::vector<int>> min_max_rem;
-	for (int col = 0; col < int(X.size()); ++col) {
+	for (int col = 0; col < int(X_hist.size()); ++col) {
 		min_max_rem.push_back(
 				{0, 1 + *std::max_element(X_hist[col].begin(), X_hist[col].end())}
 				);
@@ -107,7 +110,6 @@ void GBM::train_hist(
 	}
 	y_mean_train /= float(y.size());
 
-	trees.reserve(num_boosting_rounds);
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(
@@ -117,7 +119,6 @@ void GBM::train_hist(
 					round,
 					max_depth,
 					l2_reg,
-					min_child_weight,
 					min_data_in_leaf,
 					max_bin,
 					min_max_rem	

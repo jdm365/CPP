@@ -10,9 +10,9 @@
 
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
-	// const char* FILENAME = "data/regression_dataset.csv";
-	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	// const char* FILENAME = "data/hpx10.csv";
+	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+	const char* FILENAME = "data/hpx10.csv";
+	// const char* FILENAME = "data/hpx100.csv";
 
 	std::vector<std::vector<float>> X = read_csv(FILENAME);
 
@@ -42,25 +42,6 @@ int main() {
 	}
 	y_train = data_train[(int(X.size()) - 1)];
 	y_test  = data_test[(int(X.size()) - 1)];
-
-	for (int row = 0; row < int(y_train.size()); row++) {
-		for (int col = 0; col < int(X_train.size()); col++) {
-			X_train_rowmajor_row.push_back(X_train[col][row]);
-			if (row < int(y_test.size())) {
-				X_test_rowmajor_row.push_back(X_test[col][row]);
-			}
-		}
-		X_train_rowmajor.push_back(X_train_rowmajor_row);
-		X_test_rowmajor.push_back(X_test_rowmajor_row);
-
-		// Empty elements of array.
-		X_train_rowmajor_row.clear();
-		X_test_rowmajor_row.clear();
-	}
-
-	assert (X_train_rowmajor[2][1] == X_train[1][2]);
-	assert (X_train_rowmajor[3][0] == X_train[0][3]);
-	assert (X_train_rowmajor[1][1] == X_train[1][1]);
 
 	GBM model(
 			8,				// max_depth

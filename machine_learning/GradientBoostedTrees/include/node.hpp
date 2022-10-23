@@ -55,13 +55,13 @@ struct Node {
 			std::vector<std::vector<float>>& hessian_hist_new,
 			int&   tree_num_new,
 			float& l2_reg_new,
-			float& min_child_weight_new,
 			int& min_data_in_leaf_new,
 			int& max_depth_new,
 			int& depth_new,
 			std::vector<std::vector<int>>& min_max_rem
 		);
 	void get_hist_split();
+	void empty_memory();
 
 	float calc_gamma();
 	float calc_gamma_hist();

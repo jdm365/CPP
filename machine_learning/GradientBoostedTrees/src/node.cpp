@@ -70,7 +70,6 @@ Node::Node(
 		std::vector<std::vector<float>>& hessian_hist_new,
 		int&   tree_num_new,
 		float& l2_reg_new,
-		float& min_child_weight_new,
 		int&   min_data_in_leaf_new,
 		int&   max_depth_new,
 		int&   depth_new,
@@ -84,14 +83,11 @@ Node::Node(
 	hessian_hist  	  = hessian_hist_new;
 	tree_num		  = tree_num_new;
 	l2_reg	 		  = l2_reg_new;
-	min_child_weight  = min_child_weight_new;
 	min_data_in_leaf  = min_data_in_leaf_new;
 	max_depth	 	  = max_depth_new;
 	depth	 		  = depth_new;
 	min_max_rem	 	  = min_max_rem_new;
 	is_leaf			  = (depth >= max_depth) || (int(X_hist.size()) < min_data_in_leaf);
-	split_bin		  = 0;
-	split_col		  = 0;
 	max_bin			  = int(gradient_hist[0].size());
 	gamma 			  = calc_gamma_hist();
 
@@ -246,6 +242,7 @@ void Node::get_hist_split() {
 	if (best_score == -INFINITY) {
 		// If no split was found then node is leaf.
 		is_leaf = true;
+		empty_memory();
 		return;
 	}
 
@@ -287,13 +284,13 @@ void Node::get_hist_split() {
 	hessian_right.reserve(right_idxs.size());
 
 	for (const int& row: left_idxs) { 
-		X_hist_left.emplace_back(X_hist[row]);
+		X_hist_left.push_back(X_hist[row]);
 		gradient_left.push_back(gradient[row]);
 		hessian_left.push_back(hessian[row]);
 	}
 
 	for (const int& row: right_idxs) { 
-		X_hist_right.emplace_back(X_hist[row]);
+		X_hist_right.push_back(X_hist[row]);
 		gradient_right.push_back(gradient[row]);
 		hessian_right.push_back(hessian[row]);
 	}
@@ -320,6 +317,8 @@ void Node::get_hist_split() {
 		gradient_hist_right = calc_diff_hist(gradient_hist, gradient_hist_left);
 		hessian_hist_right  = calc_diff_hist(hessian_hist, hessian_hist_left);
 	}
+	
+	empty_memory();
 
 	left_child = new Node(
 			X_hist_left, 
@@ -329,7 +328,6 @@ void Node::get_hist_split() {
 			hessian_hist_left, 
 			tree_num,
 			l2_reg,
-			min_child_weight,
 			min_data_in_leaf,
 			max_depth,
 			++depth,
@@ -343,7 +341,6 @@ void Node::get_hist_split() {
 			hessian_hist_right, 
 			tree_num,
 			l2_reg,
-			min_child_weight,
 			min_data_in_leaf,
 			max_depth,
 			++depth,
@@ -555,4 +552,21 @@ void Node::get_greedy_split() {
 			max_depth,
 			depth + 1
 			);
+}
+
+
+void Node::empty_memory() {
+		X_hist.clear();
+		gradient.clear();
+		hessian.clear();
+		gradient_hist.clear();
+		hessian_hist.clear();
+		min_max_rem.clear();
+
+		X_hist.shrink_to_fit();
+		gradient.shrink_to_fit();
+		hessian.shrink_to_fit();
+		gradient_hist.shrink_to_fit();
+		hessian_hist.shrink_to_fit();
+		min_max_rem.shrink_to_fit();
 }
