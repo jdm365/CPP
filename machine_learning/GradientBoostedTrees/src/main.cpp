@@ -14,13 +14,14 @@ int main() {
 	const char* FILENAME = "data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
-	std::vector<std::vector<float>> X = read_csv(FILENAME);
+	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
+	// std::vector<std::vector<float>> X = read_csv_rowmajor(FILENAME);
 
-	std::cout << "Number of columns: " << int(X.size() - 1) << std::endl;
+	std::cout << "Number of columns: " << X.size() - 1 << std::endl;
 	std::cout << "Number of rows:    " << X[0].size() << std::endl;
 	std::cout << std::endl;
 
-	std::array<std::vector<std::vector<float>>, 2> split = train_test_split(X, 0.80);
+	std::array<std::vector<std::vector<float>>, 2> split = train_test_split_columnar(X, 0.80);
 
 	std::vector<std::vector<float>>& data_train = split[0];
 	std::vector<std::vector<float>>& data_test  = split[1];
@@ -29,16 +30,10 @@ int main() {
 	std::vector<std::vector<float>> X_test;
 	std::vector<float> y_train;
 	std::vector<float> y_test;
-	
-	std::vector<std::vector<float>> X_train_rowmajor;
-	std::vector<std::vector<float>> X_test_rowmajor;
 
-	std::vector<float> X_train_rowmajor_row;
-	std::vector<float> X_test_rowmajor_row;
-
-	for (int idx = 0; idx < (int(X.size()) - 1); idx++) {
-		X_train.push_back(data_train[idx]);
-		X_test.push_back(data_test[idx]);
+	for (int row = 0; row < int(X.size()) - 1; ++row) {
+		X_train.push_back(data_train[row]);
+		X_test.push_back(data_test[row]);
 	}
 	y_train = data_train[(int(X.size()) - 1)];
 	y_test  = data_test[(int(X.size()) - 1)];
@@ -46,7 +41,7 @@ int main() {
 	GBM model(
 			8,				// max_depth
 			2.00f,			// l2_reg
-			0.50f,			// lr
+			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds

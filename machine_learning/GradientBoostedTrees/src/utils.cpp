@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 
-std::array<std::vector<std::vector<float>>, 2> train_test_split(
+std::array<std::vector<std::vector<float>>, 2> train_test_split_columnar(
 		std::vector<std::vector<float>>& X,
 		float train_size
 		) {
@@ -55,6 +55,46 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split(
 	std::array<std::vector<std::vector<float>>, 2> split = {X_train, X_test};
 	return split;
 }
+
+std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
+		std::vector<std::vector<float>>& X,
+		float train_size
+		) {
+	// Create index array to draw idxs from.
+	std::vector<int> train_idxs;
+	std::vector<int> test_idxs;
+	for (int idx = 0; idx < int(X.size()); idx++) {
+		train_idxs.push_back(idx);
+	}
+
+	int train_length = int(X.size() * train_size);
+	int test_length  = int(X.size() - train_length);
+
+	// Init random seed.
+	srand(time(NULL));
+
+	int idx;
+	while (int(test_idxs.size()) != test_length) {
+		// Generate random number in range [0, X.size()].
+		idx = rand() % int(train_idxs.size());
+		test_idxs.push_back(idx);
+		train_idxs.erase(train_idxs.begin() + idx);
+	}
+
+	std::vector<std::vector<float>> X_train;
+	std::vector<std::vector<float>> X_test;
+
+	for (int row = 0; row < train_length; row++) {
+		if (row < test_length) {
+			X_test.push_back(X[test_idxs[row]]);
+		}
+		X_train.push_back(X[train_idxs[row]]);
+	}
+
+	std::array<std::vector<std::vector<float>>, 2> split = {X_train, X_test};
+	return split;
+}
+
 
 void vector_reserve_2d(
 		std::vector<std::vector<int>>& vec,

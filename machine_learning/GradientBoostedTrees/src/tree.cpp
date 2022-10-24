@@ -36,7 +36,6 @@ Tree::Tree(
 			X,
 			gradient,
 			hessian,
-			tree_num,
 			l2_reg,
 			min_child_weight,
 			min_data_in_leaf,
@@ -62,6 +61,8 @@ Tree::Tree(
 		int&   max_bin_in,
 		std::vector<std::vector<int>>& min_max_rem_in 
 		) {
+
+	tree_num = tree_num_in;
 
 	// Calc init. grad + hess histograms.
 	int n_rows = int(X_hist_in.size());
@@ -93,7 +94,6 @@ Tree::Tree(
 			hessian_in,
 			gradient_hist,
 			hessian_hist,
-			tree_num_in,
 			l2_reg_in,
 			min_data_in_leaf_in,
 			max_depth_in,

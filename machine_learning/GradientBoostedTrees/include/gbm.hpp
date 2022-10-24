@@ -2,11 +2,12 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 #include "node.hpp"
 #include "tree.hpp"
 
-// GBM -> GradientBoostingMachine - Not enough clarity to justify verbosity.
+// GBM -> GradientBoostingMachine
 
 struct GBM {
 	int   max_depth;
@@ -17,8 +18,8 @@ struct GBM {
 	int   min_data_in_leaf;
 	int   num_boosting_rounds;
 	int   max_bin;
-	std::vector<std::vector<int>> orig_col_idxs;
 	std::vector<Tree> trees;
+	std::vector<std::vector<float>> bin_mapping;
 
 	GBM(
 			int   max_depth_new,
@@ -39,15 +40,17 @@ struct GBM {
 			std::vector<std::vector<float>>& X, 
 			std::vector<float>& y
 			);
+
 	std::vector<float> predict(std::vector<std::vector<float>>& X_rowmajor);
 	std::vector<float> predict_hist(std::vector<std::vector<float>>& X);
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
-	std::vector<std::vector<int>> map_hist_bins(
+	std::vector<std::vector<int>> map_hist_bins_train(
 			std::vector<std::vector<float>>& X, 
 			int& max_bins
 			);
+	std::vector<std::vector<int>> map_hist_bins_inference(std::vector<std::vector<float>>& X);
 	std::vector<std::vector<int>> get_hist_bins_rowmajor(
 			std::vector<std::vector<int>>& X_hist
 			);

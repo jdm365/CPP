@@ -7,15 +7,10 @@
 
 struct Node {
 	std::vector<std::vector<float>> X;
-	std::vector<std::vector<int>> X_hist;
 	std::vector<float> gradient;
 	std::vector<float> hessian;
-	std::vector<std::vector<float>> gradient_hist;
-	std::vector<std::vector<float>> hessian_hist;
-	std::vector<std::vector<int>> min_max_rem;
 	float 	grad_sum = 0.00f;
 	float 	hess_sum = 0.00f;
-	int   	tree_num;
 	int   	max_depth;
 	int   	depth;
 	float 	gamma;
@@ -38,7 +33,6 @@ struct Node {
 			std::vector<std::vector<float>>& X_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
-			int&   tree_num_new,
 			float& l2_reg_new,
 			float& min_child_weight_new,
 			int& min_data_in_leaf_new,
@@ -48,29 +42,48 @@ struct Node {
 
 	// Histogram Constructor
 	Node(
-			std::vector<std::vector<int>>& X_hist_new,
+			std::vector<std::vector<int>>& X_hist,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
-			std::vector<std::vector<float>>& gradient_hist_new,
-			std::vector<std::vector<float>>& hessian_hist_new,
-			int&   tree_num_new,
+			std::vector<std::vector<float>>& gradient_hist,
+			std::vector<std::vector<float>>& hessian_hist,
 			float& l2_reg_new,
 			int& min_data_in_leaf_new,
 			int& max_depth_new,
 			int& depth_new,
 			std::vector<std::vector<int>>& min_max_rem
 		);
-	void get_hist_split();
-	void empty_memory();
+	void get_hist_split(
+			std::vector<std::vector<int>>& X_hist_new,
+			std::vector<float>& gradient_new,
+			std::vector<float>& hessian_new,
+			std::vector<std::vector<float>>& gradient_hist_new,
+			std::vector<std::vector<float>>& hessian_hist_new,
+			float& l2_reg_new,
+			int& min_data_in_leaf_new,
+			std::vector<std::vector<int>>& min_max_rem_new,
+			int& max_bin_new,
+			int& max_depth_new
+			);
 
 	float calc_gamma();
-	float calc_gamma_hist();
+	float calc_gamma_hist(
+			std::vector<float>& gradient_hist_col,
+			std::vector<float>& hessian_hist_col
+			);
 
 	float calc_score(
 			float& lgs, // Left gradient sum
 			float& rgs, // Right gradient sum
 			float& lhs, // Left hessian sum
-			float& rhs  // Right hessian sum
+			float& rhs // Right hessian sum
+			);
+	float calc_score(
+			float& lgs, // Left gradient sum
+			float& rgs, // Right gradient sum
+			float& lhs, // Left hessian sum
+			float& rhs, // Right hessian sum
+			float& l2_reg_in
 			);
 	void get_greedy_split();
 

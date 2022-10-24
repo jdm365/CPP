@@ -5,7 +5,11 @@
 #include <array>
 #include <stdlib.h>
 
-std::array<std::vector<std::vector<float>>, 2> train_test_split(
+std::array<std::vector<std::vector<float>>, 2> train_test_split_columnar(
+		std::vector<std::vector<float>>& X,
+		float train_size
+		);
+std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
 		std::vector<std::vector<float>>& X,
 		float train_size
 		);

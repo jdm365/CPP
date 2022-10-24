@@ -19,7 +19,7 @@ int get_dims(std::string* line) {
 
 // Reads csv into columnar data matrix.
 // Data must be numeric.
-std::vector<std::vector<float>> read_csv(const char* filename) {
+std::vector<std::vector<float>> read_csv_columnar(const char* filename) {
 	std::vector<std::vector<float>> X;
 	std::ifstream file(filename);
 	std::string line;
@@ -55,6 +55,43 @@ std::vector<std::vector<float>> read_csv(const char* filename) {
 				idx++;
 			}
 		}
+	}
+	file.close();
+	return X;
+}
+
+
+// Reads csv into rowmajor data matrix.
+// Data must be numeric.
+std::vector<std::vector<float>> read_csv_rowmajor(const char* filename) {
+	std::vector<std::vector<float>> X;
+	std::ifstream file(filename);
+	std::vector<float> tmp;
+	std::string line;
+	int dims = 0;
+
+	bool first_line = true;
+	while (std::getline(file, line)) {
+		// Extra check to break if file ends.
+		if (line == "") {
+			break;
+		}
+
+		std::stringstream stream(line);
+		std::string num;
+		
+		// Get dimensions from first line and instantiate matrix.
+		if (first_line) {
+			dims = get_dims(&line);
+			first_line = false;
+		}
+
+			std::getline(stream, num, ',');
+			tmp.clear();
+			for (int idx = 0; idx < dims; ++idx) {
+				tmp.push_back(std::stof(num));
+			}
+			X.push_back(tmp);
 	}
 	file.close();
 	return X;
