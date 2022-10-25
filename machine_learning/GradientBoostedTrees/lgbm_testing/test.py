@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import lightgbm as lgb
 
@@ -7,7 +8,7 @@ df = pd.read_csv('../data/hpx10.csv', header=None)
 
 params = {
         'boosting': 'gbdt',
-        'num_threads': 0,
+        'num_threads': 1,
         'learning_rate': 0.1,
         'max_depth': 8,
         'max_leaves': 1000,
@@ -16,8 +17,8 @@ params = {
         'verbosity': '-1'
         }
 ds_params = {
-        'is_enable_sparse': 'true',
-        'enable_bundle': 'true',
+        'is_enable_sparse': 'false',
+        'enable_bundle': 'false',
         'max_bin': 255
         }
 

@@ -33,7 +33,6 @@ struct GBM {
 
 	void train_greedy(
 			std::vector<std::vector<float>>& X, 
-			std::vector<std::vector<float>>& X_rowmajor, 
 			std::vector<float>& y
 			);
 	void train_hist(

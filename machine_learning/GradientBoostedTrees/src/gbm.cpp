@@ -30,26 +30,40 @@ GBM::GBM(
 
 void GBM::train_greedy(
 		std::vector<std::vector<float>>& X, 
-		std::vector<std::vector<float>>& X_rowmajor, 
 		std::vector<float>& y
 		) {
 	int n_rows = int(X[0].size());
+	int n_cols = int(X.size());
 
 	std::vector<float> gradient(n_rows, 0.00f);
 	std::vector<float> hessian(n_rows, 2.00f);
 
 	float loss;
 
-	std::vector<float> preds(n_rows, 0.00f);
+	for (int row = 0; row < n_rows; ++row) {
+		y_mean_train += y[row];
+	}
+	y_mean_train /= y.size();
+
+	std::vector<float> preds(n_rows, y_mean_train);
 	std::vector<float> round_preds;
 
+	std::vector<std::vector<float>> X_rowmajor(
+			n_rows,
+			std::vector<float>(n_cols) 
+			);
+	for (int col = 0; col < n_cols; ++col) {
+		for (int row = 0; row < n_rows; ++row) {
+			X_rowmajor[row][col] = X[col][row];
+		}
+	}
+
 	auto start = std::chrono::high_resolution_clock::now();
-	for (int round = 0; round < num_boosting_rounds; round++) {
+	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(
 					X,
 					gradient,
 					hessian,
-					round,
 					max_depth,
 					l2_reg,
 					min_child_weight,
@@ -125,7 +139,6 @@ void GBM::train_hist(
 					X_hist_rowmajor,
 					gradient,
 					hessian,
-					round,
 					max_depth,
 					l2_reg,
 					min_data_in_leaf,
@@ -150,22 +163,30 @@ void GBM::train_hist(
 }
 
 
-std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowmajor) {
-	std::vector<float> round_preds;
-	std::vector<float> tree_preds;
+std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
+	int n_rows = int(X[0].size());
+	int n_cols = int(X.size());
 
-	for (int tree_num = 0; tree_num < int(trees.size()); tree_num++) {
-		tree_preds = trees[tree_num].predict(X_rowmajor);
-		for (int row = 0; row < int(X_rowmajor.size()); row++) {
-			if (tree_num == 0) {
-				round_preds.push_back(lr * tree_preds[row]);
-			}
-			else {
-				round_preds[row] += lr * tree_preds[row];
-			}
+	std::vector<std::vector<float>> X_rowmajor(
+			n_rows,
+			std::vector<float>(n_cols) 
+			);
+	for (int col = 0; col < n_cols; ++col) {
+		for (int row = 0; row < n_rows; ++row) {
+			X_rowmajor[row][col] = X[col][row];
 		}
 	}
-	return round_preds;
+
+	std::vector<float> preds(n_rows, y_mean_train);
+	std::vector<float> tree_preds;
+
+	for (int tree_num = 0; tree_num < num_boosting_rounds; ++tree_num) {
+		tree_preds = trees[tree_num].predict(X_rowmajor);
+		for (int row = 0; row < n_rows; ++row) {
+			preds[row] += lr * tree_preds[row];
+		}
+	}
+	return preds;
 }
 
 std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {

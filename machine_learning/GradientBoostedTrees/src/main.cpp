@@ -47,9 +47,10 @@ int main() {
 			50,				// num_boosting_rounds
 			255				// max_bin
 			);
-	// model.train_greedy(X_train, X_train_rowmajor, y_train);
-	model.train_hist(X_train, y_train);
+	// model.train_greedy(X_train, y_train);
+	// std::vector<float> y_preds = model.predict(X_test);
 
+	model.train_hist(X_train, y_train);
 	std::vector<float> y_preds = model.predict_hist(X_test);
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
 	return 0;
