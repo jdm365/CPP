@@ -42,7 +42,7 @@ struct Node {
 
 	// Histogram Constructor
 	Node(
-			std::vector<std::vector<int>>& X_hist,
+			std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			std::vector<std::vector<float>>& gradient_hist,
@@ -51,25 +51,25 @@ struct Node {
 			int& min_data_in_leaf_new,
 			int& max_depth_new,
 			int& depth_new,
-			std::vector<std::vector<int>>& min_max_rem
+			std::vector<std::vector<uint8_t>>& min_max_rem
 		);
 	void get_hist_split(
-			std::vector<std::vector<int>>& X_hist_new,
+			std::vector<std::vector<uint8_t>>& X_hist_new,
 			std::vector<float>& gradient_new,
 			std::vector<float>& hessian_new,
 			std::vector<std::vector<float>>& gradient_hist_new,
 			std::vector<std::vector<float>>& hessian_hist_new,
 			float& l2_reg_new,
 			int& min_data_in_leaf_new,
-			std::vector<std::vector<int>>& min_max_rem_new,
+			std::vector<std::vector<uint8_t>>& min_max_rem_new,
 			int& max_bin_new,
 			int& max_depth_new
 			);
-
 	float calc_gamma();
-	float calc_gamma_hist(
+	void  calc_gamma_hist(
 			std::vector<float>& gradient_hist_col,
-			std::vector<float>& hessian_hist_col
+			std::vector<float>& hessian_hist_col,
+			float& l2_reg_new
 			);
 
 	float calc_score(
@@ -90,11 +90,11 @@ struct Node {
 	float predict_obs(std::vector<float> &obs);
 	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
 
-	float predict_obs_hist(std::vector<int> &obs);
-	std::vector<float> predict_hist(std::vector<std::vector<int>> &X_hist_pred);
+	float predict_obs_hist(std::vector<uint8_t> &obs);
+	std::vector<float> predict_hist(std::vector<std::vector<uint8_t>> &X_hist_pred);
 
 	std::vector<std::vector<float>> calc_bin_statistics(
-			std::vector<std::vector<int>>& X_hist_child,
+			std::vector<std::vector<uint8_t>>& X_hist_child,
 			std::vector<float>& stat_vector
 			);
 	std::vector<std::vector<float>> calc_diff_hist(

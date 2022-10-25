@@ -45,13 +45,12 @@ int main() {
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
-			256				// max_bins
+			255				// max_bin
 			);
 	// model.train_greedy(X_train, X_train_rowmajor, y_train);
 	model.train_hist(X_train, y_train);
 
 	std::vector<float> y_preds = model.predict_hist(X_test);
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
-
 	return 0;
 }

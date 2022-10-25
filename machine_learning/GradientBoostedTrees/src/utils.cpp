@@ -97,6 +97,20 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
 
 
 void vector_reserve_2d(
+		std::vector<std::vector<uint8_t>>& vec,
+		int dim_0,
+		int dim_1
+		) {
+	vec.reserve(dim_0);
+	std::for_each(
+			vec.begin(), 
+			vec.end(), 
+			[dim_1](std::vector<uint8_t>& row) {row.reserve(dim_1);}
+			);
+}
+
+
+void vector_reserve_2d(
 		std::vector<std::vector<int>>& vec,
 		int dim_0,
 		int dim_1
@@ -108,6 +122,7 @@ void vector_reserve_2d(
 			[dim_1](std::vector<int>& row) {row.reserve(dim_1);}
 			);
 }
+
 
 void vector_reserve_2d(
 		std::vector<std::vector<float>>& vec,

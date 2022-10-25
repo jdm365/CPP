@@ -79,20 +79,20 @@ void GBM::train_hist(
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
 
-	std::vector<float> gradient(n_rows, 0.00f);
-	std::vector<float> hessian(n_rows, 2.00f);
+	alignas(64) std::vector<float> gradient(n_rows, 0.00f);
+	alignas(64) std::vector<float> hessian(n_rows, 2.00f);
 	float loss;
 
 	auto start_0 = std::chrono::high_resolution_clock::now();
 
 	std::vector<std::vector<int>> X_hist = map_hist_bins_train(X, max_bin);
-	std::vector<std::vector<int>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	// Get min/max bin per col to avoid unneccessary split finding. 
-	std::vector<std::vector<int>> min_max_rem;
+	alignas(64) std::vector<std::vector<uint8_t>> min_max_rem;
 	for (int col = 0; col < n_cols; ++col) {
 		min_max_rem.push_back(
-				{0, 1 + *std::max_element(X_hist[col].begin(), X_hist[col].end())}
+				{uint8_t(0), uint8_t(1 + *std::max_element(X_hist[col].begin(), X_hist[col].end()))}
 				);
 	}
 
@@ -169,11 +169,11 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X_rowmajor) {
 }
 
 std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
-	std::vector<float> preds(X.size(), y_mean_train);
+	std::vector<float> preds(X[0].size(), y_mean_train);
 	std::vector<float> tree_preds;
 
 	std::vector<std::vector<int>> X_hist = map_hist_bins_inference(X);
-	std::vector<std::vector<int>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+	std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
 		tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
@@ -187,8 +187,8 @@ std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
 std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> gradient;
 	// Assume MSE for now
-	for (int idx = 0; idx < int(y.size()); idx++) {
-		gradient.emplace_back(2.00f * (preds[idx] - y[idx]));
+	for (int idx = 0; idx < int(y.size()); ++idx) {
+		gradient.push_back(2.00f * (preds[idx] - y[idx]));
 	}
 	return gradient;
 }
@@ -197,7 +197,7 @@ std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vecto
 std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> hessian;
 	// Assume MSE for now
-	for (int idx = 0; idx < int(y.size()); idx++) {
+	for (int idx = 0; idx < int(y.size()); ++idx) {
 		hessian.push_back(2.00f);
 	}
 	return hessian;
@@ -207,10 +207,10 @@ std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector
 float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) {
 	float loss = 0.00f;
 	// Assume MSE for now
-	for (int idx = 0; idx < int(preds.size()); idx++) {
-		loss += 0.50f * std::pow((preds[idx] - y[idx]), 2);
+	for (int idx = 0; idx < int(y.size()); ++idx) {
+		loss += 0.50f * (preds[idx] - y[idx]) * (preds[idx] - y[idx]);
 	}
-	loss = loss / float(preds.size());	
+	loss /= float(y.size());	
 	return loss;
 }
 
@@ -292,17 +292,17 @@ std::vector<std::vector<int>> GBM::map_hist_bins_inference(std::vector<std::vect
 	return X_hist;
 }
 
-std::vector<std::vector<int>> GBM::get_hist_bins_rowmajor(
+std::vector<std::vector<uint8_t>> GBM::get_hist_bins_rowmajor(
 		std::vector<std::vector<int>>& X_hist
 		) {
-	std::vector<std::vector<int>> X_hist_rowmajor(
+	std::vector<std::vector<uint8_t>> X_hist_rowmajor(
 			X_hist[0].size(),
-			std::vector<int>(X_hist.size())
+			std::vector<uint8_t>(X_hist.size())
 			);
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {
 		for (int col = 0; col < int(X_hist.size()); ++col) {
-			X_hist_rowmajor[row][col] = X_hist[col][row];
+			X_hist_rowmajor[row][col] = uint8_t(X_hist[col][row]);
 		}
 	}
 	return X_hist_rowmajor;

@@ -61,7 +61,7 @@ Histogram Constructor
 ****************************************************************
 */
 Node::Node(
-		std::vector<std::vector<int>>& X_hist,
+		std::vector<std::vector<uint8_t>>& X_hist,
 		std::vector<float>& gradient_new,
 		std::vector<float>& hessian_new,
 		std::vector<std::vector<float>>& gradient_hist,
@@ -70,13 +70,13 @@ Node::Node(
 		int&   min_data_in_leaf_new,
 		int&   max_depth_new,
 		int&   depth_new,
-		std::vector<std::vector<int>>& min_max_rem_new
+		std::vector<std::vector<uint8_t>>& min_max_rem
 		) {
 
-	depth	 		  = depth_new;
-	is_leaf			  = (depth_new >= max_depth_new) || (int(X_hist.size()) < min_data_in_leaf_new);
-	max_bin	  		  = int(gradient_hist[0].size());
-	gamma 			  = calc_gamma_hist(gradient_hist[0], hessian_hist[0]);
+	depth	= depth_new;
+	is_leaf	= (depth_new >= max_depth_new) || (int(X_hist.size()) < min_data_in_leaf_new);
+	max_bin	= int(gradient_hist[0].size());
+	calc_gamma_hist(gradient_hist[0], hessian_hist[0], l2_reg_new);
 
 	// Needed for prediction.
 	//     1. is_leaf
@@ -94,7 +94,7 @@ Node::Node(
 				hessian_hist,
 				l2_reg_new,
 				min_data_in_leaf_new,
-				min_max_rem_new,
+				min_max_rem,
 				max_bin,
 				max_depth_new
 				);
@@ -116,9 +116,10 @@ float Node::calc_gamma() {
 }
 
 
-float Node::calc_gamma_hist(
+void Node::calc_gamma_hist(
 		std::vector<float>& gradient_hist_col,
-		std::vector<float>& hessian_hist_col
+		std::vector<float>& hessian_hist_col,
+		float& l2_reg_new
 		) {
 	float eps = 0.00001f;
 
@@ -126,9 +127,9 @@ float Node::calc_gamma_hist(
 		grad_sum += gradient_hist_col[idx];
 		hess_sum += hessian_hist_col[idx];
 	}
-	float gamma = -grad_sum / (hess_sum + l2_reg + eps);
-	return gamma;
+	gamma = -grad_sum / (hess_sum + l2_reg_new + eps);
 }
+
 
 float Node::calc_score(
 		float& lgs,
@@ -147,6 +148,7 @@ float Node::calc_score(
 	// absolute if implementing `min_gain_to_split`.
 	return (lgs * lgs / (lhs + l2_reg)) + (rgs * rgs / (rhs + l2_reg));
 }
+
 
 float Node::calc_score(
 		float& lgs,
@@ -167,26 +169,31 @@ float Node::calc_score(
 	return (lgs * lgs / (lhs + l2_reg_in)) + (rgs * rgs / (rhs + l2_reg_in));
 }
 
+
 float Node::predict_obs(std::vector<float>& obs) {
 	if (is_leaf) {
 		return gamma;
 	}
-	if (obs[split_col] <= split_val) {
+	if (obs[split_col] < split_val) {
 		return (*left_child).predict_obs(obs);
 	}
 	return (*right_child).predict_obs(obs);
 }
 
+
 std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 	std::vector<float> preds;
+	preds.reserve(X_pred.size());
+
 	// X_pred is rowmajor storage.
-	for (int row = 0; row < int(X_pred.size()); row++) {
+	for (int row = 0; row < int(X_pred.size()); ++row) {
 		preds.push_back(predict_obs(X_pred[row]));
 	}
 	return preds;
 }
 
-float Node::predict_obs_hist(std::vector<int>& obs) {
+
+float Node::predict_obs_hist(std::vector<uint8_t>& obs) {
 	if (is_leaf) {
 		return gamma;
 	}
@@ -197,10 +204,12 @@ float Node::predict_obs_hist(std::vector<int>& obs) {
 }
 
 
-std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred) {
+std::vector<float> Node::predict_hist(std::vector<std::vector<uint8_t>>& X_hist_pred) {
 	std::vector<float> preds;
+	preds.reserve(X_hist_pred.size());
+
 	// X_pred is rowmajor storage.
-	for (int row = 0; row < int(X_hist_pred.size()); row++) {
+	for (int row = 0; row < int(X_hist_pred.size()); ++row) {
 		preds.push_back(predict_obs_hist(X_hist_pred[row]));
 	}
 	return preds;
@@ -208,7 +217,7 @@ std::vector<float> Node::predict_hist(std::vector<std::vector<int>>& X_hist_pred
 
 
 std::vector<std::vector<float>> Node::calc_bin_statistics(
-		std::vector<std::vector<int>>& X_hist_child,
+		std::vector<std::vector<uint8_t>>& X_hist_child,
 		std::vector<float>& stat_vector
 		) {
 	int n_rows = int(X_hist_child.size());
@@ -221,7 +230,7 @@ std::vector<std::vector<float>> Node::calc_bin_statistics(
 
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
-			stat_hist[col][X_hist_child[row][col]] += stat_vector[row];
+			stat_hist[col][int(X_hist_child[row][col])] += stat_vector[row];
 		}
 	}
 	return stat_hist;
@@ -232,16 +241,13 @@ std::vector<std::vector<float>> Node::calc_diff_hist(
 		std::vector<std::vector<float>>& orig,
 		std::vector<std::vector<float>>& child
 		) {
-	int n_cols = int(orig.size());
-
-	for (int col = 0; col < n_cols; ++col) {
+	for (int col = 0; col < int(orig.size()); ++col) {
 		for (int bin = 0; bin < max_bin; bin++) {
 			orig[col][bin] -= child[col][bin];
 		}
 	}
 	return orig;
 }
-
 
 
 void Node::get_greedy_split() {
@@ -373,14 +379,14 @@ void Node::get_greedy_split() {
 
 
 void Node::get_hist_split(
-				std::vector<std::vector<int>>& X_hist,
+				std::vector<std::vector<uint8_t>>& X_hist,
 				std::vector<float>& gradient_new,
 				std::vector<float>& hessian_new,
 				std::vector<std::vector<float>>& gradient_hist,
 				std::vector<std::vector<float>>& hessian_hist,
 				float& l2_reg_new,
 				int& min_data_in_leaf_new,
-				std::vector<std::vector<int>>& min_max_rem_new,
+				std::vector<std::vector<uint8_t>>& min_max_rem,
 				int& max_bin_new,
 				int& max_depth_new
 		) {
@@ -402,8 +408,8 @@ void Node::get_hist_split(
 
 	for (int col = 0; col < n_cols; ++col) {
 		// Get min and max bin in hist col and only iterate over those buckets.
-		min_bin_col = min_max_rem_new[col][0];
-		max_bin_col = min_max_rem_new[col][1];
+		min_bin_col = int(min_max_rem[col][0]);
+		max_bin_col = int(min_max_rem[col][1]);
 		
 		// If only one bin remaining then skip.
 		if (max_bin_col - min_bin_col == 1) {
@@ -489,6 +495,10 @@ void Node::get_hist_split(
 	std::vector<int> left_idxs;
 	std::vector<int> right_idxs;
 
+	left_idxs.reserve(int(n_rows * split_bin / int(min_max_rem[split_col][1])));
+	right_idxs.reserve(n_rows - int(n_rows * split_bin / int(min_max_rem[split_col][1])));
+
+
 	for (int row = 0; row < n_rows; ++row) {
 		if (X_hist[row][split_col] < split_bin) {
 			left_idxs.push_back(row);
@@ -497,21 +507,6 @@ void Node::get_hist_split(
 			right_idxs.push_back(row);
 		}
 	}
-
-	assert(left_idxs.size()  != 0);
-	assert(right_idxs.size() != 0);
-
-	std::vector<std::vector<int>> min_max_rem_left  = min_max_rem_new;
-	std::vector<std::vector<int>> min_max_rem_right = min_max_rem_new;
-
-	min_max_rem_left[split_col][1]  = split_bin;
-	min_max_rem_right[split_col][0] = split_bin;
-
-	std::vector<std::vector<int>> X_hist_left;
-	std::vector<std::vector<int>> X_hist_right;
-
-	vector_reserve_2d(X_hist_left,  int(left_idxs.size()), n_cols);
-	vector_reserve_2d(X_hist_right, int(right_idxs.size()), n_cols);
 
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;
@@ -522,6 +517,21 @@ void Node::get_hist_split(
 	gradient_right.reserve(right_idxs.size());
 	hessian_left.reserve(left_idxs.size());
 	hessian_right.reserve(right_idxs.size());
+
+	assert(left_idxs.size()  != 0);
+	assert(right_idxs.size() != 0);
+
+	std::vector<std::vector<uint8_t>> min_max_rem_left  = min_max_rem;
+	std::vector<std::vector<uint8_t>> min_max_rem_right = min_max_rem;
+
+	min_max_rem_left[split_col][1]  = uint8_t(split_bin);
+	min_max_rem_right[split_col][0] = uint8_t(split_bin);
+
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist_left;
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist_right;
+
+	vector_reserve_2d(X_hist_left,  int(left_idxs.size()), n_cols);
+	vector_reserve_2d(X_hist_right, int(right_idxs.size()), n_cols);
 
 	for (const int& row: left_idxs) { 
 		X_hist_left.push_back(X_hist[row]);
@@ -535,15 +545,10 @@ void Node::get_hist_split(
 		hessian_right.push_back(hessian_new[row]);
 	}
 	
-	std::vector<std::vector<float>> gradient_hist_left;
-	std::vector<std::vector<float>> gradient_hist_right;
-	std::vector<std::vector<float>> hessian_hist_left;
-	std::vector<std::vector<float>> hessian_hist_right;
-
-	vector_reserve_2d(gradient_hist_left,  n_cols, max_bin_new);
-	vector_reserve_2d(gradient_hist_right, n_cols, max_bin_new);
-	vector_reserve_2d(hessian_hist_left,   n_cols, max_bin_new);
-	vector_reserve_2d(hessian_hist_right,  n_cols, max_bin_new);
+	alignas(64) std::vector<std::vector<float>> gradient_hist_left;
+	alignas(64) std::vector<std::vector<float>> gradient_hist_right;
+	alignas(64) std::vector<std::vector<float>> hessian_hist_left;
+	alignas(64) std::vector<std::vector<float>> hessian_hist_right;
 
 	if (left_idxs.size() > right_idxs.size()) {
 		gradient_hist_right = calc_bin_statistics(X_hist_right, gradient_right);

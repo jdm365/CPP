@@ -51,7 +51,7 @@ struct GBM {
 			int& max_bins
 			);
 	std::vector<std::vector<int>> map_hist_bins_inference(std::vector<std::vector<float>>& X);
-	std::vector<std::vector<int>> get_hist_bins_rowmajor(
+	std::vector<std::vector<uint8_t>> get_hist_bins_rowmajor(
 			std::vector<std::vector<int>>& X_hist
 			);
 };
