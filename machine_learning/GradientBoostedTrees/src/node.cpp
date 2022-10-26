@@ -457,8 +457,10 @@ void Node::get_hist_split(
 			right_gradient_sum = grad_sum - left_gradient_sum;
 			right_hessian_sum  = hess_sum - left_hessian_sum;
 
-			if (left_hessian_sum  <= float(2 * min_data_in_leaf) ||
-				right_hessian_sum <= float(2 * min_data_in_leaf)) {
+			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
+				continue;
+			}
+			if (right_hessian_sum < float(2 * min_data_in_leaf)) {
 				continue;
 			}
 
@@ -489,8 +491,10 @@ void Node::get_hist_split(
 			left_gradient_sum = grad_sum - right_gradient_sum;
 			left_hessian_sum  = hess_sum - right_hessian_sum;
 
-			if (left_hessian_sum  <= float(2 * min_data_in_leaf) ||
-				right_hessian_sum <= float(2 * min_data_in_leaf)) {
+			if (right_hessian_sum < float(2 * min_data_in_leaf)) {
+				continue;
+			}
+			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
 				continue;
 			}
 

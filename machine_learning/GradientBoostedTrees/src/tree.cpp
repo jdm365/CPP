@@ -64,12 +64,17 @@ Tree::Tree(
 			std::vector<float>(max_bin, 0.00f)
 			);
 
-	uint8_t idx;
+	// Most obvious case of slow down at the moment.
+	// Fixing would require storing bin -> rows in map.
+	// This would take up n_rows * n_cols space, so if implementing should
+	// definitely use on the fly compression.
+	// If compression not sufficient then leave as optional argument which 
+	// depends on the data size.
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
-			idx = X_hist[row][col];
-			gradient_hist[col][idx] += gradient[row];
-			hessian_hist[col][idx]  += hessian[row];
+			gradient_hist[col][X_hist[row][col]] += gradient[row];
+			hessian_hist[col][X_hist[row][col]]  += hessian[row];
+		}
 	}
 	int depth = 0;
 
