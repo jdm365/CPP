@@ -64,13 +64,12 @@ Tree::Tree(
 			std::vector<float>(max_bin, 0.00f)
 			);
 
-	int idx;
+	uint8_t idx;
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
-			idx = int(X_hist[row][col]);
+			idx = X_hist[row][col];
 			gradient_hist[col][idx] += gradient[row];
 			hessian_hist[col][idx]  += hessian[row];
-		}
 	}
 	int depth = 0;
 

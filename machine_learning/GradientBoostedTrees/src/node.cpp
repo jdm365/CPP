@@ -211,7 +211,7 @@ std::vector<std::vector<float>> Node::calc_bin_statistics(
 
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
-			stat_hist[col][int(X_hist_child[row][col])] += stat_vector[row];
+			stat_hist[col][X_hist_child[row][col]] += stat_vector[row];
 		}
 	}
 	return stat_hist;
@@ -521,25 +521,28 @@ void Node::get_hist_split(
 	left_idxs.reserve(int(n_rows * split_bin / int(min_max_rem[split_col][1])));
 	right_idxs.reserve(n_rows - int(n_rows * split_bin / int(min_max_rem[split_col][1])));
 
-
-	for (int row = 0; row < n_rows; ++row) {
-		if (X_hist[row][split_col] < split_bin) {
-			left_idxs.push_back(row);
-		}
-		else {
-			right_idxs.push_back(row);
-		}
-	}
-
 	std::vector<float> gradient_left;
 	std::vector<float> gradient_right;
 	std::vector<float> hessian_left;
 	std::vector<float> hessian_right;
 
-	gradient_left.reserve(left_idxs.size());
-	gradient_right.reserve(right_idxs.size());
-	hessian_left.reserve(left_idxs.size());
-	hessian_right.reserve(right_idxs.size());
+	gradient_left.reserve(left_idxs.capacity());
+	gradient_right.reserve(right_idxs.capacity());
+	hessian_left.reserve(left_idxs.capacity());
+	hessian_right.reserve(right_idxs.capacity());
+
+	for (int row = 0; row < n_rows; ++row) {
+		if (X_hist[row][split_col] < split_bin) {
+			left_idxs.push_back(row);
+			gradient_left.push_back(gradient[row]);
+			hessian_left.push_back(hessian[row]);
+		}
+		else {
+			right_idxs.push_back(row);
+			gradient_right.push_back(gradient[row]);
+			hessian_right.push_back(hessian[row]);
+		}
+	}
 
 	assert(left_idxs.size()  != 0);
 	assert(right_idxs.size() != 0);
@@ -558,14 +561,10 @@ void Node::get_hist_split(
 
 	for (const int& row: left_idxs) { 
 		X_hist_left.push_back(X_hist[row]);
-		gradient_left.push_back(gradient[row]);
-		hessian_left.push_back(hessian[row]);
 	}
 
 	for (const int& row: right_idxs) { 
 		X_hist_right.push_back(X_hist[row]);
-		gradient_right.push_back(gradient[row]);
-		hessian_right.push_back(hessian[row]);
 	}
 	
 	alignas(64) std::vector<std::vector<float>> gradient_hist_left;
