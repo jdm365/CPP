@@ -100,22 +100,22 @@ void GBM::train_hist(
 
 	auto start_0 = std::chrono::high_resolution_clock::now();
 
-	std::vector<std::vector<int>> X_hist = map_hist_bins_train(X, max_bin);
+	std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, max_bin);
 	alignas(64) std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	// Get min/max bin per col to avoid unneccessary split finding. 
 	alignas(64) std::vector<std::vector<uint8_t>> min_max_rem;
 	for (int col = 0; col < n_cols; ++col) {
 		min_max_rem.push_back(
-				{uint8_t(0), uint8_t(1 + *std::max_element(X_hist[col].begin(), X_hist[col].end()))}
+				{0, uint8_t(1 + *std::max_element(X_hist[col].begin(), X_hist[col].end()))}
 				);
 	}
 
 	// Free up unused memory.
 	X.clear();
-	X_hist.clear();
+	// X_hist.clear();
 	X.shrink_to_fit();
-	X_hist.shrink_to_fit();
+	// X_hist.shrink_to_fit();
 
 	auto stop_0 = std::chrono::high_resolution_clock::now();
 	auto duration_0 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_0 - start_0);
@@ -194,7 +194,7 @@ std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
 	std::vector<float> preds(X[0].size(), y_mean_train);
 	std::vector<float> tree_preds;
 
-	std::vector<std::vector<int>> X_hist = map_hist_bins_inference(X);
+	std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X);
 	std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
@@ -236,7 +236,7 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 	return loss;
 }
 
-std::vector<std::vector<int>> GBM::map_hist_bins_train(
+std::vector<std::vector<uint8_t>> GBM::map_hist_bins_train(
 		std::vector<std::vector<float>>& X,
 		int& max_bin
 		) {
@@ -246,7 +246,7 @@ std::vector<std::vector<int>> GBM::map_hist_bins_train(
 	int bin_size   = std::ceil(n_rows / max_bin);
 	int total_bins = 0;
 
-	std::vector<std::vector<int>> X_hist(n_cols, std::vector<int>(n_rows));
+	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 
 	X_col.reserve(n_rows);
@@ -254,16 +254,16 @@ std::vector<std::vector<int>> GBM::map_hist_bins_train(
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		float last_X = 0.00f;
-		int   cntr 	 = 0;
-		int   bin  	 = 0;
+		float 	last_X = 0.00f;
+		int     cntr   = 0;
+		uint8_t bin    = 0;
 
 		std::vector<int> idxs(n_rows);
 		std::iota(idxs.begin(), idxs.end(), 0);
 		std::stable_sort(idxs.begin(), idxs.end(), [&X_col](int i, int j){return X_col[i] < X_col[j];});
 
 		for (int row = 0; row < n_rows; ++row) {
-			X_hist[col][idxs[row]] = std::min(bin, max_bin - 1);
+			X_hist[col][idxs[row]] = std::min(bin, uint8_t(max_bin - 1));
 			if (cntr >= bin_size && last_X != X_col[idxs[row]]) {
 				cntr = 0;
 				++bin;
@@ -274,29 +274,29 @@ std::vector<std::vector<int>> GBM::map_hist_bins_train(
 			}
 			last_X = X_col[idxs[row]];
 		}
-		total_bins += std::min(bin, max_bin - 1);
+		total_bins += std::min(bin, uint8_t(max_bin - 1));
 	}
 	std::cout << "Total bins used: " << total_bins << std::endl;
 	std::cout << std::endl;
 	return X_hist;
 }
 
-std::vector<std::vector<int>> GBM::map_hist_bins_inference(std::vector<std::vector<float>>& X) {
+std::vector<std::vector<uint8_t>> GBM::map_hist_bins_inference(std::vector<std::vector<float>>& X) {
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
 
-	std::vector<std::vector<int>> X_hist(n_cols, std::vector<int>(n_rows));
+	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 	X_col.reserve(n_rows);
 
-	float val;
-	int   bin;
-	int   max_bin_col;
+	float 	  val;
+	uint8_t   bin;
+	uint8_t   max_bin_col;
 
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
-		max_bin_col = int(bin_mapping[col].size());
+		max_bin_col = uint8_t(bin_mapping[col].size());
 		bin = 0;
 
 		std::vector<int> idxs(n_rows);
@@ -315,7 +315,7 @@ std::vector<std::vector<int>> GBM::map_hist_bins_inference(std::vector<std::vect
 }
 
 std::vector<std::vector<uint8_t>> GBM::get_hist_bins_rowmajor(
-		std::vector<std::vector<int>>& X_hist
+		std::vector<std::vector<uint8_t>>& X_hist
 		) {
 	std::vector<std::vector<uint8_t>> X_hist_rowmajor(
 			X_hist[0].size(),
@@ -324,7 +324,7 @@ std::vector<std::vector<uint8_t>> GBM::get_hist_bins_rowmajor(
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {
 		for (int col = 0; col < int(X_hist.size()); ++col) {
-			X_hist_rowmajor[row][col] = uint8_t(X_hist[col][row]);
+			X_hist_rowmajor[row][col] = X_hist[col][row];
 		}
 	}
 	return X_hist_rowmajor;

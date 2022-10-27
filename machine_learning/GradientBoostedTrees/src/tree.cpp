@@ -54,11 +54,11 @@ Tree::Tree(
 	int n_rows = int(X_hist.size());
 	int n_cols = int(X_hist[0].size());
 
-	alignas(64) std::vector<std::vector<float>> gradient_hist(
+	std::vector<std::vector<float>> gradient_hist(
 			n_cols, 
 			std::vector<float>(max_bin, 0.00f)
 			);
-	alignas(64) std::vector<std::vector<float>> hessian_hist(
+	std::vector<std::vector<float>> hessian_hist(
 			n_cols, 
 			std::vector<float>(max_bin, 0.00f)
 			);
