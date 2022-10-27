@@ -36,7 +36,14 @@ Node::Node(
 		int    depth
 		) {
 	is_leaf	= (depth >= max_depth);
-	gamma 	= calc_gamma(gradient, hessian, l2_reg);
+	float grad_sum = 0.00f;
+	float hess_sum = 0.00f;
+	for (int row = 0; row < int(X.size()); ++row) {
+		grad_sum += gradient[row];
+		hess_sum += hessian[row];
+	}
+
+	calc_gamma(grad_sum, hess_sum, l2_reg);
 
 	// Recursively finds child nodes to build tree.
 	if (!is_leaf) {
@@ -44,6 +51,8 @@ Node::Node(
 				X,
 				gradient,
 				hessian,
+				grad_sum,
+				hess_sum,
 				l2_reg,
 				min_child_weight,
 				min_data_in_leaf,
@@ -73,7 +82,14 @@ Node::Node(
 
 	is_leaf	= (depth >= max_depth) || (int(X_hist.size()) < min_data_in_leaf);
 	int max_bin	= int(gradient_hist[0].size());
-	calc_gamma_hist(gradient_hist[0], hessian_hist[0], l2_reg);
+
+	float grad_sum = 0.00f;
+	float hess_sum = 0.00f;
+	for (int bin = 0; bin < max_bin; ++bin) {
+		grad_sum += gradient_hist[0][bin];
+		hess_sum += hessian_hist[0][bin];
+	}
+	calc_gamma(grad_sum, hess_sum, l2_reg);
 
 	// Needed for prediction.
 	//     1. is_leaf
@@ -87,6 +103,8 @@ Node::Node(
 				X_hist,
 				gradient,
 				hessian,
+				grad_sum,
+				hess_sum,
 				gradient_hist,
 				hessian_hist,
 				l2_reg,
@@ -100,32 +118,12 @@ Node::Node(
 }
 
 
-float Node::calc_gamma(
-		std::vector<float>& gradient,
-		std::vector<float>& hessian,
+void Node::calc_gamma(
+		float& grad_sum,
+		float& hess_sum,
 		float& l2_reg
 		) {
 	float eps = 0.00001f;
-	for (int idx = 0; idx < int(gradient.size()); ++idx) {
-		grad_sum += gradient[idx];
-		hess_sum += hessian[idx];
-	}
-	float gamma = -grad_sum / (hess_sum + l2_reg + eps);
-	return gamma;
-}
-
-
-void Node::calc_gamma_hist(
-		std::vector<float>& gradient_hist_col,
-		std::vector<float>& hessian_hist_col,
-		float& l2_reg
-		) {
-	float eps = 0.00001f;
-
-	for (int idx = 0; idx < int(gradient_hist_col.size()); ++idx) {
-		grad_sum += gradient_hist_col[idx];
-		hess_sum += hessian_hist_col[idx];
-	}
 	gamma = -grad_sum / (hess_sum + l2_reg + eps);
 }
 
@@ -235,6 +233,8 @@ void Node::get_greedy_split(
 		std::vector<std::vector<float>>& X,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
+		float& grad_sum,
+		float& hess_sum,
 		float& l2_reg,
 		float& min_child_weight,
 		int& min_data_in_leaf,
@@ -404,6 +404,8 @@ void Node::get_hist_split(
 				std::vector<std::vector<uint8_t>>& X_hist,
 				std::vector<float>& gradient,
 				std::vector<float>& hessian,
+				float& grad_sum,
+				float& hess_sum,
 				std::vector<std::vector<float>>& gradient_hist,
 				std::vector<std::vector<float>>& hessian_hist,
 				float& l2_reg,

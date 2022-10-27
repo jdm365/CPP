@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 #include <assert.h>
 
 #include "node.hpp"
@@ -65,11 +64,6 @@ Tree::Tree(
 			);
 
 	// Most obvious case of slow down at the moment.
-	// Fixing would require storing bin -> rows in map.
-	// This would take up n_rows * n_cols space, so if implementing should
-	// definitely use on the fly compression.
-	// If compression not sufficient then leave as optional argument which 
-	// depends on the data size.
 	for (int row = 0; row < n_rows; ++row) {
 		for (int col = 0; col < n_cols; ++col) {
 			gradient_hist[col][X_hist[row][col]] += gradient[row];

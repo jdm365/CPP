@@ -6,8 +6,6 @@
 
 
 struct Node {
-	float 	grad_sum = 0.00f;
-	float 	hess_sum = 0.00f;
 	float 	gamma;
 	int     split_col;
 	int		split_bin;
@@ -49,6 +47,8 @@ struct Node {
 			std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
+			float& grad_sum,
+			float& hess_sum,
 			std::vector<std::vector<float>>& gradient_hist,
 			std::vector<std::vector<float>>& hessian_hist,
 			float& l2_reg,
@@ -62,6 +62,8 @@ struct Node {
 			std::vector<std::vector<float>>& X,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
+			float& grad_sum,
+			float& hess_sum,
 			float& l2_reg,
 			float& min_child_weight,
 			int& min_data_in_leaf,
@@ -69,14 +71,9 @@ struct Node {
 			int depth
 			);
 
-	float calc_gamma(
-			std::vector<float>& gradient, 
-			std::vector<float>& hessian,
-			float& l2_reg
-			);
-	void  calc_gamma_hist(
-			std::vector<float>& gradient_hist_col,
-			std::vector<float>& hessian_hist_col,
+	void calc_gamma(
+			float& grad_sum, 
+			float& hess_sum,
 			float& l2_reg
 			);
 

@@ -10,8 +10,8 @@
 
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
-	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "data/hpx10.csv";
+	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+	// const char* FILENAME = "data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
