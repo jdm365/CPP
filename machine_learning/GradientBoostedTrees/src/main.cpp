@@ -17,26 +17,15 @@ int main() {
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
 	// std::vector<std::vector<float>> X = read_csv_rowmajor(FILENAME);
 
-	std::cout << "Number of columns: " << X.size() - 1 << std::endl;
-	std::cout << "Number of rows:    " << X[0].size() << std::endl;
-	std::cout << std::endl;
-
-	std::array<std::vector<std::vector<float>>, 2> split = train_test_split_columnar(X, 0.80);
-
-	std::vector<std::vector<float>>& data_train = split[0];
-	std::vector<std::vector<float>>& data_test  = split[1];
-
-	std::vector<std::vector<float>> X_train;
-	std::vector<std::vector<float>> X_test;
-	std::vector<float> y_train;
-	std::vector<float> y_test;
-
-	for (int row = 0; row < int(X.size()) - 1; ++row) {
-		X_train.push_back(data_train[row]);
-		X_test.push_back(data_test[row]);
-	}
-	y_train = data_train[(int(X.size()) - 1)];
-	y_test  = data_test[(int(X.size()) - 1)];
+	std::pair<
+			std::pair<std::vector<std::vector<float>>, std::vector<float>>,
+			std::pair<std::vector<std::vector<float>>, std::vector<float>>
+	> splits = train_test_split_columnar(X, 0.80);
+	
+	std::vector<std::vector<float>> X_train = splits.first.first;
+	std::vector<std::vector<float>> X_test  = splits.second.first;
+	std::vector<float> y_train = splits.first.second;
+	std::vector<float> y_test  = splits.second.second;
 
 	GBM model(
 			8,				// max_depth
@@ -49,10 +38,12 @@ int main() {
 			true			// const_hessian
 			);
 	// model.train_greedy(X_train, y_train);
-	// std::vector<float> y_preds = model.predict(X_test);
-
 	model.train_hist(X_train, y_train);
-	std::vector<float> y_preds = model.predict_hist(X_test);
+
+	float* y_preds = model.predict_hist(X_test);//(float*) malloc(sizeof(y_preds));
+
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
+
+	free(y_preds);
 	return 0;
 }

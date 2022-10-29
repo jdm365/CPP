@@ -46,5 +46,5 @@ struct Tree {
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
-	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
+	float* predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
 };

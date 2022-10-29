@@ -140,6 +140,6 @@ std::vector<float> Tree::predict(std::vector<std::vector<float>>& X_pred) {
 	return (*root).predict(X_pred);
 }
 
-std::vector<float> Tree::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
+float* Tree::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
 	return (*root).predict_hist(X_hist_pred);
 }

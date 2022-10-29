@@ -89,7 +89,7 @@ struct Node {
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 
 	float predict_obs_hist(const std::vector<uint8_t>& obs);
-	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred);
+	float* predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred);
 
 	std::vector<std::vector<float>> calc_bin_statistics(
 			const std::vector<std::vector<uint8_t>>& X_hist_child,

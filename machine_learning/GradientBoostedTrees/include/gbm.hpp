@@ -44,10 +44,10 @@ struct GBM {
 			);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_rowmajor);
-	std::vector<float> predict_hist(std::vector<std::vector<float>>& X);
-	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
-	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
-	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
+	float* predict_hist(std::vector<std::vector<float>>& X);
+	std::vector<float> calculate_gradient(float* preds, std::vector<float>& y);
+	std::vector<float> calculate_hessian(float* preds, std::vector<float>& y);
+	float calculate_mse_loss(float* preds, std::vector<float>& y); 
 	std::vector<std::vector<uint8_t>> map_hist_bins_train(
 			std::vector<std::vector<float>>& X, 
 			int& max_bin

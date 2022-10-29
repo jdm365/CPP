@@ -7,10 +7,16 @@
 #include "utils.hpp"
 
 
-std::array<std::vector<std::vector<float>>, 2> train_test_split_columnar(
+std::pair<
+		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
+		std::pair<std::vector<std::vector<float>>, std::vector<float>>
+> train_test_split_columnar(
 		std::vector<std::vector<float>>& X,
-		float train_size
+		float train_size,
+		int   seed,
+		bool  verbose
 		) {
+
 	// Create index array to draw idxs from.
 	std::vector<int> train_idxs;
 	std::vector<int> test_idxs;
@@ -22,7 +28,7 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split_columnar(
 	int test_length  = int(int(X[0].size()) - train_length);
 
 	// Init random seed.
-	srand(time(NULL));
+	srand(seed);
 
 	int idx;
 	while (int(test_idxs.size()) != test_length) {
@@ -32,29 +38,53 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split_columnar(
 		train_idxs.erase(train_idxs.begin() + idx);
 	}
 
-	std::vector<std::vector<float>> X_train;
-	std::vector<std::vector<float>> X_test;
+	std::vector<std::vector<float>> data_train;
+	std::vector<std::vector<float>> data_test;
 
-	std::vector<float> X_train_col;
-	std::vector<float> X_test_col;
+	std::vector<float> data_train_col;
+	std::vector<float> data_test_col;
 
 	for (int col = 0; col < int(X.size()); col++) {
 		for (int row = 0; row < train_length; row++) {
 			if (row < test_length) {
-				X_test_col.push_back(X[col][test_idxs[row]]);
+				data_test_col.push_back(X[col][test_idxs[row]]);
 			}
-			X_train_col.push_back(X[col][train_idxs[row]]);
+			data_train_col.push_back(X[col][train_idxs[row]]);
 		}
-		X_test.push_back(X_test_col);
-		X_train.push_back(X_train_col);
+		data_test.push_back(data_test_col);
+		data_train.push_back(data_train_col);
 
 		// Delete all elements of vectors.
-		X_test_col.clear();
-		X_train_col.clear();
+		data_test_col.clear();
+		data_train_col.clear();
 	}
 
-	std::array<std::vector<std::vector<float>>, 2> split = {X_train, X_test};
-	return split;
+	if (verbose) {
+		std::cout << "Number of columns: " << X.size() - 1 << std::endl;
+		std::cout << "Number of rows:    " << X[0].size() << std::endl;
+		std::cout << std::endl;
+	}
+
+	std::vector<std::vector<float>> X_train;
+	std::vector<std::vector<float>> X_test;
+	std::vector<float> y_train;
+	std::vector<float> y_test;
+
+	for (int row = 0; row < int(X.size()) - 1; ++row) {
+		X_train.push_back(data_train[row]);
+		X_test.push_back(data_test[row]);
+	}
+	y_train = data_train[(int(X.size()) - 1)];
+	y_test  = data_test[(int(X.size()) - 1)];
+
+	std::pair<std::vector<std::vector<float>>, std::vector<float>> train_split = {X_train, y_train};
+	std::pair<std::vector<std::vector<float>>, std::vector<float>> test_split  = {X_test,  y_test};
+
+	std::pair<
+		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
+		std::pair<std::vector<std::vector<float>>, std::vector<float>>
+		>splits = {train_split,  test_split};
+	return splits;
 }
 
 std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
