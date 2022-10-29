@@ -45,7 +45,8 @@ int main() {
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
-			255				// max_bin
+			255,			// max_bin
+			true			// const_hessian
 			);
 	// model.train_greedy(X_train, y_train);
 	// std::vector<float> y_preds = model.predict(X_test);

@@ -19,6 +19,7 @@ struct GBM {
 	int   min_data_in_leaf;
 	int   num_boosting_rounds;
 	int   max_bin;
+	bool  const_hessian;
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
@@ -29,7 +30,8 @@ struct GBM {
 			float min_child_weight_new,
 			int   min_data_in_leaf_new,
 			int   num_boosting_rounds_new,
-			int   max_bin_new
+			int   max_bin_new,
+			bool  const_hessian_new
 		);
 
 	void train_greedy(
@@ -50,8 +52,10 @@ struct GBM {
 			std::vector<std::vector<float>>& X, 
 			int& max_bin
 			);
-	std::vector<std::vector<uint8_t>> map_hist_bins_inference(std::vector<std::vector<float>>& X);
+	std::vector<std::vector<uint8_t>> map_hist_bins_inference(
+			const std::vector<std::vector<float>>& X
+			);
 	std::vector<std::vector<uint8_t>> get_hist_bins_rowmajor(
-			std::vector<std::vector<uint8_t>>& X_hist
+			const std::vector<std::vector<uint8_t>>& X_hist
 			);
 };

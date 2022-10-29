@@ -32,7 +32,7 @@ struct Node {
 
 	// Histogram Constructor
 	Node(
-			std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			std::vector<std::vector<float>>& gradient_hist,
@@ -44,7 +44,7 @@ struct Node {
 			std::vector<std::vector<uint8_t>>& min_max_rem
 		);
 	void get_hist_split(
-			std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			float& grad_sum,
@@ -85,14 +85,14 @@ struct Node {
 			float& l2_reg
 			);
 
-	float predict_obs(std::vector<float> &obs);
-	std::vector<float> predict(std::vector<std::vector<float>> &X_pred);
+	float predict_obs(std::vector<float>& obs);
+	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 
-	float predict_obs_hist(std::vector<uint8_t> &obs);
-	std::vector<float> predict_hist(std::vector<std::vector<uint8_t>> &X_hist_pred);
+	float predict_obs_hist(const std::vector<uint8_t>& obs);
+	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred);
 
 	std::vector<std::vector<float>> calc_bin_statistics(
-			std::vector<std::vector<uint8_t>>& X_hist_child,
+			const std::vector<std::vector<uint8_t>>& X_hist_child,
 			std::vector<float>& stat_vector,
 			int& max_bin
 			);

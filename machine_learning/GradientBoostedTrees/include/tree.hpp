@@ -20,9 +20,22 @@ struct Tree {
 			int&   min_data_in_leaf
 		);
 
-	// Histogram Constructor
+	// Histogram Constructor 0
 	Tree(
-			std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<std::vector<uint8_t>>& X_hist,
+			std::vector<float>& gradient,
+			std::vector<float>& hessian,
+			int&   max_depth,
+			float& l2_reg,
+			int&   min_data_in_leaf,
+			int&   max_bin,
+			std::vector<std::vector<uint8_t>>& min_max_rem 
+		);
+
+	// Histogram Constructor 1
+	Tree(
+			const std::vector<std::vector<uint8_t>>& X_hist,
+			std::vector<std::vector<float>> hessian_hist_root,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			int&   max_depth,
@@ -33,5 +46,5 @@ struct Tree {
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
-	std::vector<float> predict_hist(std::vector<std::vector<uint8_t>>& X_hist_pred); 
+	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
 };

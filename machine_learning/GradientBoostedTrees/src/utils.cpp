@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "utils.hpp"
 
@@ -96,43 +97,38 @@ std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
 }
 
 
-void vector_reserve_2d(
-		std::vector<std::vector<uint8_t>>& vec,
-		int dim_0,
-		int dim_1
+std::vector<float> get_ordered_gradients(
+		std::vector<uint8_t>& vec_0,
+		std::vector<float> vec_1, 
+		int max_val
 		) {
-	vec.reserve(dim_0);
-	std::for_each(
-			vec.begin(), 
-			vec.end(), 
-			[dim_1](std::vector<uint8_t>& row) {row.reserve(dim_1);}
-			);
-}
+	uint8_t output_0[vec_0.size()];
+	float   output_1[vec_0.size()];
 
+	int count[max_val + 1]; 
 
-void vector_reserve_2d(
-		std::vector<std::vector<int>>& vec,
-		int dim_0,
-		int dim_1
-		) {
-	vec.reserve(dim_0);
-	std::for_each(
-			vec.begin(), 
-			vec.end(), 
-			[dim_1](std::vector<int>& row) {row.reserve(dim_1);}
-			);
-}
+	for (int idx = 0; idx < max_val + 1; ++idx) {
+		count[idx] = 0;
+	}
 
+	for (int idx = 1; idx < int(vec_0.size()); ++idx) {
+		++count[int(vec_0[idx])];
+	}
 
-void vector_reserve_2d(
-		std::vector<std::vector<float>>& vec,
-		int dim_0,
-		int dim_1
-		) {
-	vec.reserve(dim_0);
-	std::for_each(
-			vec.begin(), 
-			vec.end(), 
-			[dim_1](std::vector<float>& row) {row.reserve(dim_1);}
-			);
+	for (int idx = 1; idx < max_val + 1; ++idx) {
+		count[idx] += count[idx - 1];
+	}
+
+	for (int idx = int(vec_0.size()); idx > 0; --idx) {
+		assert(int(vec_0[idx]) <= max_val + 1);
+		output_0[count[int(vec_0[idx])]] = vec_0[idx];
+		output_1[count[int(vec_0[idx])]] = vec_1[idx];
+		--count[int(vec_0[idx])];
+	}
+	
+	for (int idx = 0; idx < int(vec_0.size()); ++idx) {
+		vec_0[idx] = output_0[idx];
+		vec_1[idx] = output_1[idx];
+	}
+	return vec_1;
 }

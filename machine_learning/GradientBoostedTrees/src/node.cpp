@@ -68,7 +68,7 @@ Histogram Constructor
 ****************************************************************
 */
 Node::Node(
-		std::vector<std::vector<uint8_t>>& X_hist,
+		const std::vector<std::vector<uint8_t>>& X_hist,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
 		std::vector<std::vector<float>>& gradient_hist,
@@ -171,7 +171,7 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 }
 
 
-float Node::predict_obs_hist(std::vector<uint8_t>& obs) {
+float Node::predict_obs_hist(const std::vector<uint8_t>& obs) {
 	if (is_leaf) {
 		return gamma;
 	}
@@ -182,7 +182,7 @@ float Node::predict_obs_hist(std::vector<uint8_t>& obs) {
 }
 
 
-std::vector<float> Node::predict_hist(std::vector<std::vector<uint8_t>>& X_hist_pred) {
+std::vector<float> Node::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
 	std::vector<float> preds;
 	preds.reserve(X_hist_pred.size());
 
@@ -195,7 +195,7 @@ std::vector<float> Node::predict_hist(std::vector<std::vector<uint8_t>>& X_hist_
 
 
 std::vector<std::vector<float>> Node::calc_bin_statistics(
-		std::vector<std::vector<uint8_t>>& X_hist_child,
+		const std::vector<std::vector<uint8_t>>& X_hist_child,
 		std::vector<float>& stat_vector,
 		int& max_bin
 		) {
@@ -401,7 +401,7 @@ void Node::get_greedy_split(
 
 
 void Node::get_hist_split(
-				std::vector<std::vector<uint8_t>>& X_hist,
+				const std::vector<std::vector<uint8_t>>& X_hist,
 				std::vector<float>& gradient,
 				std::vector<float>& hessian,
 				float& grad_sum,
@@ -559,11 +559,11 @@ void Node::get_hist_split(
 	min_max_rem_left[split_col][1]  = uint8_t(split_bin);
 	min_max_rem_right[split_col][0] = uint8_t(split_bin);
 
-	alignas(64) std::vector<std::vector<uint8_t>> X_hist_left;
-	alignas(64) std::vector<std::vector<uint8_t>> X_hist_right;
+	std::vector<std::vector<uint8_t>> X_hist_left;
+	std::vector<std::vector<uint8_t>> X_hist_right;
 
-	vector_reserve_2d(X_hist_left,  int(left_idxs.size()), n_cols);
-	vector_reserve_2d(X_hist_right, int(right_idxs.size()), n_cols);
+	vector_reserve_2d<uint8_t>(X_hist_left,  int(left_idxs.size()), n_cols);
+	vector_reserve_2d<uint8_t>(X_hist_right, int(right_idxs.size()), n_cols);
 
 	for (const int& row: left_idxs) { 
 		X_hist_left.push_back(X_hist[row]);
@@ -572,7 +572,7 @@ void Node::get_hist_split(
 	for (const int& row: right_idxs) { 
 		X_hist_right.push_back(X_hist[row]);
 	}
-	
+
 	alignas(64) std::vector<std::vector<float>> gradient_hist_left;
 	alignas(64) std::vector<std::vector<float>> gradient_hist_right;
 	alignas(64) std::vector<std::vector<float>> hessian_hist_left;
