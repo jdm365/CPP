@@ -40,7 +40,7 @@ struct Node {
 			float& l2_reg,
 			int& min_data_in_leaf,
 			int& max_depth,
-			int& depth,
+			int  depth,
 			int& max_bin,
 			std::vector<std::vector<uint8_t>>& min_max_rem
 		);
@@ -55,7 +55,7 @@ struct Node {
 			int& min_data_in_leaf,
 			std::vector<std::vector<uint8_t>>& min_max_rem,
 			int& max_bin,
-			int& depth,
+			int  depth,
 			int& max_depth
 			);
 	void get_greedy_split(

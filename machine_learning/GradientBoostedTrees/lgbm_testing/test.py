@@ -11,7 +11,7 @@ params = {
         'num_threads': 1,
         'learning_rate': 0.1,
         'max_depth': 8,
-        'max_leaves': 1000,
+        'num_leaves': 256,
         'min_child_weight': 0.00,
         'objective': 'regression',
         'verbosity': '-1'

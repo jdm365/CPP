@@ -217,6 +217,8 @@ float* GBM::predict_hist(std::vector<std::vector<float>>& X) {
 
 std::vector<float> GBM::calculate_gradient(float* preds, std::vector<float>& y) {
 	std::vector<float> gradient;
+	gradient.reserve(y.size());
+
 	// Assume MSE for now
 	for (int idx = 0; idx < int(y.size()); ++idx) {
 		gradient.push_back(2.00f * (preds[idx] - y[idx]));
@@ -226,11 +228,8 @@ std::vector<float> GBM::calculate_gradient(float* preds, std::vector<float>& y) 
 
 
 std::vector<float> GBM::calculate_hessian(float* preds, std::vector<float>& y) {
-	std::vector<float> hessian;
+	std::vector<float> hessian(y.size(), 2.00f);
 	// Assume MSE for now
-	for (int idx = 0; idx < int(y.size()); ++idx) {
-		hessian.push_back(2.00f);
-	}
 	return hessian;
 }
 

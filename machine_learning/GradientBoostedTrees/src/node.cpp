@@ -75,7 +75,7 @@ Node::Node(
 		float& l2_reg,
 		int&   min_data_in_leaf,
 		int&   max_depth,
-		int&   depth,
+		int    depth,
 		int&   max_bin,
 		std::vector<std::vector<uint8_t>>& min_max_rem
 		) {
@@ -370,7 +370,7 @@ void Node::get_hist_split(
 				int& min_data_in_leaf,
 				std::vector<std::vector<uint8_t>>& min_max_rem,
 				int& max_bin,
-				int& depth,
+				int  depth,
 				int& max_depth
 		) {
 	int n_rows = int(X_hist.size());
@@ -392,7 +392,7 @@ void Node::get_hist_split(
 		// Get min and max bin in hist col and only iterate over those buckets.
 		min_bin_col = int(min_max_rem[col][0]);
 		max_bin_col = int(min_max_rem[col][1]);
-		
+
 		// If only one bin remaining then skip.
 		if (max_bin_col - min_bin_col == 1) {
 			continue;
@@ -543,7 +543,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				++depth,
+				depth++,
 				max_bin,
 				min_max_rem_right
 				);
@@ -555,7 +555,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				++depth,
+				depth++,
 				max_bin,
 				min_max_rem_left
 				);
@@ -573,7 +573,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				++depth,
+				depth++,
 				max_bin,
 				min_max_rem_left
 				);
@@ -585,7 +585,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				++depth,
+				depth++,
 				max_bin,
 				min_max_rem_right
 				);
