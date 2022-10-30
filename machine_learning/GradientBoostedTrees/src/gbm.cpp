@@ -18,8 +18,7 @@ GBM::GBM(
 		float min_child_weight_new,
 		int   min_data_in_leaf_new,
 		int   num_boosting_rounds_new,
-		int   max_bin_new,
-		bool  const_hessian_new
+		int   max_bin_new
 		) {
 	max_depth 			= max_depth_new;
 	l2_reg 				= l2_reg_new;
@@ -28,7 +27,6 @@ GBM::GBM(
 	min_data_in_leaf 	= min_data_in_leaf_new;
 	num_boosting_rounds = num_boosting_rounds_new;
 	max_bin				= max_bin_new;
-	const_hessian		= const_hessian;
 
 	trees.reserve(num_boosting_rounds);
 }
@@ -65,8 +63,6 @@ void GBM::train_greedy(
 			X_rowmajor[row][col] = X[col][row];
 		}
 	}
-
-
 
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
@@ -110,7 +106,7 @@ void GBM::train_hist(
 	auto start_0 = std::chrono::high_resolution_clock::now();
 
 	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, max_bin);
-	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+	alignas(64) const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	// Get min/max bin per col to avoid unneccessary split finding. 
 	std::vector<std::vector<uint8_t>> min_max_rem;
@@ -131,54 +127,27 @@ void GBM::train_hist(
 	}
 	y_mean_train /= float(n_rows);
 
-	// std::vector<float> round_preds;
-	// round_preds.reserve(n_rows);
-
 	float* round_preds = (float*) malloc(sizeof(float) * n_rows);
-	float* preds = (float*) malloc(sizeof(float) * n_rows);
+	float* preds 	   = (float*) malloc(sizeof(float) * n_rows);
 	for (int idx = 0; idx < n_rows; ++idx) {
 		preds[idx] = y_mean_train;
 	}
 
 	// Define const hessian histogram for root node.
-	std::vector<std::vector<float>> hessian_hist_root;
-
-	if (const_hessian) {
-		hessian_hist_root.resize(n_cols, std::vector<float>(max_bin, 0.00f));
-		for (int row = 0; row < n_rows; ++row) {
-			for (int col = 0; col < n_cols; ++col) {
-				hessian_hist_root[col][X_hist_rowmajor[row][col]] += hessian[row];
-			}
-		}
-	}
+	// std::vector<std::vector<float>> hessian_hist_root;
 
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
-		if (const_hessian) {
-			trees.emplace_back(
-						X_hist_rowmajor,
-						hessian_hist_root,
-						gradient,
-						hessian,
-						max_depth,
-						l2_reg,
-						min_data_in_leaf,
-						max_bin,
-						min_max_rem	
-				);
-		}
-		else {
-			trees.emplace_back(
-						X_hist_rowmajor,
-						gradient,
-						hessian,
-						max_depth,
-						l2_reg,
-						min_data_in_leaf,
-						max_bin,
-						min_max_rem	
-				);
-		}
+		trees.emplace_back(
+					X_hist_rowmajor,
+					gradient,
+					hessian,
+					max_depth,
+					l2_reg,
+					min_data_in_leaf,
+					max_bin,
+					min_max_rem	
+			);
 
 
 		round_preds = trees[round].predict_hist(X_hist_rowmajor);
@@ -361,15 +330,15 @@ std::vector<std::vector<uint8_t>> GBM::map_hist_bins_inference(
 std::vector<std::vector<uint8_t>> GBM::get_hist_bins_rowmajor(
 		const std::vector<std::vector<uint8_t>>& X_hist
 		) {
-	std::vector<std::vector<uint8_t>> X_hist_rowmajor(
-			X_hist[0].size(),
-			std::vector<uint8_t>(X_hist.size())
-			);
+	std::vector<std::vector<uint8_t>> X_hist_rowmajor;
+	alignas(64) std::vector<uint8_t>  X_hist_rowmajor_row;
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {
+		X_hist_rowmajor_row.clear();
 		for (int col = 0; col < int(X_hist.size()); ++col) {
-			X_hist_rowmajor[row][col] = X_hist[col][row];
+			X_hist_rowmajor_row.push_back(X_hist[col][row]);
 		}
+		X_hist_rowmajor.push_back(X_hist_rowmajor_row);
 	}
 	return X_hist_rowmajor;
 }

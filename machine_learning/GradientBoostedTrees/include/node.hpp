@@ -4,6 +4,7 @@
 #include <array>
 #include <unordered_map>
 
+#include "histogram.hpp"
 
 struct Node {
 	float 	gamma;
@@ -35,22 +36,21 @@ struct Node {
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
-			std::vector<std::vector<float>>& gradient_hist,
-			std::vector<std::vector<float>>& hessian_hist,
+			Histograms& hists,
 			float& l2_reg,
 			int& min_data_in_leaf,
 			int& max_depth,
 			int& depth,
+			int& max_bin,
 			std::vector<std::vector<uint8_t>>& min_max_rem
 		);
 	void get_hist_split(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
+			Histograms& hists,
 			float& grad_sum,
 			float& hess_sum,
-			std::vector<std::vector<float>>& gradient_hist,
-			std::vector<std::vector<float>>& hessian_hist,
 			float& l2_reg,
 			int& min_data_in_leaf,
 			std::vector<std::vector<uint8_t>>& min_max_rem,
@@ -90,14 +90,4 @@ struct Node {
 
 	float predict_obs_hist(const std::vector<uint8_t>& obs);
 	float* predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred);
-
-	std::vector<std::vector<float>> calc_bin_statistics(
-			const std::vector<std::vector<uint8_t>>& X_hist_child,
-			std::vector<float>& stat_vector,
-			int& max_bin
-			);
-	std::vector<std::vector<float>> calc_diff_hist(
-			std::vector<std::vector<float>>& orig,
-			std::vector<std::vector<float>>& child
-			); 
 };
