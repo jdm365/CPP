@@ -380,7 +380,6 @@ void Node::get_hist_split(
 	int n_cols = int(X_hist[0].size());
 
 	int min_bin_col;
-	int mid_pt;
 	int max_bin_col;
 
 	float left_gradient_sum;
@@ -400,24 +399,19 @@ void Node::get_hist_split(
 		if (max_bin_col - min_bin_col == 1) {
 			continue;
 		}
+		left_gradient_sum  = 0.00f;
+		left_hessian_sum   = 0.00f;
+		right_gradient_sum = grad_sum;
+		right_hessian_sum  = hess_sum;
 
-		// Use subtraction trick to get other side grad/hist sum.
-		mid_pt = int((max_bin_col - min_bin_col) / 2) + min_bin_col;
-
-		// Start from min_bin_col + 1 
+		// Start from min_bin_col 
 		// Splitting on min_bin would cause left_idxs.size() == 0
-		for (int bin = min_bin_col + 1; bin < mid_pt; ++bin) {
-			// Reset summary statistics.
-			left_gradient_sum = 0.00f;
-			left_hessian_sum  = 0.00f;
+		for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
 
-			for (int idx = min_bin_col; idx < bin; ++idx) {
-				left_gradient_sum += hists.bins[col][idx].gradient;
-				left_hessian_sum  += hists.bins[col][idx].hessian;
-			}
-
-			right_gradient_sum = grad_sum - left_gradient_sum;
-			right_hessian_sum  = hess_sum - left_hessian_sum;
+			left_gradient_sum  += hists.bins[col][bin].gradient;
+			left_hessian_sum   += hists.bins[col][bin].hessian;
+			right_gradient_sum -= hists.bins[col][bin].gradient;
+			right_hessian_sum  -= hists.bins[col][bin].hessian;
 
 			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
 				continue;
@@ -434,41 +428,7 @@ void Node::get_hist_split(
 					l2_reg
 					);
 			if (score > best_score) {
-				split_bin  = bin;
-				split_col  = col;
-				best_score = score;
-			}
-		}
-
-		for (int bin = mid_pt; bin < max_bin_col; ++bin) {
-			// Reset summary statistics.
-			right_gradient_sum = 0.00f;
-			right_hessian_sum  = 0.00f;
-
-			for (int idx = bin; idx < max_bin_col; ++idx) {
-				right_gradient_sum += hists.bins[col][idx].gradient;
-				right_hessian_sum  += hists.bins[col][idx].hessian;
-			}
-
-			left_gradient_sum = grad_sum - right_gradient_sum;
-			left_hessian_sum  = hess_sum - right_hessian_sum;
-
-			if (right_hessian_sum < float(2 * min_data_in_leaf)) {
-				continue;
-			}
-			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
-				continue;
-			}
-
-			score = calc_score(
-					left_gradient_sum,
-					right_gradient_sum,
-					left_hessian_sum, 
-					right_hessian_sum,
-					l2_reg
-					);
-			if (score > best_score) {
-				split_bin  = bin;
+				split_bin  = bin + 1;
 				split_col  = col;
 				best_score = score;
 			}
