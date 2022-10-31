@@ -133,9 +133,6 @@ void GBM::train_hist(
 		preds[idx] = y_mean_train;
 	}
 
-	// Define const hessian histogram for root node.
-	// std::vector<std::vector<float>> hessian_hist_root;
-
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(

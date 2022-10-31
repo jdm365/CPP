@@ -4,7 +4,7 @@
 #include "histogram.hpp"
 
 
-alignas(64) Bin::Bin(float grad, float hess) {
+alignas(8) Bin::Bin(float grad, float hess) {
 	gradient = grad;
 	hessian  = hess;
 }
@@ -35,9 +35,10 @@ void Histograms::calc_diff_hist(Histograms& other_hist) {
 void Histograms::calc_hists(
 		const std::vector<std::vector<uint8_t>>& X_hist,
 		std::vector<float>& gradient,
-		std::vector<float>& hessian
+		std::vector<float>& hessian,
+		std::vector<int>& row_idxs
 		) {
-	for (int row = 0; row < int(X_hist.size()); ++row) {
+	for (const int& row: row_idxs) {
 		for (int col = 0; col < int(X_hist[0].size()); ++col) {
 			bins[col][X_hist[row][col]].gradient += gradient[row];
 			bins[col][X_hist[row][col]].hessian  += hessian[row];

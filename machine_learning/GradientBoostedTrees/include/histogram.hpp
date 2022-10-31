@@ -19,7 +19,8 @@ struct Histograms {
 	void calc_hists(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
-			std::vector<float>& hessian
+			std::vector<float>& hessian,
+			std::vector<int>& row_idxs
 			); 
 	void calc_hists_grad(
 			const std::vector<std::vector<uint8_t>>& X_hist,
