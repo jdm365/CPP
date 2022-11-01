@@ -4,7 +4,7 @@
 #include <array>
 #include <unordered_map>
 
-#include "histogram.hpp"
+#include "feature_histograms.hpp"
 
 struct Node {
 	float 	gamma;
@@ -36,7 +36,7 @@ struct Node {
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
-			Histograms& hists,
+			FeatureHistograms& hists,
 			std::vector<int>& row_idxs,
 			float& l2_reg,
 			int& min_data_in_leaf,
@@ -49,7 +49,7 @@ struct Node {
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
-			Histograms& hists,
+			FeatureHistograms& hists,
 			std::vector<int>& row_idxs,
 			float& grad_sum,
 			float& hess_sum,

@@ -39,7 +39,7 @@ int main() {
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);
 
-	float* y_preds = model.predict_hist(X_test);//(float*) malloc(sizeof(y_preds));
+	float* y_preds = model.predict_hist(X_test);
 
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
 

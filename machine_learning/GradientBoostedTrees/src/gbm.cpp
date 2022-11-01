@@ -5,6 +5,7 @@
 #include <cmath>
 #include <map>
 #include <chrono>
+#include <assert.h>
 
 #include "node.hpp"
 #include "tree.hpp"
@@ -136,7 +137,7 @@ void GBM::train_hist(
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
 		trees.emplace_back(
-					X_hist_rowmajor,
+					X_hist,
 					gradient,
 					hessian,
 					max_depth,
@@ -257,7 +258,9 @@ std::vector<std::vector<uint8_t>> GBM::map_hist_bins_train(
 	std::vector<float> X_col;
 
 	X_col.reserve(n_rows);
-	bin_mapping.reserve(n_rows);
+	for (int col = 0; col < n_cols; ++col) {
+		bin_mapping.emplace_back();
+	}
 
 	for (int col = 0; col < n_cols; col++) {
 		X_col = X[col];
@@ -281,7 +284,7 @@ std::vector<std::vector<uint8_t>> GBM::map_hist_bins_train(
 			}
 			last_X = X_col[idxs[row]];
 		}
-		total_bins += std::min(bin, uint8_t(max_bin - 1));
+		total_bins += std::min(int(bin) + 1, max_bin);
 	}
 	std::cout << "Total bins used: " << total_bins << std::endl;
 	std::cout << std::endl;

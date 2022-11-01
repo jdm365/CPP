@@ -71,7 +71,7 @@ Node::Node(
 		const std::vector<std::vector<uint8_t>>& X_hist,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
-		Histograms& hists,
+		FeatureHistograms& hists,
 		std::vector<int>& row_idxs,
 		float& l2_reg,
 		int&   min_data_in_leaf,
@@ -81,11 +81,11 @@ Node::Node(
 		std::vector<std::vector<uint8_t>>& min_max_rem
 		) {
 
-	is_leaf	= (depth >= max_depth) || (int(X_hist.size()) < min_data_in_leaf);
+	is_leaf	= (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
 
 	float grad_sum; 
 	float hess_sum; 
-	std::tie(grad_sum, hess_sum) = hists.get_col_sums();
+	std::tie(grad_sum, hess_sum) = hists.get_col_sums(max_bin);
 	
 	calc_gamma(grad_sum, hess_sum, l2_reg);
 
@@ -365,7 +365,7 @@ void Node::get_hist_split(
 				const std::vector<std::vector<uint8_t>>& X_hist,
 				std::vector<float>& gradient,
 				std::vector<float>& hessian,
-				Histograms& hists,
+				FeatureHistograms& hists,
 				std::vector<int>& row_idxs,
 				float& grad_sum,
 				float& hess_sum,
@@ -376,8 +376,8 @@ void Node::get_hist_split(
 				int  depth,
 				int& max_depth
 		) {
-	int n_rows = int(X_hist.size());
-	int n_cols = int(X_hist[0].size());
+	int n_rows = int(X_hist[0].size());
+	int n_cols = int(X_hist.size());
 
 	int min_bin_col;
 	int max_bin_col;
@@ -408,10 +408,10 @@ void Node::get_hist_split(
 		// Splitting on min_bin would cause left_idxs.size() == 0
 		for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
 
-			left_gradient_sum  += hists.bins[col][bin].gradient;
-			left_hessian_sum   += hists.bins[col][bin].hessian;
-			right_gradient_sum -= hists.bins[col][bin].gradient;
-			right_hessian_sum  -= hists.bins[col][bin].hessian;
+			left_gradient_sum  += hists.bins[max_bin * col + bin].gradient;
+			left_hessian_sum   += hists.bins[max_bin * col + bin].hessian;
+			right_gradient_sum -= hists.bins[max_bin * col + bin].gradient;
+			right_hessian_sum  -= hists.bins[max_bin * col + bin].hessian;
 
 			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
 				continue;
@@ -448,7 +448,7 @@ void Node::get_hist_split(
 	right_idxs.reserve(n_rows - int(n_rows * split_bin / int(min_max_rem[split_col][1])));
 
 	for (const int& row: row_idxs) {
-		if (X_hist[row][split_col] < split_bin) {
+		if (X_hist[split_col][row] < split_bin) {
 			left_idxs.push_back(row);
 		}
 		else {
@@ -466,8 +466,8 @@ void Node::get_hist_split(
 	min_max_rem_right[split_col][0] = uint8_t(split_bin);
 
 	if (left_idxs.size() > right_idxs.size()) {
-		Histograms left_hists(n_cols, max_bin);
-		left_hists.calc_hists(X_hist, gradient, hessian, left_idxs);
+		FeatureHistograms left_hists(n_cols, max_bin);
+		left_hists.calc_hists(X_hist, gradient, hessian, left_idxs, max_bin);
 		hists.calc_diff_hist(left_hists);
 
 		right_child = new Node(
@@ -498,8 +498,8 @@ void Node::get_hist_split(
 				);
 	}
 	else {
-		Histograms right_hists(n_cols, max_bin);
-		right_hists.calc_hists(X_hist, gradient, hessian, right_idxs);
+		FeatureHistograms right_hists(n_cols, max_bin);
+		right_hists.calc_hists(X_hist, gradient, hessian, right_idxs, max_bin);
 		hists.calc_diff_hist(right_hists);
 
 		left_child = new Node(

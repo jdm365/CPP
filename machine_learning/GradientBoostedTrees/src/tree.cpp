@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
+#include <unordered_map>
 #include <assert.h>
 
 #include "node.hpp"
 #include "tree.hpp"
 #include "utils.hpp"
-#include "histogram.hpp"
+#include "feature_histograms.hpp"
 
 /*
 ****************************************************************
@@ -55,12 +56,12 @@ Tree::Tree(
 	// init depth of root node to 0.
 	int depth = 0;
 	
-	std::vector<int> row_idxs(X_hist.size());
+	std::vector<int> row_idxs(X_hist[0].size());
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
 
 	// Most obvious case of slow down at the moment.
-	struct Histograms hists(int(X_hist[0].size()), max_bin);
-	hists.calc_hists(X_hist, gradient, hessian, row_idxs);
+	struct FeatureHistograms hists(int(X_hist.size()), max_bin);
+	hists.calc_hists(X_hist, gradient, hessian, row_idxs, max_bin);
 
 	// Creating the root node will recursively create nodes and build the tree.
 	root = new Node(
