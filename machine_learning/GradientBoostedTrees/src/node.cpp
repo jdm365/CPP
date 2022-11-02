@@ -7,7 +7,6 @@
 #include <cmath>
 #include <assert.h>
 
-#include "tree.hpp"
 #include "node.hpp"
 #include "utils.hpp"
 
@@ -117,9 +116,9 @@ Node::Node(
 
 
 void Node::calc_gamma(
-		float& grad_sum,
-		float& hess_sum,
-		float& l2_reg
+		float grad_sum,
+		float hess_sum,
+		float l2_reg
 		) {
 	float eps = 0.00001f;
 	gamma = -grad_sum / (hess_sum + l2_reg + eps);
@@ -127,11 +126,11 @@ void Node::calc_gamma(
 
 
 float Node::calc_score(
-		float& lgs,
-		float& rgs,
-		float& lhs,
-		float& rhs,
-		float& l2_reg
+		float lgs,
+		float rgs,
+		float lhs,
+		float rhs,
+		float l2_reg
 		) {
 	// float expr_0 = lgs * lgs / (lhs + l2_reg);
 	// float expr_1 = rgs * rgs / (rhs + l2_reg);
@@ -404,14 +403,12 @@ void Node::get_hist_split(
 		right_gradient_sum = grad_sum;
 		right_hessian_sum  = hess_sum;
 
-		// Start from min_bin_col 
-		// Splitting on min_bin would cause left_idxs.size() == 0
+		
 		for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
-
-			left_gradient_sum  += hists.bins[max_bin * col + bin].gradient;
-			left_hessian_sum   += hists.bins[max_bin * col + bin].hessian;
-			right_gradient_sum -= hists.bins[max_bin * col + bin].gradient;
-			right_hessian_sum  -= hists.bins[max_bin * col + bin].hessian;
+			left_gradient_sum  += hists.bins[col][bin].gradient;
+			right_gradient_sum -= hists.bins[col][bin].gradient;
+			left_hessian_sum   += hists.bins[col][bin].hessian;
+			right_hessian_sum  -= hists.bins[col][bin].hessian;
 
 			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
 				continue;

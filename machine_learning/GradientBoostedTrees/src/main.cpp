@@ -7,7 +7,6 @@
 #include "utils.hpp"
 #include "gbm.hpp"
 
-
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
@@ -27,6 +26,7 @@ int main() {
 	std::vector<float> y_train = splits.first.second;
 	std::vector<float> y_test  = splits.second.second;
 
+
 	GBM model(
 			8,				// max_depth
 			0.20f,			// l2_reg
@@ -34,7 +34,7 @@ int main() {
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
-			255				// max_bin
+			8				// max_bin
 			);
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);

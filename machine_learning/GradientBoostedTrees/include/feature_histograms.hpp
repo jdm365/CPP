@@ -4,7 +4,9 @@
 #include <vector>
 #include <unordered_map>
 
-struct Bin {
+#define NUM_THREADS	1
+
+struct __attribute__ ((packed)) Bin {
 	float gradient;
 	float hessian;
 
@@ -13,7 +15,7 @@ struct Bin {
 
 
 struct FeatureHistograms {
-	std::vector<Bin> bins;
+	std::vector<std::vector<Bin>> bins;
 
 	FeatureHistograms(int n_cols, int max_bin);
 	void calc_diff_hist(FeatureHistograms& other_hist);
@@ -24,21 +26,24 @@ struct FeatureHistograms {
 			std::vector<int>& row_idxs,
 			int max_bin
 			); 
-	void calc_hists_test(
-			std::unordered_map<int, std::vector<int>>& bin_idx_map,
-			std::vector<float>& gradient,
-			std::vector<float>& hessian,
+	void calc_hists_single_feature(
+			const std::vector<uint8_t>& X_hist_col,
+			std::vector<float>& ordered_gradients,
+			std::vector<float>& ordered_hessians,
 			std::vector<int>& row_idxs,
-			int max_bin
+			int max_bin,
+			int col
 			); 
 	void calc_hists_grad(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,
+			std::vector<int>& row_idxs,
 			int max_bin
 			); 
 	void calc_hists_hess(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& hessian,
+			std::vector<int>& row_idxs,
 			int max_bin
 			); 
 	std::pair<float, float> get_col_sums(int max_bin);

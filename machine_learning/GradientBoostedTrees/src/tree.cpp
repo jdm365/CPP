@@ -59,7 +59,6 @@ Tree::Tree(
 	std::vector<int> row_idxs(X_hist[0].size());
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
 
-	// Most obvious case of slow down at the moment.
 	struct FeatureHistograms hists(int(X_hist.size()), max_bin);
 	hists.calc_hists(X_hist, gradient, hessian, row_idxs, max_bin);
 

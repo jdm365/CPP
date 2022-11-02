@@ -4,12 +4,12 @@ import lightgbm as lgb
 
 
 ## df = pd.read_csv('../data/housing_price_prediction_dataset.csv', header=None)
-df = pd.read_csv('../data/hpx10.csv', header=None)
+df = pd.read_csv('../../data/hpx10.csv', header=None)
 
 params = {
         'boosting': 'gbdt',
         'num_threads': 1,
-        'learning_rate': 0.1,
+        'learning_rate': 0.2,
         'max_depth': 8,
         'num_leaves': 256,
         'min_child_weight': 0.00,

@@ -254,7 +254,7 @@ std::vector<std::vector<uint8_t>> GBM::map_hist_bins_train(
 	int bin_size   = std::ceil(n_rows / max_bin);
 	int total_bins = 0;
 
-	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 
 	X_col.reserve(n_rows);

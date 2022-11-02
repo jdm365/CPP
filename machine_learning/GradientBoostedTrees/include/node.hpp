@@ -74,17 +74,17 @@ struct Node {
 			);
 
 	void calc_gamma(
-			float& grad_sum, 
-			float& hess_sum,
-			float& l2_reg
+			float grad_sum, 
+			float hess_sum,
+			float l2_reg
 			);
 
 	float calc_score(
-			float& lgs, // Left gradient sum
-			float& rgs, // Right gradient sum
-			float& lhs, // Left hessian sum
-			float& rhs, // Right hessian sum
-			float& l2_reg
+			float lgs, // Left gradient sum
+			float rgs, // Right gradient sum
+			float lhs, // Left hessian sum
+			float rhs, // Right hessian sum
+			float l2_reg
 			);
 
 	float predict_obs(std::vector<float>& obs);
