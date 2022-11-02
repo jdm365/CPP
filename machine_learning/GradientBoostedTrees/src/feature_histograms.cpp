@@ -77,9 +77,16 @@ void FeatureHistograms::calc_hists_single_feature(
 		int col
 		) {
 	uint8_t bin;
+	std::vector<uint8_t> all_bins;
+	all_bins.reserve(row_idxs.size());
 
 	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-		bin = X_hist_col[row_idxs[idx]];
+		all_bins.push_back(X_hist_col[row_idxs[idx]]);
+	}
+
+	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
+		// bin = X_hist_col[row_idxs[idx]];
+		bin = all_bins[idx];
 
 		bins[col][bin].gradient += ordered_gradients[idx];
 		bins[col][bin].hessian  += ordered_hessians[idx];

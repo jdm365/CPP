@@ -3,7 +3,7 @@ import pandas as pd
 import lightgbm as lgb
 
 
-## df = pd.read_csv('../data/housing_price_prediction_dataset.csv', header=None)
+## df = pd.read_csv('../../data/housing_price_prediction_dataset.csv', header=None)
 df = pd.read_csv('../../data/hpx10.csv', header=None)
 
 params = {
