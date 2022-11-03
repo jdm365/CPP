@@ -2,9 +2,8 @@
 
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 
-#define NUM_THREADS	1
+#define NUM_THREADS	16
 
 struct __attribute__ ((packed)) Bin {
 	float gradient;

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 
 #include "feature_histograms.hpp"
 #include "utils.hpp"
@@ -76,20 +75,37 @@ void FeatureHistograms::calc_hists_single_feature(
 		int max_bin,
 		int col
 		) {
-	uint8_t bin;
-	std::vector<uint8_t> all_bins;
-	all_bins.reserve(row_idxs.size());
+	uint8_t bin_0;
+	uint8_t bin_1;
+	uint8_t bin_2;
+	uint8_t bin_3;
 
-	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-		all_bins.push_back(X_hist_col[row_idxs[idx]]);
+	int final_step = int(row_idxs.size() / 4) * 4;
+	for (int idx = 0; idx < final_step; idx+=4) {
+		bin_0 = X_hist_col[row_idxs[idx]];
+		bin_1 = X_hist_col[row_idxs[idx + 1]];
+		bin_2 = X_hist_col[row_idxs[idx + 2]];
+		bin_3 = X_hist_col[row_idxs[idx + 3]];
+
+		// std::cout << int(bin_0) << "	" << int(bin_1) << "	" << int(bin_2) << "	" << int(bin_3) << "		" << std::endl;
+		
+		bins[col][bin_0].gradient += ordered_gradients[idx];
+		bins[col][bin_0].hessian  += ordered_hessians[idx];
+
+		bins[col][bin_1].gradient += ordered_gradients[idx + 1];
+		bins[col][bin_1].hessian  += ordered_hessians[idx + 1];
+
+		bins[col][bin_2].gradient += ordered_gradients[idx + 2];
+		bins[col][bin_2].hessian  += ordered_hessians[idx + 2];
+
+		bins[col][bin_3].gradient += ordered_gradients[idx + 3];
+		bins[col][bin_3].hessian  += ordered_hessians[idx + 3];
 	}
+	for (int idx = final_step; idx < int(row_idxs.size()); ++idx) {
+		bin_0 = X_hist_col[row_idxs[idx]];
 
-	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-		// bin = X_hist_col[row_idxs[idx]];
-		bin = all_bins[idx];
-
-		bins[col][bin].gradient += ordered_gradients[idx];
-		bins[col][bin].hessian  += ordered_hessians[idx];
+		bins[col][bin_0].gradient += ordered_gradients[idx];
+		bins[col][bin_0].hessian  += ordered_hessians[idx];
 	}
 }
 

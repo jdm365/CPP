@@ -144,6 +144,58 @@ float Node::calc_score(
 	return (lgs * lgs / (lhs + l2_reg)) + (rgs * rgs / (rhs + l2_reg));
 }
 
+std::pair<int, float> Node::find_hist_split_col(
+		std::vector<Bin>& bins_col,
+		int   min_data_in_leaf,
+		float l2_reg,
+		float grad_sum,
+		float hess_sum,
+		int   min_bin_col,
+		int   max_bin_col
+		) {
+	if (max_bin_col - min_bin_col == 1) {
+		std::pair<int, float> best_split(0, -INFINITY);
+		return best_split;
+	}
+	float left_gradient_sum  = 0.00f;
+	float left_hessian_sum   = 0.00f;
+	float right_gradient_sum = grad_sum;
+	float right_hessian_sum  = hess_sum;
+
+	float best_score = -INFINITY;
+	float score;
+
+	int split_bin_ = 0;
+
+	for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
+		left_gradient_sum  += bins_col[bin].gradient;
+		left_hessian_sum   += bins_col[bin].hessian;
+		right_gradient_sum -= bins_col[bin].gradient;
+		right_hessian_sum  -= bins_col[bin].hessian;
+
+		if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
+			continue;
+		}
+		if (right_hessian_sum < float(2 * min_data_in_leaf)) {
+			continue;
+		}
+
+		score = calc_score(
+				left_gradient_sum,
+				right_gradient_sum,
+				left_hessian_sum, 
+				right_hessian_sum,
+				l2_reg
+				);
+		if (score > best_score) {
+			split_bin_  = bin + 1;
+			best_score  = score;
+		}
+	}
+	std::pair<int, float> best_split(split_bin_, best_score);
+	return best_split;
+}
+	
 
 float Node::predict_obs(std::vector<float>& obs) {
 	if (is_leaf) {
@@ -381,54 +433,34 @@ void Node::get_hist_split(
 	int min_bin_col;
 	int max_bin_col;
 
-	float left_gradient_sum;
-	float right_gradient_sum;
-	float left_hessian_sum;
-	float right_hessian_sum;
+	std::vector<std::pair<int, float>> col_splits;
+	col_splits.resize(n_cols);
 
-	float score;
-	float best_score = -INFINITY;
-
-	for (int col = 0; col < n_cols; ++col) {
-		// Get min and max bin in hist col and only iterate over those buckets.
-		min_bin_col = int(min_max_rem[col][0]);
-		max_bin_col = int(min_max_rem[col][1]);
-
-		// If only one bin remaining then skip.
-		if (max_bin_col - min_bin_col == 1) {
-			continue;
-		}
-		left_gradient_sum  = 0.00f;
-		left_hessian_sum   = 0.00f;
-		right_gradient_sum = grad_sum;
-		right_hessian_sum  = hess_sum;
-
-		
-		for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
-			left_gradient_sum  += hists.bins[col][bin].gradient;
-			right_gradient_sum -= hists.bins[col][bin].gradient;
-			left_hessian_sum   += hists.bins[col][bin].hessian;
-			right_hessian_sum  -= hists.bins[col][bin].hessian;
-
-			if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
-				continue;
-			}
-			if (right_hessian_sum < float(2 * min_data_in_leaf)) {
-				continue;
-			}
-
-			score = calc_score(
-					left_gradient_sum,
-					right_gradient_sum,
-					left_hessian_sum, 
-					right_hessian_sum,
-					l2_reg
+	#pragma omp parallel num_threads(NUM_THREADS)
+	{
+		#pragma omp for
+		for (int col = 0; col < n_cols; ++col) {
+			// Get min and max bin in hist col and only iterate over those buckets.
+			min_bin_col = int(min_max_rem[col][0]);
+			max_bin_col = int(min_max_rem[col][1]);
+			
+			col_splits[col] = find_hist_split_col(
+					hists.bins[col],
+					min_data_in_leaf,
+					l2_reg,
+					grad_sum,
+					hess_sum,
+					min_bin_col,
+					max_bin_col
 					);
-			if (score > best_score) {
-				split_bin  = bin + 1;
-				split_col  = col;
-				best_score = score;
-			}
+		}
+	}
+	float best_score = -INFINITY;
+	for (int col = 0; col < n_cols; ++col) {
+		if (col_splits[col].second > best_score) {
+			split_bin  = col_splits[col].first;
+			best_score = col_splits[col].second;
+			split_col  = col;
 		}
 	}
 

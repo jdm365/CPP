@@ -87,6 +87,16 @@ struct Node {
 			float l2_reg
 			);
 
+	std::pair<int, float> find_hist_split_col(
+		std::vector<Bin>& bins_col,
+		int   min_data_in_leaf,
+		float l2_reg,
+		float grad_sum,
+		float hess_sum,
+		int   min_bin_col,
+		int   max_bin_col
+		);
+
 	float predict_obs(std::vector<float>& obs);
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 

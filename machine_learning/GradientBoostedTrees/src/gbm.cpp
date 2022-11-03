@@ -107,7 +107,7 @@ void GBM::train_hist(
 	auto start_0 = std::chrono::high_resolution_clock::now();
 
 	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, max_bin);
-	alignas(64) const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
 	// Get min/max bin per col to avoid unneccessary split finding. 
 	std::vector<std::vector<uint8_t>> min_max_rem;
@@ -254,7 +254,7 @@ std::vector<std::vector<uint8_t>> GBM::map_hist_bins_train(
 	int bin_size   = std::ceil(n_rows / max_bin);
 	int total_bins = 0;
 
-	alignas(64) std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
+	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 
 	X_col.reserve(n_rows);
@@ -330,7 +330,7 @@ std::vector<std::vector<uint8_t>> GBM::get_hist_bins_rowmajor(
 		const std::vector<std::vector<uint8_t>>& X_hist
 		) {
 	std::vector<std::vector<uint8_t>> X_hist_rowmajor;
-	alignas(64) std::vector<uint8_t>  X_hist_rowmajor_row;
+	std::vector<uint8_t>  X_hist_rowmajor_row;
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {
 		X_hist_rowmajor_row.clear();
