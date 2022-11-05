@@ -19,7 +19,7 @@ params = {
 ds_params = {
         'is_enable_sparse': 'false',
         'enable_bundle': 'false',
-        'max_bin': 255
+        'max_bin': 256 
         }
 
 train_cols = df.columns[:-1]

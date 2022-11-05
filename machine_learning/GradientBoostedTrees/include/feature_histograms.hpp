@@ -3,18 +3,18 @@
 #include <iostream>
 #include <vector>
 
-#define NUM_THREADS	16
+#define NUM_THREADS	1
 
-struct __attribute__ ((packed)) Bin {
-	float gradient;
-	float hessian;
+struct Bin {
+	float grad_sum;
+	float hess_sum;
 
 	Bin(float grad=0.00f, float hess=0.00f);
 };
 
 
 struct FeatureHistograms {
-	std::vector<std::vector<Bin>> bins;
+	alignas(64) std::vector<std::vector<Bin>> bins;
 
 	FeatureHistograms(int n_cols, int max_bin);
 	void calc_diff_hist(FeatureHistograms& other_hist);
@@ -23,7 +23,8 @@ struct FeatureHistograms {
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			std::vector<int>& row_idxs,
-			int max_bin
+			int max_bin,
+			bool root = false
 			); 
 	void calc_hists_single_feature(
 			const std::vector<uint8_t>& X_hist_col,

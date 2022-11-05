@@ -6,13 +6,13 @@
 
 
 Bin::Bin(float grad, float hess) {
-	gradient = grad;
-	hessian  = hess;
+	grad_sum = grad;
+	hess_sum  = hess;
 }
 
 FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
 	bins.reserve(n_cols);
-	std::vector<Bin> bin_col;
+	alignas(64) std::vector<Bin> bin_col;
 	bin_col.reserve(max_bin);
 
 	for (int col = 0; col < n_cols; ++col) {
@@ -27,8 +27,8 @@ FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
 void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
 	for (int col = 0; col < int(bins.size()); ++col) {
 		for (int bin = 0; bin < int(bins[0].size()); ++bin) {
-			bins[col][bin].gradient -= other_hist.bins[col][bin].gradient;
-			bins[col][bin].hessian  -= other_hist.bins[col][bin].hessian;
+			bins[col][bin].grad_sum -= other_hist.bins[col][bin].grad_sum;
+			bins[col][bin].hess_sum -= other_hist.bins[col][bin].hess_sum;
 		}
 	}
 }
@@ -38,31 +38,50 @@ void FeatureHistograms::calc_hists(
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
 		std::vector<int>& row_idxs,
-		int max_bin
+		int max_bin,
+		bool root
 		) {
 
-	std::vector<float> ordered_gradients;
-	std::vector<float> ordered_hessians;
-	ordered_gradients.reserve(row_idxs.size());
-	ordered_hessians.reserve(row_idxs.size());
+	if (!root) {
+		std::vector<float> ordered_gradients;
+		std::vector<float> ordered_hessians;
+		ordered_gradients.reserve(row_idxs.size());
+		ordered_hessians.reserve(row_idxs.size());
 
-	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-		ordered_gradients.push_back(gradient[row_idxs[idx]]);
-		ordered_hessians.push_back(hessian[row_idxs[idx]]);
+		for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
+			ordered_gradients.push_back(gradient[row_idxs[idx]]);
+			ordered_hessians.push_back(hessian[row_idxs[idx]]);
+		}
+
+		#pragma omp parallel if (int(row_idxs.size()) > 100) num_threads(NUM_THREADS)
+		{
+			#pragma omp for schedule(static)
+			for (int col = 0; col < int(X_hist.size()); ++col) {
+				calc_hists_single_feature(
+						X_hist[col],
+						ordered_gradients,
+						ordered_hessians,
+						row_idxs,
+						max_bin,
+						col
+						);
+			}
+		}
 	}
-
-	#pragma omp parallel num_threads(NUM_THREADS)
-	{
-		#pragma omp for
-		for (int col = 0; col < int(X_hist.size()); ++col) {
-			calc_hists_single_feature(
-					X_hist[col],
-					ordered_gradients,
-					ordered_hessians,
-					row_idxs,
-					max_bin,
-					col
-					);
+	else {
+		#pragma omp parallel num_threads(NUM_THREADS)
+		{
+			#pragma omp for schedule(static)
+			for (int col = 0; col < int(X_hist.size()); ++col) {
+				calc_hists_single_feature(
+						X_hist[col],
+						gradient,
+						hessian,
+						row_idxs,
+						max_bin,
+						col
+						);
+			}
 		}
 	}
 }
@@ -81,31 +100,31 @@ void FeatureHistograms::calc_hists_single_feature(
 	uint8_t bin_3;
 
 	int final_step = int(row_idxs.size() / 4) * 4;
+
 	for (int idx = 0; idx < final_step; idx+=4) {
 		bin_0 = X_hist_col[row_idxs[idx]];
 		bin_1 = X_hist_col[row_idxs[idx + 1]];
 		bin_2 = X_hist_col[row_idxs[idx + 2]];
 		bin_3 = X_hist_col[row_idxs[idx + 3]];
 
-		// std::cout << int(bin_0) << "	" << int(bin_1) << "	" << int(bin_2) << "	" << int(bin_3) << "		" << std::endl;
-		
-		bins[col][bin_0].gradient += ordered_gradients[idx];
-		bins[col][bin_0].hessian  += ordered_hessians[idx];
+		bins[col][bin_0].grad_sum += ordered_gradients[idx];
+		bins[col][bin_0].hess_sum += ordered_hessians[idx];
 
-		bins[col][bin_1].gradient += ordered_gradients[idx + 1];
-		bins[col][bin_1].hessian  += ordered_hessians[idx + 1];
+		bins[col][bin_1].grad_sum += ordered_gradients[idx + 1];
+		bins[col][bin_1].hess_sum += ordered_hessians[idx + 1];
 
-		bins[col][bin_2].gradient += ordered_gradients[idx + 2];
-		bins[col][bin_2].hessian  += ordered_hessians[idx + 2];
+		bins[col][bin_2].grad_sum += ordered_gradients[idx + 2];
+		bins[col][bin_2].hess_sum += ordered_hessians[idx + 2];
 
-		bins[col][bin_3].gradient += ordered_gradients[idx + 3];
-		bins[col][bin_3].hessian  += ordered_hessians[idx + 3];
+		bins[col][bin_3].grad_sum += ordered_gradients[idx + 3];
+		bins[col][bin_3].hess_sum += ordered_hessians[idx + 3];
 	}
+
 	for (int idx = final_step; idx < int(row_idxs.size()); ++idx) {
 		bin_0 = X_hist_col[row_idxs[idx]];
 
-		bins[col][bin_0].gradient += ordered_gradients[idx];
-		bins[col][bin_0].hessian  += ordered_hessians[idx];
+		bins[col][bin_0].grad_sum += ordered_gradients[idx];
+		bins[col][bin_0].hess_sum += ordered_hessians[idx];
 	}
 }
 
@@ -128,7 +147,7 @@ void FeatureHistograms::calc_hists_grad(
 		for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
 			bin = int(X_hist[col][row_idxs[idx]]);
 
-			bins[col][bin].gradient += ordered_gradients[idx];
+			bins[col][bin].grad_sum += ordered_gradients[idx];
 		}
 	}
 }
@@ -152,7 +171,7 @@ void FeatureHistograms::calc_hists_hess(
 		for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
 			bin = int(X_hist[col][row_idxs[idx]]);
 
-			bins[col][bin].hessian += ordered_hessians[idx];
+			bins[col][bin].hess_sum += ordered_hessians[idx];
 		}
 	}
 }
@@ -160,8 +179,8 @@ void FeatureHistograms::calc_hists_hess(
 std::pair<float, float> FeatureHistograms::get_col_sums(int max_bin) {
 	std::pair<float, float> sums;
 	for (int bin = 0; bin < max_bin; ++bin) {
-		sums.first  += bins[0][bin].gradient;
-		sums.second += bins[0][bin].hessian;
+		sums.first  += bins[0][bin].grad_sum;
+		sums.second += bins[0][bin].hess_sum;
 	}
 	return sums;
 }

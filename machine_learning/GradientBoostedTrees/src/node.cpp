@@ -168,10 +168,10 @@ std::pair<int, float> Node::find_hist_split_col(
 	int split_bin_ = 0;
 
 	for (int bin = min_bin_col; bin < max_bin_col; ++bin) {
-		left_gradient_sum  += bins_col[bin].gradient;
-		left_hessian_sum   += bins_col[bin].hessian;
-		right_gradient_sum -= bins_col[bin].gradient;
-		right_hessian_sum  -= bins_col[bin].hessian;
+		left_gradient_sum  += bins_col[bin].grad_sum;
+		left_hessian_sum   += bins_col[bin].hess_sum;
+		right_gradient_sum -= bins_col[bin].grad_sum;
+		right_hessian_sum  -= bins_col[bin].hess_sum;
 
 		if (left_hessian_sum  < float(2 * min_data_in_leaf)) {
 			continue;
@@ -438,7 +438,7 @@ void Node::get_hist_split(
 
 	#pragma omp parallel num_threads(NUM_THREADS)
 	{
-		#pragma omp for
+		#pragma omp for schedule(static)
 		for (int col = 0; col < n_cols; ++col) {
 			// Get min and max bin in hist col and only iterate over those buckets.
 			min_bin_col = int(min_max_rem[col][0]);
