@@ -48,9 +48,9 @@ void FeatureHistograms::calc_hists(
 		ordered_gradients.reserve(row_idxs.size());
 		ordered_hessians.reserve(row_idxs.size());
 
-		for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-			ordered_gradients.push_back(gradient[row_idxs[idx]]);
-			ordered_hessians.push_back(hessian[row_idxs[idx]]);
+		for (const int& row: row_idxs) {
+			ordered_gradients.push_back(gradient[row]);
+			ordered_hessians.push_back(hessian[row]);
 		}
 
 		#pragma omp parallel if (int(row_idxs.size()) > 100) num_threads(NUM_THREADS)

@@ -3,9 +3,9 @@
 #include <iostream>
 #include <vector>
 
-#define NUM_THREADS	1
+#define NUM_THREADS	16
 
-struct Bin {
+struct __attribute__ ((packed)) Bin {
 	float grad_sum;
 	float hess_sum;
 

@@ -34,7 +34,7 @@ int main() {
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
-			4				// max_bin
+			255				// max_bin
 			);
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);
