@@ -14,7 +14,7 @@ model = HistGradientBoostingRegressor(
         max_bins=255,
         max_leaf_nodes=1000, 
         max_depth=8,
-        early_stopping=False,
+        early_stopping=True,
         verbose=1,
         categorical_features=None
         )

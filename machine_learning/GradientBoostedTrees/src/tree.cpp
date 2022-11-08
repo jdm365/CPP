@@ -60,7 +60,7 @@ Tree::Tree(
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
 
 	struct FeatureHistograms hists(int(X_hist.size()), max_bin);
-	hists.calc_hists(X_hist, gradient, hessian, row_idxs, max_bin, true);
+	hists.calc_hists(X_hist, gradient, hessian, row_idxs, true);
 
 	// Creating the root node will recursively create nodes and build the tree.
 	root = new Node(

@@ -80,7 +80,7 @@ Node::Node(
 		std::vector<std::vector<uint8_t>>& min_max_rem
 		) {
 
-	is_leaf	= (depth > max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
+	is_leaf	= (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
 
 	float grad_sum; 
 	float hess_sum; 
@@ -494,6 +494,7 @@ void Node::get_hist_split(
 	min_max_rem_left[split_col][1]  = uint8_t(split_bin);
 	min_max_rem_right[split_col][0] = uint8_t(split_bin);
 
+	depth++;
 	if (left_idxs.size() > right_idxs.size()) {
 		FeatureHistograms left_hists(n_cols, max_bin);
 		left_hists.calc_hists(X_hist, gradient, hessian, left_idxs, max_bin);
@@ -508,7 +509,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				depth++,
+				depth,
 				max_bin,
 				min_max_rem_right
 				);
@@ -521,7 +522,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				depth++,
+				depth,
 				max_bin,
 				min_max_rem_left
 				);
@@ -540,7 +541,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				depth++,
+				depth,
 				max_bin,
 				min_max_rem_left
 				);
@@ -553,7 +554,7 @@ void Node::get_hist_split(
 				l2_reg,
 				min_data_in_leaf,
 				max_depth,
-				depth++,
+				depth,
 				max_bin,
 				min_max_rem_right
 				);

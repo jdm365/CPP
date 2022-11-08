@@ -24,21 +24,21 @@ struct FeatureHistograms {
 			std::vector<float>& hessian,
 			std::vector<int>& row_idxs,
 			int max_bin,
-			bool root = false
+			bool root = false,
+			bool const_hessian = false
 			); 
 	void calc_hists_single_feature(
 			const std::vector<uint8_t>& X_hist_col,
 			std::vector<float>& ordered_gradients,
 			std::vector<float>& ordered_hessians,
 			std::vector<int>& row_idxs,
-			int max_bin,
 			int col
 			); 
-	void calc_hists_grad(
-			const std::vector<std::vector<uint8_t>>& X_hist,
-			std::vector<float>& gradient,
+	void calc_hists_grad_single_feature(
+			const std::vector<uint8_t>& X_hist_col,
+			std::vector<float>& ordered_gradients,
 			std::vector<int>& row_idxs,
-			int max_bin
+			int col
 			); 
 	void calc_hists_hess(
 			const std::vector<std::vector<uint8_t>>& X_hist,
