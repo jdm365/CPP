@@ -80,7 +80,7 @@ Node::Node(
 		std::vector<std::vector<uint8_t>>& min_max_rem
 		) {
 
-	is_leaf	= (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
+	is_leaf	= (depth > max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
 
 	float grad_sum; 
 	float hess_sum; 
