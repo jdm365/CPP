@@ -20,6 +20,7 @@ struct GBM {
 	int   num_boosting_rounds;
 	int   max_bin;
 	int   max_leaves;
+	bool  dart;
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
@@ -31,7 +32,8 @@ struct GBM {
 			int   min_data_in_leaf_new,
 			int   num_boosting_rounds_new,
 			int   max_bin_new,
-			int   max_leaves_new
+			int   max_leaves_new,
+			bool  _dart = false
 		);
 
 	void train_greedy(

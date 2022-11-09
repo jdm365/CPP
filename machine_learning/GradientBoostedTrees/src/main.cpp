@@ -28,14 +28,15 @@ int main() {
 
 
 	GBM model(
-			8,				// max_depth
+			-1,				// max_depth
 			0.10f,			// l2_reg
 			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
-			50,				// num_boosting_rounds
+			500,			// num_boosting_rounds
 			255,			// max_bin
-			31				// max_leaves
+			255,			// max_leaves
+			true			// enable_dart
 			);
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);

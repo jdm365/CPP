@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
-#include <map>
 #include <chrono>
+#include <random>
 #include <assert.h>
 
 #include "node.hpp"
@@ -22,11 +22,13 @@ GBM::GBM(
 		int   min_data_in_leaf_new,
 		int   num_boosting_rounds_new,
 		int   max_bin_new,
-		int   max_leaves_new
+		int   max_leaves_new,
+		bool  _dart
 		) {
 	if (max_depth_new <= 0) {
 		max_depth_new = 1048576;
 	}
+	dart				= _dart;
 	max_depth 			= max_depth_new;
 	l2_reg 				= l2_reg_new;
 	lr 					= lr_new;
@@ -126,6 +128,7 @@ void GBM::train_hist(
 
 	// Add mean for better start.
 	y_mean_train = get_vector_mean(y);
+	std::vector<float*> all_preds;
 
 	float* round_preds = (float*) malloc(sizeof(float) * n_rows);
 	float* preds 	   = (float*) malloc(sizeof(float) * n_rows);
@@ -148,9 +151,50 @@ void GBM::train_hist(
 			);
 
 
-		round_preds = trees[round].predict_hist(X_hist_rowmajor);
-		for (int idx = 0; idx < n_rows; ++idx) {
-			preds[idx] += lr * round_preds[idx];
+		// Init random seed.
+		srand(42);
+		if (dart) {
+			float scale_factor_0 = 0.10f;
+			float scale_factor_1 = 1.20f;
+			float drop_rate		 = 0.10f;
+			
+			round_preds = trees[round].predict_hist(X_hist_rowmajor);
+			all_preds.push_back(round_preds);
+
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] = y_mean_train;
+			}
+
+			std::vector<int> pred_idxs(std::max(1, round));
+			std::iota(pred_idxs.begin(), pred_idxs.end(), 0);
+
+			auto rng = std::default_random_engine{};
+			std::shuffle(pred_idxs.begin(), pred_idxs.end(), rng);
+
+			// Use first (rounds * ratio) random idx round preds. 20% dropped.
+			
+			// Non-dropped trees
+			for (int _idx = 0; _idx < int((1.00f - drop_rate) * round) + 1; ++_idx) {
+				for (int idx = 0; idx < n_rows; ++idx) {
+					preds[idx] += lr * all_preds[pred_idxs[_idx]][idx];
+				}
+			}
+			// Dropped trees with scale factor
+			for (int _idx = int((1.00f - drop_rate) * round) + 1; _idx < round; ++_idx) {
+				for (int idx = 0; idx < n_rows; ++idx) {
+					preds[idx] += lr * scale_factor_0 * all_preds[pred_idxs[_idx]][idx];
+				}
+			}
+			// Current round.
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] += lr * scale_factor_0 * scale_factor_1 * all_preds[round][idx];
+			}
+		}
+		else {
+			round_preds = trees[round].predict_hist(X_hist_rowmajor);
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] += lr * round_preds[idx];
+			}
 		}
 
 		gradient = calculate_gradient(preds, y);
