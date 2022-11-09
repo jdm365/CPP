@@ -111,11 +111,14 @@ std::vector<std::vector<uint8_t>> get_hist_bins_rowmajor(
 }
 
 std::vector<std::vector<uint8_t>> get_min_max_rem(
-		std::vector<std::vector<uint8_t>>& X_hist
+		const std::vector<std::vector<uint8_t>>& X_hist
 		) {
+	std::vector<std::vector<uint8_t>> min_max_rem;
 	for (int col = 0; col < int(X_hist.size()); ++col) {
 		min_max_rem.push_back(
 				{0, uint8_t(1 + *std::max_element(X_hist[col].begin(), X_hist[col].end()))}
 				);
 	}
+	return min_max_rem;
+}
 

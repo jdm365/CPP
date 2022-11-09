@@ -107,7 +107,6 @@ void GBM::train_hist(
 		std::vector<float>& y
 		) {
 	int n_rows = int(X[0].size());
-	int n_cols = int(X.size());
 
 	std::vector<float> gradient(n_rows, 0.00f);
 	std::vector<float> hessian(n_rows, 2.00f);
