@@ -21,20 +21,21 @@ int main() {
 			std::pair<std::vector<std::vector<float>>, std::vector<float>>
 	> splits = train_test_split_columnar(X, 0.80);
 	
-	std::vector<std::vector<float>> X_train = splits.first.first;
-	std::vector<std::vector<float>> X_test  = splits.second.first;
-	std::vector<float> y_train = splits.first.second;
-	std::vector<float> y_test  = splits.second.second;
+	std::vector<std::vector<float>>& X_train = splits.first.first;
+	std::vector<std::vector<float>>& X_test  = splits.second.first;
+	std::vector<float>& y_train = splits.first.second;
+	std::vector<float>& y_test  = splits.second.second;
 
 
 	GBM model(
-			8,				// max_depth
+			-1,				// max_depth
 			0.10f,			// l2_reg
 			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
-			255				// max_bin
+			255,			// max_bin
+			63				// max_leaves
 			);
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);

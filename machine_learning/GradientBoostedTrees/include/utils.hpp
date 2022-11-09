@@ -33,3 +33,10 @@ template <typename T> void vector_reserve_2d(std::vector<std::vector<T>>& vec, i
 			);
 }
 
+inline float get_vector_mean(std::vector<float>& vec) {
+	float mean_val = 0.00f;
+	for (const float& val: vec) {
+		mean_val += val;
+	}
+	return mean_val / int(vec.size());
+}

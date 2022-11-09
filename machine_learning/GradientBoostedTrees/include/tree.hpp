@@ -9,6 +9,7 @@
 
 struct Tree {
 	Node* root;
+	int num_leaves;
 
 	// Greedy Constructor
 	Tree(
@@ -30,6 +31,7 @@ struct Tree {
 			float& l2_reg,
 			int&   min_data_in_leaf,
 			int&   max_bin,
+			int&   max_leaves,
 			std::vector<std::vector<uint8_t>>& min_max_rem 
 		);
 

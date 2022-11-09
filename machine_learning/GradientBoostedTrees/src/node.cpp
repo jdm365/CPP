@@ -77,10 +77,13 @@ Node::Node(
 		int&   max_depth,
 		int    depth,
 		int&   max_bin,
-		std::vector<std::vector<uint8_t>>& min_max_rem
+		int&   max_leaves,
+		std::vector<std::vector<uint8_t>>& min_max_rem,
+		int&   num_leaves
 		) {
 
 	is_leaf	= (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
+	num_leaves++;
 
 	float grad_sum; 
 	float hess_sum; 
@@ -109,7 +112,9 @@ Node::Node(
 				min_max_rem,
 				max_bin,
 				depth,
-				max_depth
+				max_depth,
+				max_leaves,
+				num_leaves
 				);
 	}
 }
@@ -157,6 +162,7 @@ std::pair<int, float> Node::find_hist_split_col(
 		std::pair<int, float> best_split(0, -INFINITY);
 		return best_split;
 	}
+
 	float left_gradient_sum  = 0.00f;
 	float left_hessian_sum   = 0.00f;
 	float right_gradient_sum = grad_sum;
@@ -425,9 +431,10 @@ void Node::get_hist_split(
 				std::vector<std::vector<uint8_t>>& min_max_rem,
 				int& max_bin,
 				int  depth,
-				int& max_depth
+				int& max_depth,
+				int& max_leaves,
+				int& num_leaves
 		) {
-	int n_rows = int(X_hist[0].size());
 	int n_cols = int(X_hist.size());
 
 	int min_bin_col;
@@ -473,9 +480,6 @@ void Node::get_hist_split(
 	std::vector<int> left_idxs;
 	std::vector<int> right_idxs;
 
-	left_idxs.reserve(int(n_rows * split_bin / int(min_max_rem[split_col][1])));
-	right_idxs.reserve(n_rows - int(n_rows * split_bin / int(min_max_rem[split_col][1])));
-
 	for (const int& row: row_idxs) {
 		if (X_hist[split_col][row] < split_bin) {
 			left_idxs.push_back(row);
@@ -500,63 +504,83 @@ void Node::get_hist_split(
 		left_hists.calc_hists(X_hist, gradient, hessian, left_idxs, max_bin);
 		hists.calc_diff_hist(left_hists);
 
-		right_child = new Node(
-				X_hist, 
-				gradient, 
-				hessian, 
-				hists,
-				right_idxs,
-				l2_reg,
-				min_data_in_leaf,
-				max_depth,
-				depth,
-				max_bin,
-				min_max_rem_right
-				);
-		left_child = new Node(
-				X_hist, 
-				gradient, 
-				hessian, 
-				left_hists, 
-				left_idxs,
-				l2_reg,
-				min_data_in_leaf,
-				max_depth,
-				depth,
-				max_bin,
-				min_max_rem_left
-				);
+		if (num_leaves + depth < max_leaves) {
+			right_child = new Node(
+					X_hist, 
+					gradient, 
+					hessian, 
+					hists,
+					right_idxs,
+					l2_reg,
+					min_data_in_leaf,
+					max_depth,
+					depth,
+					max_bin,
+					max_leaves,
+					min_max_rem_right,
+					num_leaves
+					);
+			left_child = new Node(
+					X_hist, 
+					gradient, 
+					hessian, 
+					left_hists, 
+					left_idxs,
+					l2_reg,
+					min_data_in_leaf,
+					max_depth,
+					depth,
+					max_bin,
+					max_leaves,
+					min_max_rem_left,
+					num_leaves
+					);
+		}
+		else {
+			is_leaf = true;
+			return;
+		}
 	}
 	else {
 		FeatureHistograms right_hists(n_cols, max_bin);
 		right_hists.calc_hists(X_hist, gradient, hessian, right_idxs, max_bin);
 		hists.calc_diff_hist(right_hists);
 
-		left_child = new Node(
-				X_hist, 
-				gradient, 
-				hessian, 
-				hists, 
-				left_idxs,
-				l2_reg,
-				min_data_in_leaf,
-				max_depth,
-				depth,
-				max_bin,
-				min_max_rem_left
-				);
-		right_child = new Node(
-				X_hist, 
-				gradient, 
-				hessian, 
-				right_hists,
-				right_idxs,
-				l2_reg,
-				min_data_in_leaf,
-				max_depth,
-				depth,
-				max_bin,
-				min_max_rem_right
-				);
+		if (num_leaves + depth < max_leaves) {
+			left_child = new Node(
+					X_hist, 
+					gradient, 
+					hessian, 
+					hists, 
+					left_idxs,
+					l2_reg,
+					min_data_in_leaf,
+					max_depth,
+					depth,
+					max_bin,
+					max_leaves,
+					min_max_rem_left,
+					num_leaves
+					);
+			right_child = new Node(
+					X_hist, 
+					gradient, 
+					hessian, 
+					right_hists,
+					right_idxs,
+					l2_reg,
+					min_data_in_leaf,
+					max_depth,
+					depth,
+					max_bin,
+					max_leaves,
+					min_max_rem_right,
+					num_leaves
+					);
+		}
+		else {
+			is_leaf = true;
+			return;
+		}
 	}
 }

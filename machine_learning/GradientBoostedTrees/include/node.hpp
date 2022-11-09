@@ -43,7 +43,9 @@ struct Node {
 			int& max_depth,
 			int  depth,
 			int& max_bin,
-			std::vector<std::vector<uint8_t>>& min_max_rem
+			int& max_leaves,
+			std::vector<std::vector<uint8_t>>& min_max_rem,
+			int& num_leaves
 		);
 	void get_hist_split(
 			const std::vector<std::vector<uint8_t>>& X_hist,
@@ -58,7 +60,9 @@ struct Node {
 			std::vector<std::vector<uint8_t>>& min_max_rem,
 			int& max_bin,
 			int  depth,
-			int& max_depth
+			int& max_depth,
+			int& max_leaves,
+			int& num_leaves
 			);
 	void get_greedy_split(
 			std::vector<std::vector<float>>& X,

@@ -38,25 +38,33 @@ std::pair<
 		train_idxs.erase(train_idxs.begin() + idx);
 	}
 
+	std::sort(test_idxs.begin(), test_idxs.end());
+	std::sort(train_idxs.begin(), train_idxs.end());
+
 	std::vector<std::vector<float>> data_train;
 	std::vector<std::vector<float>> data_test;
 
 	std::vector<float> data_train_col;
 	std::vector<float> data_test_col;
 
+	std::vector<float> X_col;
+
+	// Get training data.
 	for (int col = 0; col < int(X.size()); col++) {
-		for (int row = 0; row < train_length; row++) {
-			if (row < test_length) {
-				data_test_col.push_back(X[col][test_idxs[row]]);
-			}
-			data_train_col.push_back(X[col][train_idxs[row]]);
+		for (const int& row: train_idxs) {
+			data_train_col.push_back(X[col][row]);
+		}
+		data_train.push_back(data_train_col);
+		data_train_col.clear();
+	}
+
+	// Get testing data.
+	for (int col = 0; col < int(X.size()); col++) {
+		for (const int& row: test_idxs) {
+			data_test_col.push_back(X[col][row]);
 		}
 		data_test.push_back(data_test_col);
-		data_train.push_back(data_train_col);
-
-		// Delete all elements of vectors.
 		data_test_col.clear();
-		data_train_col.clear();
 	}
 
 	if (verbose) {
@@ -77,15 +85,17 @@ std::pair<
 	y_train = data_train[(int(X.size()) - 1)];
 	y_test  = data_test[(int(X.size()) - 1)];
 
-	std::pair<std::vector<std::vector<float>>, std::vector<float>> train_split = {X_train, y_train};
-	std::pair<std::vector<std::vector<float>>, std::vector<float>> test_split  = {X_test,  y_test};
+	std::pair<std::vector<std::vector<float>>&, std::vector<float>&> train_split = {X_train, y_train};
+	std::pair<std::vector<std::vector<float>>&, std::vector<float>&> test_split  = {X_test,  y_test};
 
 	std::pair<
-		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
-		std::pair<std::vector<std::vector<float>>, std::vector<float>>
+		std::pair<std::vector<std::vector<float>>&, std::vector<float>&>,
+		std::pair<std::vector<std::vector<float>>&, std::vector<float>&>
 		>splits = {train_split,  test_split};
 	return splits;
 }
+
+
 
 std::array<std::vector<std::vector<float>>, 2> train_test_split_rowmajor(
 		std::vector<std::vector<float>>& X,

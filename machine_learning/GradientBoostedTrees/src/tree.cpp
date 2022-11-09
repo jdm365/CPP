@@ -51,10 +51,12 @@ Tree::Tree(
 		float& l2_reg,
 		int&   min_data_in_leaf,
 		int&   max_bin,
+		int&   max_leaves,
 		std::vector<std::vector<uint8_t>>& min_max_rem 
 		) {
 	// init depth of root node to 0.
 	int depth = 0;
+	num_leaves = 0;
 	
 	std::vector<int> row_idxs(X_hist[0].size());
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
@@ -74,7 +76,9 @@ Tree::Tree(
 			max_depth,
 			depth,
 			max_bin,
-			min_max_rem
+			max_leaves,
+			min_max_rem,
+			num_leaves
 		);
 }
 
