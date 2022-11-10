@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#define NUM_THREADS	16
+#define NUM_THREADS	4
 
 struct __attribute__ ((packed)) Bin {
 	float grad_sum;

@@ -154,9 +154,9 @@ void GBM::train_hist(
 		// Init random seed.
 		srand(42);
 		if (dart) {
-			float scale_factor_0 = 0.10f;
-			float scale_factor_1 = 1.20f;
-			float drop_rate		 = 0.10f;
+			float scale_factor_0 = 0.20f;
+			float scale_factor_1 = 1.00f;
+			float drop_rate		 = 0.04f;
 			
 			round_preds = trees[round].predict_hist(X_hist_rowmajor);
 			all_preds.push_back(round_preds);

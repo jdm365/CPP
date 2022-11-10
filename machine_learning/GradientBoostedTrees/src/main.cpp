@@ -9,8 +9,8 @@
 
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
-	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "data/hpx10.csv";
+	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+	// const char* FILENAME = "data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
@@ -30,12 +30,12 @@ int main() {
 	GBM model(
 			-1,				// max_depth
 			0.10f,			// l2_reg
-			0.10f,			// lr
+			0.05f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			500,			// num_boosting_rounds
 			255,			// max_bin
-			255,			// max_leaves
+			31,				// max_leaves
 			true			// enable_dart
 			);
 	// model.train_greedy(X_train, y_train);
