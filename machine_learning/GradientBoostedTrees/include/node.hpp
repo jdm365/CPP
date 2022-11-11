@@ -98,7 +98,8 @@ struct Node {
 		float grad_sum,
 		float hess_sum,
 		int   min_bin_col,
-		int   max_bin_col
+		int   max_bin_col,
+		int   n_rows
 		);
 
 	float predict_obs(std::vector<float>& obs);

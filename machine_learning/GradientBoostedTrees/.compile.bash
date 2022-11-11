@@ -1,6 +1,6 @@
 case "$(uname -sr)" in
 
-	Linux*Microsoft*)
+	Linux*)
 		g++ -Wall -g -fsanitize=undefined -fopenmp src/*.cpp -I include -std=c++2a;;
 
 	Darwin*)

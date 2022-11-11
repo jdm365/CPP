@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <numeric>
@@ -12,6 +13,7 @@
 #include "gbm.hpp"
 #include "histogram_mapping.hpp"
 #include "utils.hpp"
+#include "loss_functions.hpp"
 
 
 GBM::GBM(
@@ -41,6 +43,7 @@ GBM::GBM(
 
 	trees.reserve(num_boosting_rounds);
 }
+
 
 void GBM::train_greedy(
 		std::vector<std::vector<float>>& X, 
@@ -202,6 +205,8 @@ void GBM::train_hist(
 
 		auto stop_1 = std::chrono::high_resolution_clock::now();
 		auto duration_1 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_1 - start_1);
+
+		std::cout << std::fixed << std::setprecision(6);
 		std::cout << "Round " << round + 1 << " MSE Loss: " << calculate_mse_loss(preds, y);
 		std::cout << "       "; 
 		std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
@@ -239,6 +244,7 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
 	return preds;
 }
 
+
 float* GBM::predict_hist(std::vector<std::vector<float>>& X) {
 	float* preds = (float*) malloc(sizeof(float) * X[0].size());
 	float* tree_preds;
@@ -259,21 +265,17 @@ float* GBM::predict_hist(std::vector<std::vector<float>>& X) {
 	return preds;
 }
 
-std::vector<float> GBM::calculate_gradient(float* preds, std::vector<float>& y) {
-	std::vector<float> gradient;
-	gradient.reserve(y.size());
 
-	// Assume MSE for now
-	for (int idx = 0; idx < int(y.size()); ++idx) {
-		gradient.push_back(2.00f * (preds[idx] - y[idx]));
-	}
+std::vector<float> GBM::calculate_gradient(float* preds, std::vector<float>& y) {
+	std::vector<float> gradient = calc_grad(preds, y, "fair_loss");
+	// std::vector<float> gradient = calc_grad(preds, y, "mse_loss");
 	return gradient;
 }
 
 
 std::vector<float> GBM::calculate_hessian(float* preds, std::vector<float>& y) {
-	std::vector<float> hessian(y.size(), 2.00f);
-	// Assume MSE for now
+	std::vector<float> hessian = calc_hess(preds, y, "fair_loss");
+	// std::vector<float> hessian = calc_hess(preds, y, "mse_loss");
 	return hessian;
 }
 

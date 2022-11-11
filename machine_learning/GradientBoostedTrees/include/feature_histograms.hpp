@@ -3,13 +3,14 @@
 #include <iostream>
 #include <vector>
 
-#define NUM_THREADS	4
+// #define NUM_THREADS	16
 
 struct __attribute__ ((packed)) Bin {
 	float grad_sum;
 	float hess_sum;
+	int   bin_cnt;
 
-	Bin(float grad=0.00f, float hess=0.00f);
+	Bin(float grad=0.00f, float hess=0.00f, int bin_cnt=0);
 };
 
 
@@ -23,9 +24,9 @@ struct FeatureHistograms {
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			std::vector<int>& row_idxs,
-			int max_bin,
-			bool root = false,
-			bool const_hessian = true 
+			int  max_bin,
+			bool root=false,
+			bool const_hessian=false 
 			); 
 	void calc_hists_single_feature(
 			const std::vector<uint8_t>& X_hist_col,
