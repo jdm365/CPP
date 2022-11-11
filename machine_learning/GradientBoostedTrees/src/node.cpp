@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <unordered_map>
 #include <assert.h>
 #include <omp.h>
 
@@ -69,6 +70,7 @@ Histogram Constructor
 */
 Node::Node(
 		const std::vector<std::vector<uint8_t>>& X_hist,
+		const std::vector<int>& subsample_cols,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
 		FeatureHistograms& hists,
@@ -102,6 +104,7 @@ Node::Node(
 	if (!is_leaf) {
 		get_hist_split(
 				X_hist,
+				subsample_cols,
 				gradient,
 				hessian,
 				hists,
@@ -224,8 +227,6 @@ void Node::get_greedy_split(
 	float score;
 	float best_score = -INFINITY;
 
-	int mid_pt = int(n_rows * 0.5);
-
 	for (int col = 0; col < n_cols; ++col) {
 		X_col = X[col];
 
@@ -233,60 +234,26 @@ void Node::get_greedy_split(
 		std::iota(idxs.begin(), idxs.end(), 0);
 		std::stable_sort(idxs.begin(), idxs.end(), [&X_col](int i, int j){return X_col[i] < X_col[j];});
 
-		for (int row = 0; row < mid_pt; ++row) {
+		for (int row = 0; row < n_rows; ++row) {
 			// Reset summary statistics.
 			left_sum 		   = 0;
 			left_gradient_sum  = 0.00f;
 			left_hessian_sum   = 0.00f;
+
+			right_sum 		   = n_rows;
+			right_gradient_sum = grad_sum;
+			right_hessian_sum  = hess_sum;
 
 			// Look at each potential split point.
 			for (int idx = 0; idx < row; ++idx) {
 				left_sum++;
 				left_gradient_sum += gradient[idxs[idx]];
 				left_hessian_sum  += hessian[idxs[idx]];
+
+				right_sum--;
+				right_gradient_sum -= gradient[idxs[idx]];
+				right_hessian_sum  -= hessian[idxs[idx]];
 			}
-			right_sum = n_rows - left_sum;
-			right_gradient_sum = grad_sum - left_gradient_sum;
-			right_hessian_sum  = hess_sum - left_hessian_sum;
-
-			cond_0 = (left_sum  < min_data_in_leaf);
-			cond_1 = (right_sum < min_data_in_leaf);
-			cond_2 = (left_hessian_sum  < min_child_weight);
-			cond_3 = (right_hessian_sum < min_child_weight);
-
-			if (cond_0 || cond_1 || cond_2 || cond_3) {
-				continue;
-			}
-
-			score = calc_score(
-					left_gradient_sum,
-					right_gradient_sum,
-					left_hessian_sum, 
-					right_hessian_sum,
-					l2_reg
-					);
-			if (score > best_score) {
-				split_val  = X_col[idxs[row]];
-				split_col  = col;
-				best_score = score;
-			}
-		}
-
-		for (int row = mid_pt; row < n_rows; ++row) {
-			// Reset summary statistics.
-			right_sum 		    = 0;
-			right_gradient_sum  = 0.00f;
-			right_hessian_sum   = 0.00f;
-
-			// Look at each potential split point.
-			for (int idx = row; idx < n_rows; ++idx) {
-				++right_sum;
-				right_gradient_sum += gradient[idxs[idx]];
-				right_hessian_sum  += hessian[idxs[idx]];
-			}
-			left_sum = n_rows - right_sum;
-			left_gradient_sum = grad_sum - right_gradient_sum;
-			left_hessian_sum  = hess_sum - right_hessian_sum;
 
 			cond_0 = (left_sum  < min_data_in_leaf);
 			cond_1 = (right_sum < min_data_in_leaf);
@@ -311,6 +278,7 @@ void Node::get_greedy_split(
 			}
 		}
 	}
+
 	if (best_score == -INFINITY) {
 		// If no split was found then node is leaf.
 		is_leaf = true;
@@ -369,6 +337,7 @@ void Node::get_greedy_split(
 
 void Node::get_hist_split(
 				const std::vector<std::vector<uint8_t>>& X_hist,
+				const std::vector<int>& subsample_cols,
 				std::vector<float>& gradient,
 				std::vector<float>& hessian,
 				FeatureHistograms& hists,
@@ -384,24 +353,27 @@ void Node::get_hist_split(
 				int& max_leaves,
 				int& num_leaves
 		) {
-	int n_cols = int(X_hist.size());
+	int n_cols = int(subsample_cols.size());
+	int col;
 
 	int min_bin_col;
 	int max_bin_col;
 
-	std::vector<std::pair<int, float>> col_splits;
-	col_splits.resize(n_cols);
+	std::unordered_map<int, std::pair<int, float>> col_splits;
 
-	#pragma omp parallel num_threads(omp_get_num_procs())
+	// Multithreading here not working with introduction of column sub-sampling.
+	#pragma omp parallel num_threads(1)
 	{
 		#pragma omp for schedule(static)
-		for (int col = 0; col < n_cols; ++col) {
+		for (int idx = 0; idx < n_cols; ++idx) {
+			col = subsample_cols[idx];
+
 			// Get min and max bin in hist col and only iterate over those buckets.
 			min_bin_col = int(min_max_rem[col][0]);
 			max_bin_col = int(min_max_rem[col][1]);
 			
 			col_splits[col] = find_hist_split_col(
-					hists.bins[col],
+					hists.bins[idx],
 					min_data_in_leaf,
 					l2_reg,
 					grad_sum,
@@ -413,7 +385,7 @@ void Node::get_hist_split(
 		}
 	}
 	float best_score = -INFINITY;
-	for (int col = 0; col < n_cols; ++col) {
+	for (const int& col: subsample_cols) {
 		if (col_splits[col].second > best_score) {
 			split_bin  = col_splits[col].first;
 			best_score = col_splits[col].second;
@@ -451,12 +423,13 @@ void Node::get_hist_split(
 	depth++;
 	if (left_idxs.size() > right_idxs.size()) {
 		FeatureHistograms left_hists(n_cols, max_bin);
-		left_hists.calc_hists(X_hist, gradient, hessian, left_idxs, max_bin);
+		left_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, left_idxs, max_bin);
 		hists.calc_diff_hist(left_hists);
 
 		if (num_leaves + depth < max_leaves) {
 			right_child = new Node(
 					X_hist, 
+					subsample_cols,
 					gradient, 
 					hessian, 
 					hists,
@@ -472,6 +445,7 @@ void Node::get_hist_split(
 					);
 			left_child = new Node(
 					X_hist, 
+					subsample_cols,
 					gradient, 
 					hessian, 
 					left_hists, 
@@ -493,12 +467,13 @@ void Node::get_hist_split(
 	}
 	else {
 		FeatureHistograms right_hists(n_cols, max_bin);
-		right_hists.calc_hists(X_hist, gradient, hessian, right_idxs, max_bin);
+		right_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, right_idxs, max_bin);
 		hists.calc_diff_hist(right_hists);
 
 		if (num_leaves + depth < max_leaves) {
 			left_child = new Node(
 					X_hist, 
+					subsample_cols,
 					gradient, 
 					hessian, 
 					hists, 
@@ -514,6 +489,7 @@ void Node::get_hist_split(
 					);
 			right_child = new Node(
 					X_hist, 
+					subsample_cols,
 					gradient, 
 					hessian, 
 					right_hists,
@@ -547,7 +523,7 @@ std::pair<int, float> Node::find_hist_split_col(
 		int   n_rows
 		) {
 	if (max_bin_col - min_bin_col == 1) {
-		std::pair<int, float> best_split(0, -INFINITY);
+		std::pair<int, float> best_split(1, -INFINITY);
 		return best_split;
 	}
 

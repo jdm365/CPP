@@ -21,6 +21,7 @@ struct GBM {
 	int   max_bin;
 	int   max_leaves;
 	bool  dart;
+	float col_subsample_rate;
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
@@ -33,6 +34,7 @@ struct GBM {
 			int   num_boosting_rounds_new,
 			int   max_bin_new,
 			int   max_leaves_new,
+			float _col_subsample_rate=1.00f,
 			bool  _dart = false
 		);
 

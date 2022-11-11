@@ -29,13 +29,14 @@ int main() {
 
 	GBM model(
 			-1,				// max_depth (<= 0 implies no limit)
-			2.00f,			// l2_reg
-			0.25f,			// lr
+			0.00f,			// l2_reg
+			0.10f,			// lr
 			1.00f,			// min_child_weight (NOT USED IN HIST)
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
 			255,			// max_bin
 			31,				// max_leaves
+			0.50f,			// col_subsample_rate [0.0, 1.0]
 			true			// enable_dart
 			);
 	// model.train_greedy(X_train, y_train);

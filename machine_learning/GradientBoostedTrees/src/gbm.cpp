@@ -25,12 +25,14 @@ GBM::GBM(
 		int   num_boosting_rounds_new,
 		int   max_bin_new,
 		int   max_leaves_new,
+		float _col_subsample_rate,
 		bool  _dart
 		) {
 	if (max_depth_new <= 0) {
 		max_depth_new = 1048576;
 	}
 	dart				= _dart;
+	col_subsample_rate  = _col_subsample_rate;
 	max_depth 			= max_depth_new;
 	l2_reg 				= l2_reg_new;
 	lr 					= lr_new;
@@ -150,7 +152,9 @@ void GBM::train_hist(
 					min_data_in_leaf,
 					max_bin,
 					max_leaves,
-					min_max_rem	
+					col_subsample_rate,
+					min_max_rem,
+					round
 			);
 
 

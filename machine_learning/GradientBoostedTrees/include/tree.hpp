@@ -32,9 +32,12 @@ struct Tree {
 			int&   min_data_in_leaf,
 			int&   max_bin,
 			int&   max_leaves,
-			std::vector<std::vector<uint8_t>>& min_max_rem 
+			float& col_subsample_rate,
+			std::vector<std::vector<uint8_t>>& min_max_rem,
+			int&   tree_num
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 	float* predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
+	std::vector<int> get_subsample_cols(float& col_subsample_rate, int n_cols, int tree_num);
 };

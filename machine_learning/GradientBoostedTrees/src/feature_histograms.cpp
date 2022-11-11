@@ -42,10 +42,11 @@ void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
 
 void FeatureHistograms::calc_hists(
 		const std::vector<std::vector<uint8_t>>& X_hist,
+		const std::vector<int>& subsample_cols,
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
 		std::vector<int>& row_idxs,
-		int max_bin,
+		int  max_bin,
 		bool root,
 		bool const_hessian
 		) {
@@ -64,13 +65,13 @@ void FeatureHistograms::calc_hists(
 			#pragma omp parallel num_threads(omp_get_num_procs())
 			{
 				#pragma omp for schedule(static)
-				for (int col = 0; col < int(X_hist.size()); ++col) {
+				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
 					calc_hists_single_feature(
-							X_hist[col],
+							X_hist[subsample_cols[idx]],
 							ordered_gradients,
 							ordered_hessians,
 							row_idxs,
-							col
+							idx	
 							);
 				}
 			}
@@ -79,13 +80,13 @@ void FeatureHistograms::calc_hists(
 			#pragma omp parallel num_threads(omp_get_num_procs())
 			{
 				#pragma omp for schedule(static)
-				for (int col = 0; col < int(X_hist.size()); ++col) {
+				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
 					calc_hists_single_feature(
-							X_hist[col],
+							X_hist[subsample_cols[idx]],
 							gradient,
 							hessian,
 							row_idxs,
-							col
+							idx	
 							);
 				}
 			}
@@ -103,12 +104,12 @@ void FeatureHistograms::calc_hists(
 			#pragma omp parallel num_threads(omp_get_num_procs())
 			{
 				#pragma omp for schedule(static)
-				for (int col = 0; col < int(X_hist.size()); ++col) {
+				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
 					calc_hists_grad_single_feature(
-							X_hist[col],
+							X_hist[subsample_cols[idx]],
 							ordered_gradients,
 							row_idxs,
-							col
+							idx	
 							);
 				}
 			}
@@ -117,12 +118,12 @@ void FeatureHistograms::calc_hists(
 			#pragma omp parallel num_threads(omp_get_num_procs())
 			{
 				#pragma omp for schedule(static)
-				for (int col = 0; col < int(X_hist.size()); ++col) {
+				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
 					calc_hists_grad_single_feature(
-							X_hist[col],
+							X_hist[subsample_cols[idx]],
 							gradient,
 							row_idxs,
-							col
+							idx	
 							);
 				}
 			}

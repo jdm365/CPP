@@ -34,6 +34,7 @@ struct Node {
 	// Histogram Constructor
 	Node(
 			const std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<int>& subsample_cols,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			FeatureHistograms& hists,
@@ -49,6 +50,7 @@ struct Node {
 		);
 	void get_hist_split(
 			const std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<int>& subsample_cols,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			FeatureHistograms& hists,

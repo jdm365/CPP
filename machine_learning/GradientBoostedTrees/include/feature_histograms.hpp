@@ -21,6 +21,7 @@ struct FeatureHistograms {
 	void calc_diff_hist(FeatureHistograms& other_hist);
 	void calc_hists(
 			const std::vector<std::vector<uint8_t>>& X_hist,
+			const std::vector<int>& subsample_cols,
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			std::vector<int>& row_idxs,
