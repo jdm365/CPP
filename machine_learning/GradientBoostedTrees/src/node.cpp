@@ -361,8 +361,12 @@ void Node::get_hist_split(
 
 	std::unordered_map<int, std::pair<int, float>> col_splits;
 
-	// Multithreading here not working with introduction of column sub-sampling.
-	#pragma omp parallel num_threads(1)
+	// Init col hashes. OMP has problems hashing multithreaded. Maybe collisions? (prob not)
+	for (const int& col: subsample_cols) {
+		col_splits[col] = {0, 0.00f};
+	}
+
+	#pragma omp parallel num_threads(omp_get_num_procs()) private(col)
 	{
 		#pragma omp for schedule(static)
 		for (int idx = 0; idx < n_cols; ++idx) {

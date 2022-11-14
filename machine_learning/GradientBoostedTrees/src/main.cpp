@@ -7,6 +7,7 @@
 #include "utils.hpp"
 #include "gbm.hpp"
 
+
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
@@ -35,8 +36,8 @@ int main() {
 			20,				// min_data_in_leaf
 			50,				// num_boosting_rounds
 			255,			// max_bin
-			31,				// max_leaves
-			0.50f,			// col_subsample_rate [0.0, 1.0]
+			127,			// max_leaves
+			0.80f,			// col_subsample_rate [0.0, 1.0]
 			true			// enable_dart
 			);
 	// model.train_greedy(X_train, y_train);
