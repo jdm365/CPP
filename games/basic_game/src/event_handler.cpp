@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include <algorithm>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -99,19 +100,19 @@ Entity handle(
 			case SDLK_LEFT:
 				player_entity.vel = Vector2f(
 						-PLAYER_SPEED * float(!collisions[0]), 
-						player_entity.vel.y * float(!collisions[1]) * float(!collisions[3])
+						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
 						);
 				break;
 			case SDLK_RIGHT:
 				player_entity.vel = Vector2f(
 						PLAYER_SPEED * float(!collisions[2]), 
-						player_entity.vel.y * float(!collisions[1]) * float(!collisions[3])
+						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
 						);
 				break;
 			case SDLK_UP:
 				if ((player_entity.vel.y == 0) && collisions[3]) {
 					player_entity.vel = Vector2f(
-							player_entity.vel.x * float(!collisions[0]) * float(!collisions[2]),
+							player_entity.vel.x * float(!(collisions[0] && collisions[2])),
 							-JUMP_SPEED * float(!collisions[1])
 							);
 				}
@@ -126,13 +127,13 @@ Entity handle(
 			case SDLK_LEFT:
 				player_entity.vel = Vector2f(
 						0, 
-						player_entity.vel.y * float(!collisions[1]) * float(!collisions[3])
+						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
 						);
 				break;
 			case SDLK_RIGHT:
 				player_entity.vel = Vector2f(
 						0, 
-						player_entity.vel.y * float(!collisions[1]) * float(!collisions[3])
+						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
 						);
 				break;
 			case SDLK_SPACE:
@@ -149,11 +150,10 @@ Entity update(
 		) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
 
-	bool cond_0 = !(collisions[3] && (player_entity.vel.y >= 0));
-	bool cond_1 = !(collisions[1] && (player_entity.vel.y <= 0));
+	player_entity.vel.y += player_entity.gravity;
+	player_entity.vel.y *= float(!(collisions[1] || collisions[3]));
 
-	player_entity.vel.y = (player_entity.vel.y + player_entity.gravity) * float(cond_0) * float(cond_1);
-
+	/*
 	// Cap velocity
 	if (player_entity.vel.y >= 0) {
 		player_entity.vel.y = std::min(player_entity.vel.y, float(3 * PLAYER_SPEED));
@@ -161,6 +161,7 @@ Entity update(
 	else {
 		player_entity.vel.y = std::max(player_entity.vel.y, float(-3 * PLAYER_SPEED));
 	}
+	*/
 
 	player_entity.pos.x += player_entity.vel.x;
 	player_entity.pos.y += player_entity.vel.y;

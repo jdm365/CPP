@@ -46,6 +46,12 @@ int main(int argc, char* args[]) {
 	while (!done) {
 		start_time = int(SDL_GetTicks());
 
+		detect_collisions(
+				collisions, 
+				entities.player_entity, 
+				entities.ground_entities, 
+				scroll_factor_x
+				);
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
 				window.quit();
@@ -53,7 +59,6 @@ int main(int argc, char* args[]) {
 			}
 			entities.player_entity = handle(event, entities.player_entity, collisions);
 		}
-		detect_collisions(collisions, entities.player_entity, entities.ground_entities, scroll_factor_x);
 		entities.player_entity = update(entities.player_entity, collisions);
 
 		scroll_factor_x = int(entities.player_entity.pos.x - x_scroll_start_pos);
