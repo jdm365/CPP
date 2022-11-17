@@ -41,25 +41,26 @@ int main(int argc, char* args[]) {
 	int scroll_factor_y = 0;
 
 	int screen_pos;
-	std::vector<bool> collisions(4, false);
+	std::vector<bool> collisions = {false, false};
 
+	// Game Loop
 	while (!done) {
 		start_time = int(SDL_GetTicks());
 
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) {
+				window.quit();
+				done = true;
+			}
+			handle(event, entities.player_entity, collisions);
+		}
 		detect_collisions(
 				collisions, 
 				entities.player_entity, 
 				entities.ground_entities, 
 				scroll_factor_x
 				);
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				window.quit();
-				done = true;
-			}
-			entities.player_entity = handle(event, entities.player_entity, collisions);
-		}
-		entities.player_entity = update(entities.player_entity, collisions);
+		update(entities.player_entity, collisions);
 
 		scroll_factor_x = int(entities.player_entity.pos.x - x_scroll_start_pos);
 		scroll_factor_y = int(y_scroll_start_pos - entities.player_entity.pos.y);

@@ -7,12 +7,12 @@
 #include "entity.hpp"
 #include "constants.h"
 
-Entity handle(
+void handle(
 		SDL_Event& event, 
 		Entity& entity, 
 		std::vector<bool>& collisions
 		);
-Entity update(
+void update(
 		Entity& entity,
 		std::vector<bool>& collisions
 		);

@@ -16,104 +16,68 @@ void detect_collisions(
 		int scroll_factor_x
 		) {
 	// Reset collisions to false
-	for (int idx = 0; idx < 4; ++idx) {
+	for (int idx = 0; idx < 2; ++idx) {
 		collisions[idx] = false;
 	}
 
-	int left_edge_p   = int(player_entity.pos.x);
-	int top_edge_p 	  = int(player_entity.pos.y);
-	int right_edge_p  = int(player_entity.pos.x) + player_entity.width;
-	int bottom_edge_p = int(player_entity.pos.y) + player_entity.height;
+	bool left_range;
+	bool right_range;
 
-	int diff_width;
-	int diff_height;
-
-	int left_edge_obj;
-	int top_edge_obj;
-	int right_edge_obj;
-	int bottom_edge_obj;
-
+	bool top_range;
+	bool bottom_range;
 
 	for (Entity& entity: collidable_entities) {
 		// Only detect collisions for objects near player.
-
-		diff_width  = player_entity.width + entity.width;
-		if (std::abs(entity.pos.x - player_entity.pos.x) > diff_width) {
-			continue;
+		if (collisions[0] && collisions[1]) {
+			break;
 		}
 
-		diff_height = player_entity.height + entity.height;
-		if (std::abs(entity.pos.y - player_entity.pos.y) > diff_height) {
-			continue;
-		}
+		left_range   = entity.pos.x + entity.width <= player_entity.pos.x;
+		right_range  = player_entity.width + player_entity.pos.x >= entity.pos.x;
 
-		left_edge_obj   = entity.pos.x;
-		top_edge_obj 	= entity.pos.y;
-		right_edge_obj  = entity.pos.x + entity.width;
-		bottom_edge_obj = entity.pos.y + entity.height;
+		top_range    = entity.pos.y + entity.height <= player_entity.pos.y;
+		bottom_range = player_entity.height + player_entity.pos.y >= entity.pos.y;
 
-
-		// Left collision
-		if (left_edge_p <= right_edge_obj) {
-			collisions[0] = true;
-		}
-		else {
-			collisions[0] = false;
-		}
-
-		// Top collision
-		if (top_edge_p <= bottom_edge_obj) {
-			collisions[1] = true;
-		}
-		else {
-			collisions[1] = false;
-		}
-
-		// Right collision
-		if (right_edge_p >= left_edge_obj) {
-			collisions[2] = true;
-		}
-		else {
-			collisions[2] = false;
-		}
-
-		// Bottom collision
-		if (bottom_edge_p >= top_edge_obj) {
-			collisions[3] = true;
-		}
-		else {
-			collisions[3] = false;
+		// Is collision 
+		if (left_range && right_range && top_range && bottom_range) {
+			if (player_entity.vel.x != 0.00f) {
+				collisions[0] = true;
+			}
+			if (player_entity.vel.y >= 0.00f) {
+				collisions[1] = true;
+			}
 		}
 	}
+	std::cout << collisions[0] << std::endl;
+	std::cout << collisions[1] << std::endl << std::endl;
 }
 
-Entity handle(
+void handle(
 		SDL_Event& event, 
 		Entity& player_entity, 
 		std::vector<bool>& collisions
 		) {
-
-	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
+	// Collisions -> horizontal: 0, vertical: 1
 	// Update player velocity.
 	if (event.type == SDL_KEYDOWN) {
 		switch(event.key.keysym.sym) {
 			case SDLK_LEFT:
 				player_entity.vel = Vector2f(
 						-PLAYER_SPEED * float(!collisions[0]), 
-						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
+						player_entity.vel.y
 						);
 				break;
 			case SDLK_RIGHT:
 				player_entity.vel = Vector2f(
-						PLAYER_SPEED * float(!collisions[2]), 
-						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
+						PLAYER_SPEED * float(!collisions[0]), 
+						player_entity.vel.y
 						);
 				break;
 			case SDLK_UP:
-				if ((player_entity.vel.y == 0) && collisions[3]) {
+				if (player_entity.vel.y == 0) {
 					player_entity.vel = Vector2f(
-							player_entity.vel.x * float(!(collisions[0] && collisions[2])),
-							-JUMP_SPEED * float(!collisions[1])
+							player_entity.vel.x,
+							-JUMP_SPEED
 							);
 				}
 				break;
@@ -126,14 +90,14 @@ Entity handle(
 		switch(event.key.keysym.sym) {
 			case SDLK_LEFT:
 				player_entity.vel = Vector2f(
-						0, 
-						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
+						0,
+						player_entity.vel.y
 						);
 				break;
 			case SDLK_RIGHT:
 				player_entity.vel = Vector2f(
-						0, 
-						player_entity.vel.y * float(!(collisions[1] && collisions[3]))
+						0,
+						player_entity.vel.y
 						);
 				break;
 			case SDLK_SPACE:
@@ -141,17 +105,18 @@ Entity handle(
 				break;
 		}
 	}
-	return player_entity;
 }
 
-Entity update(
+void update(
 		Entity& player_entity, 
 		std::vector<bool>& collisions
 		) {
-	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
+	// Collisions -> horizontal: 0, vertical: 1
+
+	player_entity.vel.x *= float(!collisions[0]);
 
 	player_entity.vel.y += player_entity.gravity;
-	player_entity.vel.y *= float(!(collisions[1] || collisions[3]));
+	player_entity.vel.y *= float(!collisions[1]);
 
 	/*
 	// Cap velocity
@@ -173,6 +138,4 @@ Entity update(
 		player_entity.vel.x = 0.00f;
 		player_entity.vel.y = 0.00f;
 	}
-
-	return player_entity;
 }
