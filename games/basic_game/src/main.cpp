@@ -41,7 +41,7 @@ int main(int argc, char* args[]) {
 	int scroll_factor_y = 0;
 
 	int screen_pos;
-	std::vector<bool> collisions = {false, false};
+	std::vector<bool> collisions = {false, false, false, false};
 
 	// Game Loop
 	while (!done) {
