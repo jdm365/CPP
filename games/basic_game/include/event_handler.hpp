@@ -9,7 +9,7 @@
 
 void handle(
 		SDL_Event& event, 
-		Entity& entity, 
+		Entity& entity,
 		std::vector<bool>& collisions
 		);
 void update(
