@@ -26,17 +26,18 @@ struct GBM {
 	std::vector<std::vector<float>> bin_mapping;
 
 	GBM(
-			int   max_depth_new,
-			float l2_reg_new,
-			float lr_new,
-			float min_child_weight_new,
-			int   min_data_in_leaf_new,
-			int   num_boosting_rounds_new,
-			int   max_bin_new,
-			int   max_leaves_new,
-			float _col_subsample_rate=1.00f,
+			int   _max_depth,
+			float _l2_reg,
+			float _lr,
+			float _min_child_weight,
+			int   _min_data_in_leaf,
+			int   _num_boosting_rounds,
+			int   _max_bin,
+			int   _max_leaves,
+			float _col_subsample_rate = 1.00f,
 			bool  _dart = false
 		);
+	~GBM() {};
 
 	void train_greedy(
 			std::vector<std::vector<float>>& X, 

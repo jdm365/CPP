@@ -17,33 +17,33 @@
 
 
 GBM::GBM(
-		int   max_depth_new,
-		float l2_reg_new,
-		float lr_new,
-		float min_child_weight_new,
-		int   min_data_in_leaf_new,
-		int   num_boosting_rounds_new,
-		int   max_bin_new,
-		int   max_leaves_new,
+		int   _max_depth,
+		float _l2_reg,
+		float _lr,
+		float _min_child_weight,
+		int   _min_data_in_leaf,
+		int   _num_boosting_rounds,
+		int   _max_bin,
+		int   _max_leaves,
 		float _col_subsample_rate,
 		bool  _dart
 		) {
-	if (max_depth_new <= 0) {
-		max_depth_new = 1048576;
+	if (_max_depth <= 0) {
+		_max_depth = 1048576;
 	}
 	dart				= _dart;
 	col_subsample_rate  = _col_subsample_rate;
-	max_depth 			= max_depth_new;
-	l2_reg 				= l2_reg_new;
-	lr 					= lr_new;
-	min_child_weight 	= min_child_weight_new;
-	min_data_in_leaf 	= min_data_in_leaf_new;
-	num_boosting_rounds = num_boosting_rounds_new;
-	max_bin				= max_bin_new;
-	max_leaves			= 2 * max_leaves_new + 1; // This represents max nodes to
+	max_depth 			= _max_depth;
+	l2_reg 				= _l2_reg;
+	lr 					= _lr;
+	min_child_weight 	= _min_child_weight;
+	min_data_in_leaf 	= _min_data_in_leaf;
+	num_boosting_rounds = _num_boosting_rounds;
+	max_bin				= _max_bin;
+	max_leaves			= 2 * _max_leaves + 1; // This represents max nodes to
 												  // get max leaves.
 
-	trees.reserve(num_boosting_rounds);
+	trees.reserve(_num_boosting_rounds);
 }
 
 

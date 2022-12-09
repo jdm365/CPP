@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iterator>
 #include <vector>
 #include <array>
 #include <assert.h>
@@ -7,13 +8,13 @@
 #include "utils.hpp"
 #include "gbm.hpp"
 
-
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "data/hpx10.csv";
+	const char* FILENAME = "~/CPP/machine_learning/GradientBoostedTrees/data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
+	std::cout << "data problem" << std::endl;
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
 	// std::vector<std::vector<float>> X = read_csv_rowmajor(FILENAME);
 
@@ -26,7 +27,6 @@ int main() {
 	std::vector<std::vector<float>>& X_test  = splits.second.first;
 	std::vector<float>& y_train = splits.first.second;
 	std::vector<float>& y_test  = splits.second.second;
-
 
 	GBM model(
 			-1,				// max_depth (<= 0 implies no limit)

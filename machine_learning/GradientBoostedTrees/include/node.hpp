@@ -18,6 +18,7 @@ struct Node {
 
 	// Default Constructor
 	Node();
+	~Node() {};
 
 	// Greedy Constructor
 	Node(

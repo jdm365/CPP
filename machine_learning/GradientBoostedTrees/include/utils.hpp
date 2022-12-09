@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <algorithm>
 #include <stdlib.h>
 
 std::pair<

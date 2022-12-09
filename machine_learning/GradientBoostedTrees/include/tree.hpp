@@ -21,6 +21,7 @@ struct Tree {
 			float& min_child_weight,
 			int&   min_data_in_leaf
 		);
+	~Tree() {};
 
 	// Histogram Constructor
 	Tree(
