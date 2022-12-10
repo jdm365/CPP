@@ -7,7 +7,7 @@
 
 
 inline std::vector<float> calc_grad(
-		float* preds,
+		std::vector<float>& preds,
 		std::vector<float>& y,
 		const char* loss_fn
 		) {
@@ -39,7 +39,7 @@ inline std::vector<float> calc_grad(
 
 
 inline std::vector<float> calc_hess(
-		float* preds,
+		std::vector<float>& preds,
 		std::vector<float>& y,
 		const char* loss_fn
 		) {

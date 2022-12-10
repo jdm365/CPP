@@ -5,10 +5,10 @@
 #include <random>
 #include <assert.h>
 
-#include "node.hpp"
-#include "tree.hpp"
-#include "utils.hpp"
-#include "feature_histograms.hpp"
+#include "../include/node.hpp"
+#include "../include/tree.hpp"
+#include "../include/utils.hpp"
+#include "../include/feature_histograms.hpp"
 
 /*
 ****************************************************************
@@ -71,7 +71,7 @@ Tree::Tree(
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
 
 	struct FeatureHistograms hists(int(subsample_cols.size()), max_bin);
-	hists.calc_hists(X_hist, subsample_cols, gradient, hessian, row_idxs, max_bin, true);
+	hists.calc_hists(X_hist, subsample_cols, gradient, hessian, row_idxs, true);
 
 
 	// Creating the root node will recursively create nodes and build the tree.
@@ -98,7 +98,7 @@ std::vector<float> Tree::predict(std::vector<std::vector<float>>& X_pred) {
 	return (*root).predict(X_pred);
 }
 
-float* Tree::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
+std::vector<float> Tree::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
 	return (*root).predict_hist(X_hist_pred);
 }
 

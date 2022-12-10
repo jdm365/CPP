@@ -4,17 +4,16 @@
 #include <array>
 #include <assert.h>
 
-#include "read_data.hpp"
-#include "utils.hpp"
-#include "gbm.hpp"
+#include "../include/read_data.hpp"
+#include "../include/utils.hpp"
+#include "../include/gbm.hpp"
 
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
 	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "~/CPP/machine_learning/GradientBoostedTrees/data/hpx10.csv";
+	const char* FILENAME = "data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
-	std::cout << "data problem" << std::endl;
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
 	// std::vector<std::vector<float>> X = read_csv_rowmajor(FILENAME);
 
@@ -43,10 +42,9 @@ int main() {
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);
 
-	float* y_preds = model.predict_hist(X_test);
+	std::vector<float> y_preds = model.predict_hist(X_test);
 
 	std::cout << "Test MSE Loss: " << model.calculate_mse_loss(y_preds, y_test) << std::endl;
 
-	free(y_preds);
 	return 0;
 }

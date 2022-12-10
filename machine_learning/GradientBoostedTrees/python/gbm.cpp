@@ -3,8 +3,7 @@
 #include <pybind11/numpy.h>
 #include <vector>
 
-// #include "include/gbm.hpp"
-#include "gbm.hpp"
+#include "../include/gbm.hpp"
 
 namespace py = pybind11;
 

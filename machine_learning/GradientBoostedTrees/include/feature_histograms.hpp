@@ -25,7 +25,6 @@ struct FeatureHistograms {
 			std::vector<float>& gradient,
 			std::vector<float>& hessian,
 			std::vector<int>& row_idxs,
-			int  max_bin,
 			bool root=false,
 			bool const_hessian=false 
 			); 
@@ -45,8 +44,7 @@ struct FeatureHistograms {
 	void calc_hists_hess(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& hessian,
-			std::vector<int>& row_idxs,
-			int max_bin
+			std::vector<int>& row_idxs
 			); 
 	std::pair<float, float> get_col_sums(int max_bin);
 };

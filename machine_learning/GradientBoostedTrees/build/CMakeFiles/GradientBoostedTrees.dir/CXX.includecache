@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jdm365/CPP/machine_learning/GradientBoostedTrees/include/utils.hpp
+iostream
+-
+vector
+-
+array
+-
+algorithm
+-
+stdlib.h
+-
+
+/home/jdm365/CPP/machine_learning/GradientBoostedTrees/src/utils.cpp
+iostream
+-
+vector
+-
+array
+-
+stdlib.h
+-
+assert.h
+-
+../include/utils.hpp
+/home/jdm365/CPP/machine_learning/GradientBoostedTrees/include/utils.hpp
+

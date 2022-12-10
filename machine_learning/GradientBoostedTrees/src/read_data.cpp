@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 
-#include "read_data.hpp"
+#include "../include/read_data.hpp"
 
 int get_dims(std::string* line) {
 	int dims = 1;

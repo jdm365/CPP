@@ -2,8 +2,8 @@
 #include <vector>
 #include <omp.h>
 
-#include "feature_histograms.hpp"
-#include "utils.hpp"
+#include "../include/feature_histograms.hpp"
+#include "../include/utils.hpp"
 
 
 Bin::Bin(float grad, float hess, int _bin_cnt) {
@@ -46,7 +46,6 @@ void FeatureHistograms::calc_hists(
 		std::vector<float>& gradient,
 		std::vector<float>& hessian,
 		std::vector<int>& row_idxs,
-		int  max_bin,
 		bool root,
 		bool const_hessian
 		) {
@@ -224,8 +223,7 @@ void FeatureHistograms::calc_hists_grad_single_feature(
 void FeatureHistograms::calc_hists_hess(
 		const std::vector<std::vector<uint8_t>>& X_hist,
 		std::vector<float>& hessian,
-		std::vector<int>& row_idxs,
-		int max_bin
+		std::vector<int>& row_idxs
 		) {
 	int bin;
 

@@ -6,25 +6,25 @@ project(GradientBoostedTrees)
 file(GLOB all_SRCS
 	"${PROJECT_SOURCE_DIR}/src/*.cpp"
 	"${PROJECT_SOURCE_DIR}/src/*.c"
-	"${PROJECT_SOURCE_DIR}/python/*.cpp"
+	## "${PROJECT_SOURCE_DIR}/python/*.cpp"
 	)
 add_executable(${PROJECT_NAME} ${all_SRCS})
 
 include_directories(
 	${PROJECT_SOURCE_DIR}/include
-	/usr/include/python3.9/
+	## /usr/include/python3.9/
 	)
 
 ########################################################################
 ############################ OPEN MP ###################################
 ########################################################################
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND)
 	target_link_libraries("${PROJECT_NAME}" PUBLIC OpenMP::OpenMP_CXX)
 endif()
 ########################################################################
 
-
+#[===[
 ########################################################################
 ############################ PYBIND11 ##################################
 ########################################################################
@@ -39,11 +39,13 @@ install(
 	LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}"
 	)
 ########################################################################
+]===]
 
-## set(CMAKE_CXX_FLAGS "-Wall -O3 -ffast-math -fopenmp -fPIC -shared -march=native -I /usr/include/python3.9/")
-set(CMAKE_CXX_FLAGS "-Wall -O3 -ffast-math -fopenmp -fPIC -shared -march=native")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -Wextra -O3 -ffast-math -fopenmp -fPIC -march=native")
 
-##set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/release)
+## DO NOT ADD -shared TAG. WILL CAUSE SEG FAULTS!!! ##
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/release)
 file(COPY data DESTINATION ${CMAKE_BINARY_DIR})
 
-##install(TARGETS "${PROJECT_NAME}" RUNTIME DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
+install(TARGETS "${PROJECT_NAME}" RUNTIME DESTINATION "${EXECUTABLE_OUTPUT_PATH}")

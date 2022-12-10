@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <omp.h>
 
-#include "node.hpp"
-#include "utils.hpp"
+#include "../include/node.hpp"
+#include "../include/utils.hpp"
 
 
 /*
@@ -189,8 +189,8 @@ float Node::predict_obs_hist(const std::vector<uint8_t>& obs) {
 }
 
 
-float* Node::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
-	float* preds = (float*) malloc(sizeof(float) * X_hist_pred.size());
+std::vector<float> Node::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
+	std::vector<float> preds(int(X_hist_pred.size()));
 
 	for (int row = 0; row < int(X_hist_pred.size()); ++row) {
 		preds[row] = predict_obs_hist(X_hist_pred[row]);
@@ -427,7 +427,7 @@ void Node::get_hist_split(
 	depth++;
 	if (left_idxs.size() > right_idxs.size()) {
 		FeatureHistograms left_hists(n_cols, max_bin);
-		left_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, left_idxs, max_bin);
+		left_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, left_idxs);
 		hists.calc_diff_hist(left_hists);
 
 		if (num_leaves + depth < max_leaves) {
@@ -471,7 +471,7 @@ void Node::get_hist_split(
 	}
 	else {
 		FeatureHistograms right_hists(n_cols, max_bin);
-		right_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, right_idxs, max_bin);
+		right_hists.calc_hists(X_hist, subsample_cols, gradient, hessian, right_idxs);
 		hists.calc_diff_hist(right_hists);
 
 		if (num_leaves + depth < max_leaves) {

@@ -7,7 +7,7 @@
 #include <chrono>
 #include <assert.h>
 
-#include "histogram_mapping.hpp"
+#include "../include/histogram_mapping.hpp"
 
 std::vector<std::vector<uint8_t>> map_hist_bins_train(
 		std::vector<std::vector<float>>& X,

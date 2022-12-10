@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "utils.hpp"
+#include "../include/utils.hpp"
 
 
 std::pair<
@@ -142,14 +142,10 @@ std::vector<float> get_ordered_gradients(
 		std::vector<float> vec_1, 
 		int max_val
 		) {
-	uint8_t output_0[vec_0.size()];
-	float   output_1[vec_0.size()];
+	std::vector<uint8_t> output_0(vec_0.size());
+	std::vector<float>   output_1(vec_0.size());
 
-	int count[max_val + 1]; 
-
-	for (int idx = 0; idx < max_val + 1; ++idx) {
-		count[idx] = 0;
-	}
+	std::vector<int> count(max_val + 1); 
 
 	for (int idx = 1; idx < int(vec_0.size()); ++idx) {
 		++count[int(vec_0[idx])];

@@ -39,6 +39,6 @@ struct Tree {
 		);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
-	float* predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
+	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 
 	std::vector<int> get_subsample_cols(float& col_subsample_rate, int n_cols, int tree_num);
 };

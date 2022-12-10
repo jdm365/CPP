@@ -8,12 +8,12 @@
 #include <random>
 #include <assert.h>
 
-#include "node.hpp"
-#include "tree.hpp"
-#include "gbm.hpp"
-#include "histogram_mapping.hpp"
-#include "utils.hpp"
-#include "loss_functions.hpp"
+#include "../include/node.hpp"
+#include "../include/tree.hpp"
+#include "../include/gbm.hpp"
+#include "../include/histogram_mapping.hpp"
+#include "../include/utils.hpp"
+#include "../include/loss_functions.hpp"
 
 
 GBM::GBM(
@@ -41,7 +41,7 @@ GBM::GBM(
 	num_boosting_rounds = _num_boosting_rounds;
 	max_bin				= _max_bin;
 	max_leaves			= 2 * _max_leaves + 1; // This represents max nodes to
-												  // get max leaves.
+											   // get max leaves.
 
 	trees.reserve(_num_boosting_rounds);
 }
@@ -65,10 +65,7 @@ void GBM::train_greedy(
 	y_mean_train /= y.size();
 
 	std::vector<float> round_preds;
-	float* preds = (float*) malloc(sizeof(float) * n_rows);
-	for (int idx = 0; idx < n_rows; ++idx) {
-		preds[idx] = y_mean_train;
-	}
+	std::vector<float> preds(n_rows, y_mean_train);
 
 	std::vector<std::vector<float>> X_rowmajor(
 			n_rows,
@@ -105,7 +102,6 @@ void GBM::train_greedy(
 		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
 		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
 	}
-	free(preds);
 }
 
 
@@ -133,13 +129,10 @@ void GBM::train_hist(
 
 	// Add mean for better start.
 	y_mean_train = get_vector_mean(y);
-	std::vector<float*> all_preds;
+	std::vector<std::vector<float>> all_preds;
 
-	float* round_preds = (float*) malloc(sizeof(float) * n_rows);
-	float* preds 	   = (float*) malloc(sizeof(float) * n_rows);
-	for (int idx = 0; idx < n_rows; ++idx) {
-		preds[idx] = y_mean_train;
-	}
+	std::vector<float> round_preds(n_rows);
+	std::vector<float> preds(n_rows, y_mean_train);
 
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
@@ -217,8 +210,6 @@ void GBM::train_hist(
 		std::cout << "       "; 
 		std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
 	}
-	free(round_preds);
-	free(preds);
 }
 
 
@@ -249,13 +240,9 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
 }
 
 
-float* GBM::predict_hist(std::vector<std::vector<float>>& X) {
-	float* preds = (float*) malloc(sizeof(float) * X[0].size());
-	float* tree_preds;
-
-	for (int row = 0; row < int(X[0].size()); ++row) {
-		preds[row] = y_mean_train;
-	}
+std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
+	std::vector<float> preds(int(X[0].size()), y_mean_train);
+	std::vector<float> tree_preds;
 
 	std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X, bin_mapping);
 	std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
@@ -270,21 +257,21 @@ float* GBM::predict_hist(std::vector<std::vector<float>>& X) {
 }
 
 
-std::vector<float> GBM::calculate_gradient(float* preds, std::vector<float>& y) {
+std::vector<float> GBM::calculate_gradient(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> gradient = calc_grad(preds, y, "fair_loss");
 	// std::vector<float> gradient = calc_grad(preds, y, "mse_loss");
 	return gradient;
 }
 
 
-std::vector<float> GBM::calculate_hessian(float* preds, std::vector<float>& y) {
+std::vector<float> GBM::calculate_hessian(std::vector<float>& preds, std::vector<float>& y) {
 	std::vector<float> hessian = calc_hess(preds, y, "fair_loss");
 	// std::vector<float> hessian = calc_hess(preds, y, "mse_loss");
 	return hessian;
 }
 
 
-float GBM::calculate_mse_loss(float* preds, std::vector<float>& y) {
+float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) {
 	float loss = 0.00f;
 
 	// Assume MSE for now
