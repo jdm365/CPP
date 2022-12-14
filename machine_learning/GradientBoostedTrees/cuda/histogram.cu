@@ -1,48 +1,131 @@
-#include <algorithm>
 #include <stdio.h>
+#include <iostream>
 #include <cuda.h>
 #include <cuda_device_runtime_api.h>
 #include <cuda_runtime.h>
-#include <vector>
+
+#include "histogram.hpp"
 
 
-__global__ void vector_add(float* out, float* a, float* b, int n) {
-	int thd_idx = blockIdx.x * blockDim.x + threadIdx.x;
+template<typename T> void convert_cpu_array_to_gpu_array_2d(
+		T** cpu_array,
+		T** gpu_array,
+		int n_rows,
+		int n_cols
+		) {
 
-	if (thd_idx < n) {
-		out[thd_idx] = a[thd_idx] + b[thd_idx];
-	}
-}
-
-int main() {
-	std::vector<std::vector<uint8_t>> X_hist(100, std::vector<uint8_t>(100));
-
-	// Create X_hist on gpu \\
-	
-	// X_hist is columnar
-	int n_cols = int(X_hist.size());
-	int n_rows = int(X_hist[0].size());
-
-	uint8_t* X_hist_gpu;
-
-	// Copy 2d std::vector to 1d array.
-	uint8_t* X_hist_cpu = (uint8_t*)malloc(n_rows * n_cols);
+	// Copy 2d std::vector to array of col arrays.
 	for (int col = 0; col < n_cols; ++col) {
-		for (int row = 0; row < n_rows; ++row) {
-			X_hist_cpu[col * n_rows + row] = X_hist[col][row];
-		}
+		cudaMalloc(&gpu_array[col], sizeof(T) * n_rows);
+		cudaMemcpy(
+				gpu_array[col], 
+				cpu_array[col], 
+				sizeof(T) * n_rows, 
+				cudaMemcpyHostToDevice
+				);
 	}
-	cudaMalloc((void**)& X_hist_gpu, n_rows * n_cols);
-	cudaMemcpy(X_hist_gpu, X_hist_cpu, n_rows * n_cols, cudaMemcpyHostToDevice);
-	free(X_hist_cpu);
-
-
-	int block_size = 256;
-	int grid_size  = ((n_rows * n_cols + block_size) / block_size);
-
-	vector_add<<<grid_size, block_size>>>(out, a, b, N);
-	cudaMemcpy(d_out, out, sizeof(float) * N, cudaMemcpyHostToDevice);
-
-	cudaFree(X_hist_gpu);
-	return 0;
+	for (int col = 0; col < n_cols; ++col) {
+		free(cpu_array[col]);
+	}
+	free(cpu_array);
 }
+
+template<typename T> void convert_cpu_array_to_gpu_array(
+		T* cpu_array,
+		T* gpu_array,
+		int n_rows
+		) {
+	cudaMalloc(&gpu_array, sizeof(T) * n_rows);
+	std::cout << "test" << std::endl;
+	
+	cudaMemcpy(
+			gpu_array, 
+			cpu_array, 
+			sizeof(T) * n_rows, 
+			cudaMemcpyHostToDevice
+			);
+	free(cpu_array);
+}
+
+__global__ void calc_hists_single_feature(
+		uint8_t* X_hist_gpu_col,
+		Bin*   gpu_hist_col,
+		float* ordered_gradients,
+		float* ordered_hessians,
+		int* row_idxs
+		) {
+	int thd_idx = blockIdx.x * blockDim.x + threadIdx.x;
+	int bin = (int)X_hist_gpu_col[row_idxs[thd_idx]];
+
+	gpu_hist_col[bin].grad_sum += ordered_gradients[thd_idx];
+	gpu_hist_col[bin].hess_sum += ordered_hessians[thd_idx];
+	gpu_hist_col[bin].bin_cnt++;
+}
+
+
+void calc_hists_single_feature_wrapper(
+		uint8_t** X_hist_cpu,
+		Bin**   cpu_hist,
+		float* ordered_gradients,
+		float* ordered_hessians,
+		int* row_idxs,
+		int grid_size,
+		int block_size,
+		int n_rows,
+		int n_cols
+		) {
+	float* ordered_gradients_gpu;
+	convert_cpu_array_to_gpu_array(
+			ordered_gradients,
+			ordered_gradients_gpu,
+			n_rows
+			);
+
+
+	float* ordered_hessians_gpu;
+	convert_cpu_array_to_gpu_array(
+			ordered_hessians,
+			ordered_hessians_gpu,
+			n_rows
+			);
+
+
+	int*   row_idxs_gpu;
+	convert_cpu_array_to_gpu_array(
+			row_idxs,
+			row_idxs_gpu,
+			n_rows
+			);
+
+
+	uint8_t** X_hist_gpu;
+	convert_cpu_array_to_gpu_array_2d(
+			X_hist_cpu, 
+			X_hist_gpu, 
+			n_rows, 
+			n_cols
+			);
+
+	Bin** gpu_hist;
+	convert_cpu_array_to_gpu_array_2d(
+			cpu_hist, 
+			gpu_hist, 
+			n_rows, 
+			n_cols
+			);
+
+
+	for (int col = 0; col < n_cols; ++col) {
+		calc_hists_single_feature<<<grid_size, block_size>>>(
+				X_hist_gpu[col], 
+				gpu_hist[col],
+				ordered_gradients, 
+				ordered_hessians, 
+				row_idxs
+				);
+	}
+	cudaFree(X_hist_gpu);
+	cudaFree(gpu_hist);
+
+}
+

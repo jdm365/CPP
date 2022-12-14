@@ -4,17 +4,17 @@ import lightgbm as lgb
 
 
 ## df = pd.read_csv('../../data/housing_price_prediction_dataset.csv', header=None)
-df = pd.read_csv('../../data/hpx10.csv', header=None)
+df = pd.read_csv('../../../data/hpx10.csv', header=None)
 
 params = {
-        'boosting': 'gbdt',
-        'num_threads': 1,
+        'boosting': 'dart',
+        'num_threads': 0,
         'learning_rate': 0.2,
-        'max_depth': 8,
-        'num_leaves': 256,
+        'num_leaves': 31,
         'min_child_weight': 0.00,
         'objective': 'regression',
-        'verbosity': '-1'
+        'verbosity': '-1',
+        'device': 'gpu'
         }
 ds_params = {
         'is_enable_sparse': 'true',
