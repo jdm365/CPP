@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -Wall -Werror -Wpedantic -Wextra -Ofast -fopenmp -fPIC -march=native  -shared  -o GBDT_.so CMakeFiles/GBDT_.dir/python/api.cpp.o  /usr/lib/x86_64-linux-gnu/libboost_python38.so.1.71.0 

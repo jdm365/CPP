@@ -157,6 +157,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named GBDT_
+
+# Build rule for target.
+GBDT_: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 GBDT_
+.PHONY : GBDT_
+
+# fast build rule for target.
+GBDT_/fast:
+	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/build
+.PHONY : GBDT_/fast
+
+#=============================================================================
 # Target rules for targets named GradientBoostedTrees
 
 # Build rule for target.
@@ -168,6 +181,33 @@ GradientBoostedTrees: cmake_check_build_system
 GradientBoostedTrees/fast:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/build
 .PHONY : GradientBoostedTrees/fast
+
+python/api.o: python/api.cpp.o
+
+.PHONY : python/api.o
+
+# target to build an object file
+python/api.cpp.o:
+	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.o
+.PHONY : python/api.cpp.o
+
+python/api.i: python/api.cpp.i
+
+.PHONY : python/api.i
+
+# target to preprocess a source file
+python/api.cpp.i:
+	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.i
+.PHONY : python/api.cpp.i
+
+python/api.s: python/api.cpp.s
+
+.PHONY : python/api.s
+
+# target to generate assembly for a file
+python/api.cpp.s:
+	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.s
+.PHONY : python/api.cpp.s
 
 src/feature_histograms.o: src/feature_histograms.cpp.o
 
@@ -396,8 +436,12 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... GBDT_"
 	@echo "... install/strip"
 	@echo "... GradientBoostedTrees"
+	@echo "... python/api.o"
+	@echo "... python/api.i"
+	@echo "... python/api.s"
 	@echo "... src/feature_histograms.o"
 	@echo "... src/feature_histograms.i"
 	@echo "... src/feature_histograms.s"

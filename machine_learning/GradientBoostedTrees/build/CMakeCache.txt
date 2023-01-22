@@ -14,6 +14,14 @@
 # EXTERNAL cache entries
 ########################
 
+//The directory containing a CMake configuration file for Boost.
+Boost_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0
+
+//Path to a file.
+Boost_INCLUDE_DIR:PATH=/usr/include
+
+Boost_PYTHON_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_python38.so.1.71.0
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
@@ -233,29 +241,28 @@ OpenMP_gomp_LIBRARY:FILEPATH=/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
 //Path to the pthread library for OpenMP
 OpenMP_pthread_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.so
 
-//Path to a library.
-Python_LIBRARY_DEBUG:FILEPATH=
-
-//Path to a library.
-Python_LIBRARY_RELEASE:FILEPATH=/home/jdm365/anaconda3/lib/libpython3.9.so
-
-//Path to a program.
-_Python_EXECUTABLE:FILEPATH=/home/jdm365/.pyenv/shims/python3
-
 //Path to a file.
-_Python_INCLUDE_DIR:PATH=/home/jdm365/anaconda3/include/python3.9
+PYTHON_INCLUDE_DIR:PATH=/usr/include/python3.9
 
 //Path to a library.
-_Python_LIBRARY_RELEASE:FILEPATH=/home/jdm365/anaconda3/lib/libpython3.9.so
+PYTHON_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpython3.9.so
 
-//The directory containing a CMake configuration file for pybind11.
-pybind11_DIR:PATH=/home/jdm365/anaconda3/share/cmake/pybind11
+//Path to a library.
+PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
+
+//The directory containing a CMake configuration file for boost_headers.
+boost_headers_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_headers-1.71.0
+
+//The directory containing a CMake configuration file for boost_python.
+boost_python_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_python-1.71.0
 
 
 ########################
 # INTERNAL cache entries
 ########################
 
+//ADVANCED property for variable: Boost_DIR
+Boost_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_ADDR2LINE
 CMAKE_ADDR2LINE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
@@ -399,16 +406,16 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding Boost
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake][cfound components: python ][v1.71.0()]
 //Details about finding OpenMP
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][TRUE][c ][v()]
 //Details about finding OpenMP_C
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_C:INTERNAL=[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.so][v()]
 //Details about finding OpenMP_CXX
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_CXX:INTERNAL=[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.so][v()]
-//Details about finding Python
-FIND_PACKAGE_MESSAGE_DETAILS_Python:INTERNAL=[/home/jdm365/.pyenv/shims/python3][/home/jdm365/anaconda3/lib/libpython3.9.so][/home/jdm365/anaconda3/include/python3.9][cfound components: Interpreter Development ][v3.9.7(3.9)]
-//Test HAS_FLTO
-HAS_FLTO:INTERNAL=1
+//Details about finding PythonLibs
+FIND_PACKAGE_MESSAGE_DETAILS_PythonLibs:INTERNAL=[/usr/lib/x86_64-linux-gnu/libpython3.9.so][/usr/include/python3.9][v3.9.5(3.9)]
 //Result of TRY_COMPILE
 OpenMP_COMPILE_RESULT_CXX_fopenmp:INTERNAL=TRUE
 //Result of TRY_COMPILE
@@ -433,24 +440,14 @@ OpenMP_SPECTEST_C_:INTERNAL=TRUE
 OpenMP_gomp_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OpenMP_pthread_LIBRARY
 OpenMP_pthread_LIBRARY-ADVANCED:INTERNAL=1
-//Python executable during the last CMake run
-PYBIND11_PYTHON_EXECUTABLE_LAST:INTERNAL=/home/jdm365/.pyenv/shims/python3
-//Python debug status
-PYTHON_IS_DEBUG:INTERNAL=0
-PYTHON_MODULE_EXTENSION:INTERNAL=.cpython-39-x86_64-linux-gnu.so
-//ADVANCED property for variable: Python_LIBRARY_DEBUG
-Python_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Python_LIBRARY_RELEASE
-Python_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-_Python:INTERNAL=Python
-_Python_DEVELOPMENT_SIGNATURE:INTERNAL=476c9368b3fa74663083bdcac0f1e45a
-//ADVANCED property for variable: _Python_EXECUTABLE
-_Python_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: _Python_INCLUDE_DIR
-_Python_INCLUDE_DIR-ADVANCED:INTERNAL=1
-_Python_INTERPRETER_SIGNATURE:INTERNAL=f15714ea0cefe30b82531fb3731869cf
-//ADVANCED property for variable: _Python_LIBRARY_RELEASE
-_Python_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-//Directories where pybind11 and possibly Python headers are located
-pybind11_INCLUDE_DIRS:INTERNAL=/home/jdm365/anaconda3/include;/home/jdm365/anaconda3/include/python3.9
+//ADVANCED property for variable: PYTHON_INCLUDE_DIR
+PYTHON_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_LIBRARY
+PYTHON_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_LIBRARY_DEBUG
+PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_headers_DIR
+boost_headers_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_python_DIR
+boost_python_DIR-ADVANCED:INTERNAL=1
 
