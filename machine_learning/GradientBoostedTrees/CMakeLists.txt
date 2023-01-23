@@ -12,7 +12,7 @@ add_executable(${PROJECT_NAME} ${all_SRCS})
 
 
 find_package(PythonLibs 3.9 REQUIRED)
-find_package(Boost COMPONENTS python REQUIRED)
+find_package(Boost REQUIRED COMPONENTS python REQUIRED)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
@@ -23,7 +23,7 @@ target_include_directories(GBDT_ PRIVATE ${PYTHON_INCLUDE_DIRS})
 include_directories(
 	${PROJECT_SOURCE_DIR}/include
 	${PYTHON_INCLUDE_DIRS}
-	${BOOST_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
 	)
 
 ########################################################################

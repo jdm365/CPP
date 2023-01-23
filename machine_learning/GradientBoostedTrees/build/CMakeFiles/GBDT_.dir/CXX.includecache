@@ -67,11 +67,15 @@ stdlib.h
 /home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/api.cpp
 boost/python.hpp
 -
+boost/python/numpy.hpp
+-
+boost/smart_ptr/detail/yield_k.hpp
+-
+pylifecycle.h
+-
 iostream
 -
 iterator
--
-pylifecycle.h
 -
 vector
 -

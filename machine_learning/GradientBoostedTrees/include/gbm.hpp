@@ -25,6 +25,7 @@ struct GBM {
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
+	GBM();
 	GBM(
 			int   _max_depth,
 			float _l2_reg,
@@ -37,7 +38,7 @@ struct GBM {
 			float _col_subsample_rate = 1.00f,
 			bool  _dart = false
 		);
-	~GBM() {};
+	~GBM() {}
 
 	void train_greedy(
 			std::vector<std::vector<float>>& X, 

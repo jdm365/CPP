@@ -23,8 +23,9 @@ BOOST_PYTHON_MODULE(GBDT_) {
 
 	// def("test", test);
 
-	class_<GBM>("GBM", init<>())
-			.def(init<
+	class_<GBM>(
+			"GBM", 
+			init<
 				int, 
 				float, 
 				float,
@@ -34,14 +35,14 @@ BOOST_PYTHON_MODULE(GBDT_) {
 				int,
 				int,
 				float,
-				bool>()
+				bool
+			>()
 			)
-		//.def("train_hist", &GBM::train_hist, args("X", "y"))
+		//.def("train_hist", &GBM::train_hist)
 		;
 }
 
 
-/*
 void train_hist_wrapper(
 		GBM& gbm,
 		np::ndarray const& X,
@@ -72,7 +73,6 @@ void train_hist_wrapper(
 
 	gbm.train_hist(X_vec, y_vec);
 }
-*/
 
 
 

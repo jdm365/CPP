@@ -281,3 +281,4 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 	loss /= float(y.size());	
 	return loss;
 }
+
