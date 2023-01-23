@@ -20,6 +20,8 @@ Boost_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0
 //Path to a file.
 Boost_INCLUDE_DIR:PATH=/usr/include
 
+Boost_NUMPY_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_numpy38.so.1.71.0
+
 Boost_PYTHON_LIBRARY_RELEASE:STRING=/usr/lib/x86_64-linux-gnu/libboost_python38.so.1.71.0
 
 //Path to a program.
@@ -241,6 +243,12 @@ OpenMP_gomp_LIBRARY:FILEPATH=/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
 //Path to the pthread library for OpenMP
 OpenMP_pthread_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.so
 
+//Add module GBDT
+PYTHON_ENABLE_MODULE_GBDT:BOOL=ON
+
+//Path to a program.
+PYTHON_EXECUTABLE:FILEPATH=/home/jdm365/anaconda3/bin/python3.9
+
 //Path to a file.
 PYTHON_INCLUDE_DIR:PATH=/usr/include/python3.9
 
@@ -250,8 +258,14 @@ PYTHON_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpython3.9.so
 //Path to a library.
 PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
 
+//Add module GBDT shared
+PYTHON_MODULE_GBDT_BUILD_SHARED:BOOL=ON
+
 //The directory containing a CMake configuration file for boost_headers.
 boost_headers_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_headers-1.71.0
+
+//The directory containing a CMake configuration file for boost_numpy.
+boost_numpy_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_numpy-1.71.0
 
 //The directory containing a CMake configuration file for boost_python.
 boost_python_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_python-1.71.0
@@ -407,13 +421,15 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding Boost
-FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake][cfound components: python ][v1.71.0()]
+FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake][cfound components: python numpy ][v1.71.0()]
 //Details about finding OpenMP
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][TRUE][c ][v4.5()]
 //Details about finding OpenMP_C
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_C:INTERNAL=[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.so][v4.5()]
 //Details about finding OpenMP_CXX
 FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_CXX:INTERNAL=[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.so][v4.5()]
+//Details about finding PythonInterp
+FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/home/jdm365/anaconda3/bin/python3.9][v3.9.7()]
 //Details about finding PythonLibs
 FIND_PACKAGE_MESSAGE_DETAILS_PythonLibs:INTERNAL=[/usr/lib/x86_64-linux-gnu/libpython3.9.so][/usr/include/python3.9][v3.9.5(3.9)]
 //Result of TRY_COMPILE
@@ -440,14 +456,22 @@ OpenMP_SPECTEST_C_:INTERNAL=TRUE
 OpenMP_gomp_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OpenMP_pthread_LIBRARY
 OpenMP_pthread_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_ENABLE_MODULE_GBDT
+PYTHON_ENABLE_MODULE_GBDT-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_EXECUTABLE
+PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_INCLUDE_DIR
 PYTHON_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_LIBRARY
 PYTHON_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_LIBRARY_DEBUG
 PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_MODULE_GBDT_BUILD_SHARED
+PYTHON_MODULE_GBDT_BUILD_SHARED-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_headers_DIR
 boost_headers_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: boost_numpy_DIR
+boost_numpy_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_python_DIR
 boost_python_DIR-ADVANCED:INTERNAL=1
 

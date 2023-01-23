@@ -157,19 +157,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named GBDT_
-
-# Build rule for target.
-GBDT_: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 GBDT_
-.PHONY : GBDT_
-
-# fast build rule for target.
-GBDT_/fast:
-	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/build
-.PHONY : GBDT_/fast
-
-#=============================================================================
 # Target rules for targets named GradientBoostedTrees
 
 # Build rule for target.
@@ -182,13 +169,26 @@ GradientBoostedTrees/fast:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/build
 .PHONY : GradientBoostedTrees/fast
 
+#=============================================================================
+# Target rules for targets named GBDT
+
+# Build rule for target.
+GBDT: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 GBDT
+.PHONY : GBDT
+
+# fast build rule for target.
+GBDT/fast:
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/build
+.PHONY : GBDT/fast
+
 python/api.o: python/api.cpp.o
 
 .PHONY : python/api.o
 
 # target to build an object file
 python/api.cpp.o:
-	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/python/api.cpp.o
 .PHONY : python/api.cpp.o
 
 python/api.i: python/api.cpp.i
@@ -197,7 +197,7 @@ python/api.i: python/api.cpp.i
 
 # target to preprocess a source file
 python/api.cpp.i:
-	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/python/api.cpp.i
 .PHONY : python/api.cpp.i
 
 python/api.s: python/api.cpp.s
@@ -206,7 +206,7 @@ python/api.s: python/api.cpp.s
 
 # target to generate assembly for a file
 python/api.cpp.s:
-	$(MAKE) -f CMakeFiles/GBDT_.dir/build.make CMakeFiles/GBDT_.dir/python/api.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/python/api.cpp.s
 .PHONY : python/api.cpp.s
 
 src/feature_histograms.o: src/feature_histograms.cpp.o
@@ -216,6 +216,7 @@ src/feature_histograms.o: src/feature_histograms.cpp.o
 # target to build an object file
 src/feature_histograms.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/feature_histograms.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/feature_histograms.cpp.o
 .PHONY : src/feature_histograms.cpp.o
 
 src/feature_histograms.i: src/feature_histograms.cpp.i
@@ -225,6 +226,7 @@ src/feature_histograms.i: src/feature_histograms.cpp.i
 # target to preprocess a source file
 src/feature_histograms.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/feature_histograms.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/feature_histograms.cpp.i
 .PHONY : src/feature_histograms.cpp.i
 
 src/feature_histograms.s: src/feature_histograms.cpp.s
@@ -234,6 +236,7 @@ src/feature_histograms.s: src/feature_histograms.cpp.s
 # target to generate assembly for a file
 src/feature_histograms.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/feature_histograms.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/feature_histograms.cpp.s
 .PHONY : src/feature_histograms.cpp.s
 
 src/gbm.o: src/gbm.cpp.o
@@ -243,6 +246,7 @@ src/gbm.o: src/gbm.cpp.o
 # target to build an object file
 src/gbm.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/gbm.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/gbm.cpp.o
 .PHONY : src/gbm.cpp.o
 
 src/gbm.i: src/gbm.cpp.i
@@ -252,6 +256,7 @@ src/gbm.i: src/gbm.cpp.i
 # target to preprocess a source file
 src/gbm.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/gbm.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/gbm.cpp.i
 .PHONY : src/gbm.cpp.i
 
 src/gbm.s: src/gbm.cpp.s
@@ -261,6 +266,7 @@ src/gbm.s: src/gbm.cpp.s
 # target to generate assembly for a file
 src/gbm.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/gbm.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/gbm.cpp.s
 .PHONY : src/gbm.cpp.s
 
 src/histogram_mapping.o: src/histogram_mapping.cpp.o
@@ -270,6 +276,7 @@ src/histogram_mapping.o: src/histogram_mapping.cpp.o
 # target to build an object file
 src/histogram_mapping.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/histogram_mapping.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/histogram_mapping.cpp.o
 .PHONY : src/histogram_mapping.cpp.o
 
 src/histogram_mapping.i: src/histogram_mapping.cpp.i
@@ -279,6 +286,7 @@ src/histogram_mapping.i: src/histogram_mapping.cpp.i
 # target to preprocess a source file
 src/histogram_mapping.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/histogram_mapping.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/histogram_mapping.cpp.i
 .PHONY : src/histogram_mapping.cpp.i
 
 src/histogram_mapping.s: src/histogram_mapping.cpp.s
@@ -288,6 +296,7 @@ src/histogram_mapping.s: src/histogram_mapping.cpp.s
 # target to generate assembly for a file
 src/histogram_mapping.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/histogram_mapping.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/histogram_mapping.cpp.s
 .PHONY : src/histogram_mapping.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -297,6 +306,7 @@ src/main.o: src/main.cpp.o
 # target to build an object file
 src/main.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/main.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
 src/main.i: src/main.cpp.i
@@ -306,6 +316,7 @@ src/main.i: src/main.cpp.i
 # target to preprocess a source file
 src/main.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/main.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -315,6 +326,7 @@ src/main.s: src/main.cpp.s
 # target to generate assembly for a file
 src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/main.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 src/node.o: src/node.cpp.o
@@ -324,6 +336,7 @@ src/node.o: src/node.cpp.o
 # target to build an object file
 src/node.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/node.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/node.cpp.o
 .PHONY : src/node.cpp.o
 
 src/node.i: src/node.cpp.i
@@ -333,6 +346,7 @@ src/node.i: src/node.cpp.i
 # target to preprocess a source file
 src/node.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/node.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/node.cpp.i
 .PHONY : src/node.cpp.i
 
 src/node.s: src/node.cpp.s
@@ -342,6 +356,7 @@ src/node.s: src/node.cpp.s
 # target to generate assembly for a file
 src/node.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/node.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/node.cpp.s
 .PHONY : src/node.cpp.s
 
 src/read_data.o: src/read_data.cpp.o
@@ -351,6 +366,7 @@ src/read_data.o: src/read_data.cpp.o
 # target to build an object file
 src/read_data.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/read_data.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/read_data.cpp.o
 .PHONY : src/read_data.cpp.o
 
 src/read_data.i: src/read_data.cpp.i
@@ -360,6 +376,7 @@ src/read_data.i: src/read_data.cpp.i
 # target to preprocess a source file
 src/read_data.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/read_data.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/read_data.cpp.i
 .PHONY : src/read_data.cpp.i
 
 src/read_data.s: src/read_data.cpp.s
@@ -369,6 +386,7 @@ src/read_data.s: src/read_data.cpp.s
 # target to generate assembly for a file
 src/read_data.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/read_data.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/read_data.cpp.s
 .PHONY : src/read_data.cpp.s
 
 src/tree.o: src/tree.cpp.o
@@ -378,6 +396,7 @@ src/tree.o: src/tree.cpp.o
 # target to build an object file
 src/tree.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/tree.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/tree.cpp.o
 .PHONY : src/tree.cpp.o
 
 src/tree.i: src/tree.cpp.i
@@ -387,6 +406,7 @@ src/tree.i: src/tree.cpp.i
 # target to preprocess a source file
 src/tree.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/tree.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/tree.cpp.i
 .PHONY : src/tree.cpp.i
 
 src/tree.s: src/tree.cpp.s
@@ -396,6 +416,7 @@ src/tree.s: src/tree.cpp.s
 # target to generate assembly for a file
 src/tree.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/tree.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/tree.cpp.s
 .PHONY : src/tree.cpp.s
 
 src/utils.o: src/utils.cpp.o
@@ -405,6 +426,7 @@ src/utils.o: src/utils.cpp.o
 # target to build an object file
 src/utils.cpp.o:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/utils.cpp.o
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/utils.cpp.o
 .PHONY : src/utils.cpp.o
 
 src/utils.i: src/utils.cpp.i
@@ -414,6 +436,7 @@ src/utils.i: src/utils.cpp.i
 # target to preprocess a source file
 src/utils.cpp.i:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/utils.cpp.i
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/utils.cpp.i
 .PHONY : src/utils.cpp.i
 
 src/utils.s: src/utils.cpp.s
@@ -423,6 +446,7 @@ src/utils.s: src/utils.cpp.s
 # target to generate assembly for a file
 src/utils.cpp.s:
 	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/src/utils.cpp.s
+	$(MAKE) -f CMakeFiles/GBDT.dir/build.make CMakeFiles/GBDT.dir/src/utils.cpp.s
 .PHONY : src/utils.cpp.s
 
 # Help Target
@@ -436,9 +460,9 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... GBDT_"
 	@echo "... install/strip"
 	@echo "... GradientBoostedTrees"
+	@echo "... GBDT"
 	@echo "... python/api.o"
 	@echo "... python/api.i"
 	@echo "... python/api.s"

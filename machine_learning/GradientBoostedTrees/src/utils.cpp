@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// #include <boost/python.hpp>
+// #include <boost/python/numpy.hpp>
+
 #include "../include/utils.hpp"
 
+// namespace np = boost::python::numpy;
 
 std::pair<
 		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
@@ -168,3 +172,36 @@ std::vector<float> get_ordered_gradients(
 	}
 	return vec_1;
 }
+
+
+/*
+std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
+
+	std::vector<std::vector<float>> X_vec;
+	std::vector<float> x_vec_col;
+
+	int x_dim = X.shape(0);
+	int y_dim = X.shape(1);
+
+	char* X_arr = X.get_data();
+
+	for (int i = 0; i < x_dim; ++i) {
+		for (int j = 0; j < y_dim; ++j) {
+			x_vec_col.push_back(float(X_arr[i * x_dim + j]));
+		}
+		X_vec.emplace_back(x_vec_col);
+		x_vec_col.clear();
+	}
+	return X_vec;
+}
+
+std::vector<float> np_to_vec(np::ndarray const& y) {
+	std::vector<float> y_vec;
+	int y_dim   = y.shape(0);
+	char* y_arr = y.get_data();
+	for (int i = 0; i < y_dim; ++i) {
+		y_vec.push_back(y_arr[i]);
+	}
+	return y_vec;
+}
+*/

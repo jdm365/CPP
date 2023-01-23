@@ -8,6 +8,9 @@
 #include <random>
 #include <assert.h>
 
+// #include <boost/python.hpp>
+// #include <boost/python/numpy.hpp>
+
 #include "../include/node.hpp"
 #include "../include/tree.hpp"
 #include "../include/gbm.hpp"
@@ -15,6 +18,7 @@
 #include "../include/utils.hpp"
 #include "../include/loss_functions.hpp"
 
+// namespace np = boost::python::numpy;
 
 GBM::GBM(
 		int   _max_depth,
@@ -282,3 +286,12 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 	return loss;
 }
 
+
+/*
+void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
+	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
+	std::vector<float> y_vec = np_to_vec(y);
+
+	this->train_hist(X_vec, y_vec);
+}
+*/

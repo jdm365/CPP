@@ -5,10 +5,16 @@
 #include <unordered_map>
 #include <map>
 
+// #include <boost/python.hpp>
+// #include <boost/python/numpy.hpp>
+
 #include "node.hpp"
 #include "tree.hpp"
 
 // GBM -> GradientBoostingMachine
+
+// namespace np = boost::python::numpy;
+
 
 struct GBM {
 	int   max_depth;
@@ -25,7 +31,7 @@ struct GBM {
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
-	GBM();
+	GBM() {}
 	GBM(
 			int   _max_depth,
 			float _l2_reg,
@@ -54,4 +60,11 @@ struct GBM {
 	std::vector<float> calculate_gradient(std::vector<float>& preds, std::vector<float>& y);
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
+
+	/*
+	void train_hist_wrapper(
+			np::ndarray const& X,
+			np::ndarray const& y
+			);
+	*/
 };
