@@ -1,3 +1,3 @@
 file(REMOVE_RECURSE
-  "libGradientBoostedTrees.a"
+  "../python/libGradientBoostedTrees.a"
 )

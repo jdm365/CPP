@@ -28,6 +28,7 @@ struct GBM {
 	int   max_leaves;
 	bool  dart;
 	float col_subsample_rate;
+	int verbosity;
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
@@ -42,7 +43,8 @@ struct GBM {
 			int   _max_bin,
 			int   _max_leaves,
 			float _col_subsample_rate = 1.00f,
-			bool  _dart = false
+			bool  _dart = false,
+			int   _verbosity = 50
 		);
 	~GBM() {}
 
@@ -61,8 +63,6 @@ struct GBM {
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 
-	void train_hist_wrapper(
-			np::ndarray const& X,
-			np::ndarray const& y
-			);
+	void train_hist_wrapper(np::ndarray const& X, np::ndarray const& y);
+	np::ndarray predict_hist_wrapper(np::ndarray const& X);
 };

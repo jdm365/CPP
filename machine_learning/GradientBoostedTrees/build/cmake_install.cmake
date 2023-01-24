@@ -38,7 +38,31 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/libGradientBoostedTrees.a")
+  if(EXISTS "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+    file(RPATH_CHECK
+         FILE "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so"
+         RPATH "")
+  endif()
+  list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
+   "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+  if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
+    message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
+  endif()
+  if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
+    message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
+  endif()
+file(INSTALL DESTINATION "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python" TYPE MODULE FILES "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+  if(EXISTS "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+    if(CMAKE_INSTALL_DO_STRIP)
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+    endif()
+  endif()
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/libGradientBoostedTrees.a")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)

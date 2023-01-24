@@ -243,9 +243,6 @@ OpenMP_gomp_LIBRARY:FILEPATH=/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
 //Path to the pthread library for OpenMP
 OpenMP_pthread_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.so
 
-//Add module GBDT
-PYTHON_ENABLE_MODULE_GBDT:BOOL=ON
-
 //Add module GBDTEngine
 PYTHON_ENABLE_MODULE_GBDTEngine:BOOL=ON
 
@@ -263,9 +260,6 @@ PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
 
 //Add module GBDTEngine shared
 PYTHON_MODULE_GBDTEngine_BUILD_SHARED:BOOL=ON
-
-//Add module GBDT shared
-PYTHON_MODULE_GBDT_BUILD_SHARED:BOOL=ON
 
 //The directory containing a CMake configuration file for boost_headers.
 boost_headers_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/boost_headers-1.71.0
@@ -462,8 +456,6 @@ OpenMP_SPECTEST_C_:INTERNAL=TRUE
 OpenMP_gomp_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OpenMP_pthread_LIBRARY
 OpenMP_pthread_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_ENABLE_MODULE_GBDT
-PYTHON_ENABLE_MODULE_GBDT-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_ENABLE_MODULE_GBDTEngine
 PYTHON_ENABLE_MODULE_GBDTEngine-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_EXECUTABLE
@@ -476,8 +468,6 @@ PYTHON_LIBRARY-ADVANCED:INTERNAL=1
 PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PYTHON_MODULE_GBDTEngine_BUILD_SHARED
 PYTHON_MODULE_GBDTEngine_BUILD_SHARED-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: PYTHON_MODULE_GBDT_BUILD_SHARED
-PYTHON_MODULE_GBDT_BUILD_SHARED-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_headers_DIR
 boost_headers_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: boost_numpy_DIR

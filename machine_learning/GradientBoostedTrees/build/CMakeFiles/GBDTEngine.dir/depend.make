@@ -8,6 +8,8 @@ CMakeFiles/GBDTEngine.dir/python/api.cpp.o: ../include/read_data.hpp
 CMakeFiles/GBDTEngine.dir/python/api.cpp.o: ../include/tree.hpp
 CMakeFiles/GBDTEngine.dir/python/api.cpp.o: ../include/utils.hpp
 CMakeFiles/GBDTEngine.dir/python/api.cpp.o: ../python/api.cpp
+CMakeFiles/GBDTEngine.dir/python/api.cpp.o: /usr/include/python3.9/cpython/pylifecycle.h
+CMakeFiles/GBDTEngine.dir/python/api.cpp.o: /usr/include/python3.9/pylifecycle.h
 
 CMakeFiles/GBDTEngine.dir/src/feature_histograms.cpp.o: ../include/feature_histograms.hpp
 CMakeFiles/GBDTEngine.dir/src/feature_histograms.cpp.o: ../include/utils.hpp

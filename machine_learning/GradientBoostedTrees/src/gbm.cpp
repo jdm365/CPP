@@ -18,6 +18,7 @@
 #include "../include/utils.hpp"
 #include "../include/loss_functions.hpp"
 
+namespace p  = boost::python;
 namespace np = boost::python::numpy;
 
 
@@ -31,7 +32,8 @@ GBM::GBM(
 		int   _max_bin,
 		int   _max_leaves,
 		float _col_subsample_rate,
-		bool  _dart
+		bool  _dart,
+		int   _verbosity
 		) {
 	if (_max_depth <= 0) {
 		_max_depth = 1048576;
@@ -47,6 +49,7 @@ GBM::GBM(
 	max_bin				= _max_bin;
 	max_leaves			= 2 * _max_leaves + 1; // This represents max nodes to
 											   // get max leaves.
+	verbosity			= _verbosity;
 
 	trees.reserve(_num_boosting_rounds);
 }
@@ -104,8 +107,10 @@ void GBM::train_greedy(
 		loss = calculate_mse_loss(preds, y);
 		auto stop = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
-		std::cout << "               Time Elapsed: " << duration.count() << std::endl;
+		if (round % verbosity == 0) {
+			std::cout << "Round " << round + 1 << " MSE Loss: " << loss;
+			std::cout << "               Time Elapsed: " << duration.count() << std::endl;
+		}
 	}
 }
 
@@ -208,12 +213,14 @@ void GBM::train_hist(
 		auto stop_1 = std::chrono::high_resolution_clock::now();
 		auto duration_1 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_1 - start_1);
 
-		std::cout << std::fixed << std::setprecision(6);
-		std::cout << "Round " << round + 1 << " MSE Loss: " << calculate_mse_loss(preds, y);
-		std::cout << "       "; 
-		std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
-		std::cout << "       "; 
-		std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
+		if (round % verbosity == (verbosity - 1)) {
+			std::cout << std::fixed << std::setprecision(6);
+			std::cout << "Round " << round + 1 << " MSE Loss: " << calculate_mse_loss(preds, y);
+			std::cout << "       "; 
+			std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
+			std::cout << "       "; 
+			std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
+		}
 	}
 }
 
@@ -293,4 +300,23 @@ void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
 	std::vector<float> y_vec = np_to_vec(y);
 
 	this->train_hist(X_vec, y_vec);
+}
+
+np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
+	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
+
+	// Need static declaration to keep pointer valid.
+	static std::vector<float> preds_vec = this->predict_hist(X_vec);
+
+	np::dtype dt    = np::dtype::get_builtin<float>();
+	p::tuple shape  = p::make_tuple(int(preds_vec.size()));
+	p::tuple stride = p::make_tuple(sizeof(float));
+
+	return np::from_data(
+			preds_vec.data(),
+			dt,
+			shape,
+			stride,
+			p::object()	
+			);
 }

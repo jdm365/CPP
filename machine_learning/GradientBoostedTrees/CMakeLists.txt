@@ -27,6 +27,8 @@ include_directories(
 
 PYTHON_ADD_MODULE(GBDTEngine ${lib_SRCS})
 target_link_libraries(GBDTEngine ${Boost_LIBRARIES} ${Python_LIBRARIES})
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/python)
+install(TARGETS GBDTEngine LIBRARY DESTINATION "${LIBRARY_OUTPUT_PATH}")
 ########################################################################
 
 
