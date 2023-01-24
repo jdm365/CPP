@@ -25,8 +25,8 @@ include_directories(
 	${Boost_INCLUDE_DIRS}
 	)
 
-PYTHON_ADD_MODULE(GBDT ${lib_SRCS})
-target_link_libraries(GBDT ${Boost_LIBRARIES} ${Python_LIBRARIES})
+PYTHON_ADD_MODULE(GBDTEngine ${lib_SRCS})
+target_link_libraries(GBDTEngine ${Boost_LIBRARIES} ${Python_LIBRARIES})
 ########################################################################
 
 

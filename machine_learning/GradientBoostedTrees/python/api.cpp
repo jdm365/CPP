@@ -60,7 +60,7 @@ std::vector<std::vector<float>> np_to_vec2d_test(np::ndarray const& X) {
 }
 
 
-BOOST_PYTHON_MODULE(GBDT) {
+BOOST_PYTHON_MODULE(GBDTEngine) {
 	Py_Initialize();
 	np::initialize();
 
