@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// #include <boost/python.hpp>
-// #include <boost/python/numpy.hpp>
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
 #include "../include/utils.hpp"
 
-// namespace np = boost::python::numpy;
+namespace np = boost::python::numpy;
 
 std::pair<
 		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
@@ -174,20 +174,19 @@ std::vector<float> get_ordered_gradients(
 }
 
 
-/*
 std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
 
 	std::vector<std::vector<float>> X_vec;
 	std::vector<float> x_vec_col;
 
-	int x_dim = X.shape(0);
-	int y_dim = X.shape(1);
+	int n_cols = X.shape(1);
+	int n_rows = X.shape(0);
 
-	char* X_arr = X.get_data();
+	float* X_arr = reinterpret_cast<float*>(X.get_data());
 
-	for (int i = 0; i < x_dim; ++i) {
-		for (int j = 0; j < y_dim; ++j) {
-			x_vec_col.push_back(float(X_arr[i * x_dim + j]));
+	for (int col = 0; col < n_cols; ++col) {
+		for (int row = 0; row < n_rows; ++row) {
+			x_vec_col.push_back(float(X_arr[col * n_rows + row]));
 		}
 		X_vec.emplace_back(x_vec_col);
 		x_vec_col.clear();
@@ -197,11 +196,12 @@ std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
 
 std::vector<float> np_to_vec(np::ndarray const& y) {
 	std::vector<float> y_vec;
-	int y_dim   = y.shape(0);
-	char* y_arr = y.get_data();
-	for (int i = 0; i < y_dim; ++i) {
-		y_vec.push_back(y_arr[i]);
+	int n_rows = y.shape(0);
+
+	float* y_arr = reinterpret_cast<float*>(y.get_data());
+
+	for (int row = 0; row < n_rows; ++row) {
+		y_vec.push_back(y_arr[row]);
 	}
 	return y_vec;
 }
-*/

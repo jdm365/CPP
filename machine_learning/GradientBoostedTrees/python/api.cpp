@@ -79,8 +79,20 @@ BOOST_PYTHON_MODULE(GBDT) {
 				float,
 				bool
 				>()
-				)
-		// .def("train_hist", &GBM::train_hist_wrapper, args("X", "y"))
-		.def("train_hist", &GBM::train_hist, args("X", "y"))
+					/*
+				arg("a"),
+				arg("b"),
+				arg("c"),
+				arg("d"),
+				arg("e"),
+				arg("f"),
+				arg("g"),
+				arg("h"),
+				arg("i"),
+				arg("j")
+			)
+				*/
+		)
+		.def("train_hist", &GBM::train_hist_wrapper, args("X", "y"))
 		;
 }

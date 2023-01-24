@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <stdlib.h>
 
-// #include <boost/python.hpp>
-// #include <boost/python/numpy.hpp>
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
-// namespace np = boost::python::numpy;
+namespace np = boost::python::numpy;
 
 std::pair<
 		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
@@ -48,7 +48,5 @@ inline float get_vector_mean(std::vector<float>& vec) {
 }
 
 
-/*
 std::vector<float> np_to_vec(np::ndarray const& X);
 std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
-*/

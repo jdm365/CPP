@@ -27,7 +27,6 @@ include_directories(
 
 PYTHON_ADD_MODULE(GBDT ${lib_SRCS})
 target_link_libraries(GBDT ${Boost_LIBRARIES} ${Python_LIBRARIES})
-target_include_directories(GBDT PRIVATE ${PYTHON_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include)
 ########################################################################
 
 
@@ -40,13 +39,13 @@ file(GLOB all_SRCS
 	"${PROJECT_SOURCE_DIR}/src/*.cpp"
 	"${PROJECT_SOURCE_DIR}/src/*.c"
 	)
-add_executable(${PROJECT_NAME} ${all_SRCS})
+add_library(${PROJECT_NAME} ${all_SRCS})
 
 
 ############################# OPEN MP ##################################
 find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND)
-	target_link_libraries("${PROJECT_NAME}" PUBLIC OpenMP::OpenMP_CXX)
+	target_link_libraries("${PROJECT_NAME}" PUBLIC OpenMP::OpenMP_CXX ${Boost_LIBRARIES} ${Python_LIBRARIES})
 endif()
 ########################################################################
 

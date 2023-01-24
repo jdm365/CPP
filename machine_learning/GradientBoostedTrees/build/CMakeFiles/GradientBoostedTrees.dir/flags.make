@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS = -Wall -Werror -Wpedantic -Wextra -Ofast -fopenmp -fPIC -march=native   -fopenmp -std=gnu++2a
 
-CXX_DEFINES = 
+CXX_DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_NUMPY_DYN_LINK -DBOOST_PYTHON_DYN_LINK
 
 CXX_INCLUDES = -I/home/jdm365/CPP/machine_learning/GradientBoostedTrees/include 
 

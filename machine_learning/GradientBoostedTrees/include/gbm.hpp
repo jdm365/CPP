@@ -5,15 +5,15 @@
 #include <unordered_map>
 #include <map>
 
-// #include <boost/python.hpp>
-// #include <boost/python/numpy.hpp>
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 
 #include "node.hpp"
 #include "tree.hpp"
 
 // GBM -> GradientBoostingMachine
 
-// namespace np = boost::python::numpy;
+namespace np = boost::python::numpy;
 
 
 struct GBM {
@@ -61,10 +61,8 @@ struct GBM {
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 
-	/*
 	void train_hist_wrapper(
 			np::ndarray const& X,
 			np::ndarray const& y
 			);
-	*/
 };

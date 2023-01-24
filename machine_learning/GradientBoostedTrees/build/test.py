@@ -3,25 +3,23 @@ try:
     import numpy as np
     import pandas as pd
 
+    df = pd.read_csv('data/hpx10.csv')
+    X  = df[df.columns[:-1]].to_numpy().astype(np.float32)
+    y  = df[df.columns[-1]].to_numpy().astype(np.float32)
 
     mod = GBDT.GBM(
             -1,
              0.00,
-             0.10,
+             0.50,
              1.00,
              20,
-             50,
+             100,
              255,
              127,
              0.80,
-             True
+             True 
              )
-    X = np.random.randint(0, 100, size=(100, 100))
-    y = np.random.randint(0, 100, size=(100, 1))
-    mod.train_hist(
-            X=X,
-            y=y
-            )
+    mod.train_hist(X=X, y=y)
 
 
     print('GBDT PASSED')
