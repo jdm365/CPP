@@ -60,7 +60,8 @@ struct GBM {
 			std::vector<std::vector<float>>& X, 
 			std::vector<float>& y,
 			std::vector<std::vector<float>>& X_validation, 
-			std::vector<float>& y_validation
+			std::vector<float>& y_validation,
+			int early_stopping_steps
 			);
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_rowmajor);
@@ -74,13 +75,19 @@ struct GBM {
 			np::ndarray const& X, 
 			np::ndarray const& y,
 			np::ndarray const& X_validation, 
-			np::ndarray const& y_validation
+			np::ndarray const& y_validation,
+			int early_stopping_steps
 			);
 	np::ndarray predict_hist_wrapper(np::ndarray const& X);
 
-	std::vector<float> predict_hist_iterative(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor);
+	std::vector<float> __predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor);
+	void predict_hist_iterative(
+			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
+			std::vector<float>& preds
+			);
 	float compute_validation_loss(
 			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
+			std::vector<float>& preds,
 			std::vector<float>& y
 			);
 };

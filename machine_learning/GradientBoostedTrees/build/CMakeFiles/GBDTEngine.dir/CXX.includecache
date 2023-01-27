@@ -99,6 +99,8 @@ random
 -
 assert.h
 -
+omp.h
+-
 boost/python.hpp
 -
 boost/python/numpy.hpp

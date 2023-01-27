@@ -6,23 +6,23 @@ import random
 import joblib
 
 
-arrayable = Union[np.ndarray, List, pd.DataFrame]
-
+arrayable   = Union[np.ndarray, List, pd.DataFrame]
 
 class GBDT:
     def __init__(
             self,
-            max_depth:           int = -1,
-            l2_reg:              float = 0.00,
-            lr:                  float = 0.50,
-            min_child_weight:    float = 1.0,
-            min_data_in_leaf:    int = 20,
-            num_boosting_rounds: int = 50,
-            max_bin:             int = 255,
-            max_leaves:          int = 31,
-            col_subsample_rate:  float = 0.8,
-            dart:                bool = False,
-            verbosity:           int = 1
+            max_depth:            int = -1,
+            l2_reg:               float = 0.00,
+            lr:                   float = 0.50,
+            min_child_weight:     float = 1.0,
+            min_data_in_leaf:     int = 20,
+            num_boosting_rounds:  int = 500,
+            max_bin:              int = 255,
+            max_leaves:           int = 31,
+            col_subsample_rate:   float = 0.8,
+            dart:                 bool = False,
+            verbosity:            int = 1,
+            early_stopping_steps: int = 10
             ):
         assert max_bin < 256, 'max_bin must be <= 255'
 
@@ -39,6 +39,7 @@ class GBDT:
                 dart,
                 verbosity
                 )
+        self.early_stopping_steps = early_stopping_steps
 
 
     def train_hist(
@@ -59,7 +60,8 @@ class GBDT:
                 X=X, 
                 y=y,
                 X_validation=X_validation,
-                y_validation=y_validation
+                y_validation=y_validation,
+                early_stopping_steps=self.early_stopping_steps
                 )
 
 
@@ -110,6 +112,8 @@ class GBDT:
         test_idxs  = idxs[int(data_size * train_size):]
 
         if type(data) == pd.DataFrame:
+            data = self._integer_encode(data)
+            data = data.fillna(-1)
             train_data = data.iloc[train_idxs]
             test_data  = data.iloc[test_idxs]
         else:
@@ -118,6 +122,15 @@ class GBDT:
 
         return train_data, test_data
 
+
+    def _integer_encode(self, df: pd.DataFrame) -> None:
+        for idx, dtype in enumerate(df.dtypes):
+            if dtype not in [str, object]:
+                continue
+            col = df.columns[idx]
+            mapping = {value: key for key, value in dict(enumerate(pd.unique(df[col]))).items()}
+            df[col] = df[col].map(mapping)
+        return df
 
 
     def _calc_mse(self, preds: np.ndarray, true: np.ndarray) -> float:
@@ -129,18 +142,20 @@ class GBDT:
 if __name__ == '__main__':
     model = GBDT(
             num_boosting_rounds=1000,
-            max_leaves=127, 
-            max_depth=6,
-            min_data_in_leaf=5, 
-            col_subsample_rate=1.0,
+            max_leaves=31, 
+            max_depth=-1,
+            min_data_in_leaf=20, 
+            col_subsample_rate=0.2,
             max_bin=255,
             lr=0.01, 
-            dart=False,
-            verbosity=10
+            dart=True,
+            verbosity=100,
+            early_stopping_steps=50
             )
 
     #df = pd.read_csv('../data/iris_dataset.csv')
-    df = pd.read_csv('../data/housing_price_prediction_dataset.csv')
+    #df = pd.read_csv('../data/housing_price_prediction_dataset.csv')
+    #df = pd.read_csv('../data/hpx10.csv')
     #df = pd.read_csv('../data/hpx100.csv')
-    #df = pd.read_feather('../data/preprocessed_train.feather')
+    df = pd.read_feather('../data/preprocessed_train.feather')
     model.train_eval(df)

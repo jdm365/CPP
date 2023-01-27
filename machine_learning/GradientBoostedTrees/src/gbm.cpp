@@ -7,6 +7,7 @@
 #include <chrono>
 #include <random>
 #include <assert.h>
+#include <omp.h>
 
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
@@ -188,12 +189,15 @@ void GBM::train_hist(
 					preds[idx] += lr * all_preds[pred_idxs[_idx]][idx];
 				}
 			}
+
+
 			// Dropped trees with scale factor
 			for (int _idx = int((1.00f - drop_rate) * round) + 1; _idx < round; ++_idx) {
 				for (int idx = 0; idx < n_rows; ++idx) {
 					preds[idx] += lr * scale_factor_0 * all_preds[pred_idxs[_idx]][idx];
 				}
 			}
+
 			// Current round.
 			for (int idx = 0; idx < n_rows; ++idx) {
 				preds[idx] += lr * scale_factor_0 * scale_factor_1 * all_preds[round][idx];
@@ -218,7 +222,7 @@ void GBM::train_hist(
 			std::cout << "       "; 
 			std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
 			std::cout << "       "; 
-			std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
+			std::cout << "Time Elapsed: " << duration_1.count() << " ms" << std::endl;
 		}
 	}
 }
@@ -228,8 +232,17 @@ void GBM::train_hist(
 		std::vector<std::vector<float>>& X, 
 		std::vector<float>& y,
 		std::vector<std::vector<float>>& X_validation,
-		std::vector<float>& y_validation
+		std::vector<float>& y_validation,
+		int early_stopping_steps
 		) {
+	float validation_loss;
+	int   stop_cntr = 0;
+	float min_validation_loss = INFINITY;
+
+	if (early_stopping_steps <= 0) {
+		early_stopping_steps = num_boosting_rounds;
+	}
+
 	int n_rows = int(X[0].size());
 
 	std::vector<float> gradient(n_rows, 0.00f);
@@ -240,6 +253,7 @@ void GBM::train_hist(
 	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, bin_mapping, max_bin);
 	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
+	// const std::vector<std::vector<uint8_t>> X_hist_val = map_hist_bins_inference(X_validation, bin_mapping);
 	const std::vector<std::vector<uint8_t>> X_hist_val = map_hist_bins_train(X_validation, bin_mapping, max_bin);
 	const std::vector<std::vector<uint8_t>> X_hist_rowmajor_val = get_hist_bins_rowmajor(X_hist_val);
 
@@ -257,9 +271,22 @@ void GBM::train_hist(
 
 	std::vector<float> round_preds(n_rows);
 	std::vector<float> preds(n_rows, y_mean_train);
+	std::vector<float> validation_preds(n_rows, y_mean_train);
 
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
+		// Check for early stopping.
+		if (stop_cntr == early_stopping_steps) {
+			std::cout << std::fixed << std::setprecision(6);
+			std::cout << "Round " << round << " MSE Train Loss: " << calculate_mse_loss(preds, y);
+			std::cout << "       "; 
+			std::cout << " MSE Validation Loss: " << validation_loss;
+			std::cout << "       "; 
+			std::cout << "Num leaves: " << (trees[round-1].num_leaves + 1) / 2 << std::endl << std::endl;
+			std::cout << "EARLY STOPPING" << std::endl; 
+			return;
+		}
+
 		trees.emplace_back(
 					X_hist,
 					gradient,
@@ -327,11 +354,20 @@ void GBM::train_hist(
 		auto stop_1 = std::chrono::high_resolution_clock::now();
 		auto duration_1 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_1 - start_1);
 
+		validation_loss = compute_validation_loss(X_hist_rowmajor_val, validation_preds, y_validation);
+		if (validation_loss < min_validation_loss) {
+			stop_cntr = 0;
+			min_validation_loss = validation_loss;
+		}
+		else {
+			stop_cntr++;
+		}
+
 		if (round % verbosity == (verbosity - 1)) {
 			std::cout << std::fixed << std::setprecision(6);
 			std::cout << "Round " << round + 1 << " MSE Train Loss: " << calculate_mse_loss(preds, y);
 			std::cout << "       "; 
-			std::cout << " MSE Validation Loss: " << compute_validation_loss(X_hist_rowmajor_val, y_validation);
+			std::cout << " MSE Validation Loss: " << validation_loss;
 			std::cout << "       "; 
 			std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
 			std::cout << "       "; 
@@ -369,32 +405,50 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
 
 
 std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
-	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X, bin_mapping);
+	// const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X, bin_mapping);
+	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, bin_mapping, max_bin);
 	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
-	return predict_hist_iterative(X_hist_rowmajor);
+	return __predict_hist(X_hist_rowmajor);
 }
 
 
-std::vector<float> GBM::predict_hist_iterative(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor) {
+std::vector<float> GBM::__predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor) {
 	std::vector<float> preds(int(X_hist_rowmajor.size()), y_mean_train);
 	std::vector<float> tree_preds;
 
-	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
-		tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
-		for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
-			preds[row] += lr * tree_preds[row];
+	#pragma omp parallel num_threads(omp_get_num_procs())
+	{
+		#pragma omp for schedule(static)
+		for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
+			tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
+			for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
+				preds[row] += lr * tree_preds[row];
+			}
 		}
 	}
 	return preds;
 }
 
+void GBM::predict_hist_iterative(
+		const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
+		std::vector<float>& preds
+		) {
+	std::vector<float> tree_preds;
+
+	tree_preds = trees[int(trees.size() - 1)].predict_hist(X_hist_rowmajor);
+	for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
+		preds[row] += lr * tree_preds[row];
+	}
+}
+
 
 float GBM::compute_validation_loss(
 		const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
+		std::vector<float>& preds,
 		std::vector<float>& y
 		) {
-	std::vector<float> preds = predict_hist_iterative(X_hist_rowmajor);
+	predict_hist_iterative(X_hist_rowmajor, preds);
 	return calculate_mse_loss(preds, y);
 }
 
@@ -437,7 +491,8 @@ void GBM::train_hist_wrapper_validation(
 		np::ndarray const& X, 
 		np::ndarray const& y,
 		np::ndarray const& X_validation, 
-		np::ndarray const& y_validation
+		np::ndarray const& y_validation,
+		int early_stopping_steps
 		) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
@@ -445,7 +500,7 @@ void GBM::train_hist_wrapper_validation(
 	std::vector<std::vector<float>> X_vec_validation = np_to_vec2d(X_validation);
 	std::vector<float> y_vec_validation = np_to_vec(y_validation);
 
-	train_hist(X_vec, y_vec, X_vec_validation, y_vec_validation);
+	train_hist(X_vec, y_vec, X_vec_validation, y_vec_validation, early_stopping_steps);
 }
 
 np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {

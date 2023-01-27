@@ -38,7 +38,13 @@ BOOST_PYTHON_MODULE(GBDTEngine) {
 				>()
 		)
 		.def("train_hist", &GBM::train_hist_wrapper, args("X", "y"))
-		.def("train_hist", &GBM::train_hist_wrapper_validation, args("X", "y", "X_validation", "y_validation"))
+		.def("train_hist", &GBM::train_hist_wrapper_validation, args(
+					"X", 
+					"y", 
+					"X_validation", 
+					"y_validation",
+					"early_stopping_steps"
+					))
 		.def("predict_hist", &GBM::predict_hist_wrapper, args("X"))
 		;
 }
