@@ -9,8 +9,6 @@ import joblib
 arrayable = Union[np.ndarray, List, pd.DataFrame]
 
 
-
-
 class GBDT:
     def __init__(
             self,
@@ -26,6 +24,7 @@ class GBDT:
             dart:                bool = False,
             verbosity:           int = 1
             ):
+        assert max_bin < 256, 'max_bin must be <= 255'
 
         self.engine = GBDTEngine.GBM(
                 max_depth,
@@ -42,11 +41,26 @@ class GBDT:
                 )
 
 
-    def train_hist(self, X: arrayable, y: arrayable) -> None:
+    def train_hist(
+            self, 
+            X: arrayable, 
+            y: arrayable, 
+            X_validation: arrayable = None, 
+            y_validation: arrayable = None
+            ) -> None:
         X = self.convert_to_np_float32(X)
         y = self.convert_to_np_float32(y)
 
-        self.engine.train_hist(X=X, y=y)
+        if (X_validation is not None) and (y_validation is not None):
+            X_validation = self.convert_to_np_float32(X_validation)
+            y_validation = self.convert_to_np_float32(y_validation)
+
+        self.engine.train_hist(
+                X=X, 
+                y=y,
+                X_validation=X_validation,
+                y_validation=y_validation
+                )
 
 
     def predict_hist(self, X: arrayable) -> np.ndarray:
@@ -64,6 +78,8 @@ class GBDT:
             train_size: float = 0.75, 
             random_seed: int = 42
             ) -> None:
+        ## Assumes target col is last col.
+
         df_train, df_test = self.train_test_split(df)
 
         X_train = df_train[df_train.columns[:-1]]
@@ -72,9 +88,9 @@ class GBDT:
         X_test = df_test[df_test.columns[:-1]]
         y_test = self.convert_to_np_float32(df_test[df_test.columns[-1]])
 
-        self.train_hist(X_train, y_train)
+        self.train_hist(X_train, y_train, X_test, y_test)
         preds = model.predict_hist(X_test)
-        print(f'Test MSE: {model.calc_mse(preds, y_test)}')
+        print(f'Test MSE: {model._calc_mse(preds, y_test)}')
 
 
     def train_test_split(
@@ -104,15 +120,27 @@ class GBDT:
 
 
 
-    def calc_mse(self, preds: np.ndarray, true: np.ndarray) -> float:
-        return np.sum((preds - true) * (preds - true)) / len(preds)
+    def _calc_mse(self, preds: np.ndarray, true: np.ndarray) -> float:
+        return 0.5 * np.sum((preds - true) * (preds - true)) / len(preds)
 
 
 
 
 if __name__ == '__main__':
-    model = GBDT(num_boosting_rounds=25, lr=0.1, dart=True)
+    model = GBDT(
+            num_boosting_rounds=1000,
+            max_leaves=127, 
+            max_depth=6,
+            min_data_in_leaf=5, 
+            col_subsample_rate=1.0,
+            max_bin=255,
+            lr=0.01, 
+            dart=False,
+            verbosity=10
+            )
 
+    #df = pd.read_csv('../data/iris_dataset.csv')
     df = pd.read_csv('../data/housing_price_prediction_dataset.csv')
     #df = pd.read_csv('../data/hpx100.csv')
+    #df = pd.read_feather('../data/preprocessed_train.feather')
     model.train_eval(df)

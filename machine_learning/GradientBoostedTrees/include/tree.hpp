@@ -23,7 +23,7 @@ struct Tree {
 		);
 	~Tree() {};
 
-	// Histogram Constructor
+	// Histogram Constructor CPU
 	Tree(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			std::vector<float>& gradient,

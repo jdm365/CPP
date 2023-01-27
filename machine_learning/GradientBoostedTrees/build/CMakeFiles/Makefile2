@@ -53,7 +53,6 @@ CMAKE_BINARY_DIR = /home/jdm365/CPP/machine_learning/GradientBoostedTrees/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/GradientBoostedTrees.dir/all
 all: CMakeFiles/GBDTEngine.dir/all
 
 .PHONY : all
@@ -64,37 +63,9 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/GradientBoostedTrees.dir/clean
 clean: CMakeFiles/GBDTEngine.dir/clean
 
 .PHONY : clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/GradientBoostedTrees.dir
-
-# All Build rule for target.
-CMakeFiles/GradientBoostedTrees.dir/all:
-	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/depend
-	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles --progress-num=11,12,13,14,15,16,17,18,19 "Built target GradientBoostedTrees"
-.PHONY : CMakeFiles/GradientBoostedTrees.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/GradientBoostedTrees.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles 9
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/GradientBoostedTrees.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles 0
-.PHONY : CMakeFiles/GradientBoostedTrees.dir/rule
-
-# Convenience name for target.
-GradientBoostedTrees: CMakeFiles/GradientBoostedTrees.dir/rule
-
-.PHONY : GradientBoostedTrees
-
-# clean rule for target.
-CMakeFiles/GradientBoostedTrees.dir/clean:
-	$(MAKE) -f CMakeFiles/GradientBoostedTrees.dir/build.make CMakeFiles/GradientBoostedTrees.dir/clean
-.PHONY : CMakeFiles/GradientBoostedTrees.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/GBDTEngine.dir

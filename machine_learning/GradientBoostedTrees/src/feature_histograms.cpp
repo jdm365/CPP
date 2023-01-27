@@ -6,6 +6,11 @@
 #include "../include/utils.hpp"
 
 
+/*
+***************************************************
+***************** CPU HISTOGRAMS ******************
+***************************************************
+*/
 Bin::Bin(float grad, float hess, int _bin_cnt) {
 	grad_sum = grad;
 	hess_sum = hess;
@@ -217,30 +222,6 @@ void FeatureHistograms::calc_hists_grad_single_feature(
 		bins[col][bin_0].grad_sum += ordered_gradients[idx];
 		bins[col][bin_0].hess_sum += 2.00f;
 		bins[col][bin_0].bin_cnt++;
-	}
-}
-
-void FeatureHistograms::calc_hists_hess(
-		const std::vector<std::vector<uint8_t>>& X_hist,
-		std::vector<float>& hessian,
-		std::vector<int>& row_idxs
-		) {
-	int bin;
-
-	std::vector<float> ordered_hessians;
-	ordered_hessians.reserve(row_idxs.size());
-
-	for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-		ordered_hessians.push_back(hessian[row_idxs[idx]]);
-	}
-
-	for (int col = 0; col < int(X_hist.size()); ++col) {
-		for (int idx = 0; idx < int(row_idxs.size()); ++idx) {
-			bin = int(X_hist[col][row_idxs[idx]]);
-
-			bins[col][bin].hess_sum += ordered_hessians[idx];
-			bins[col][bin].bin_cnt++;
-		}
 	}
 }
 

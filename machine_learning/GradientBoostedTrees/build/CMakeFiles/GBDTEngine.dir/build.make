@@ -201,6 +201,8 @@ GBDTEngine_EXTERNAL_OBJECTS =
 ../python/GBDTEngine.so: CMakeFiles/GBDTEngine.dir/build.make
 ../python/GBDTEngine.so: /usr/lib/x86_64-linux-gnu/libboost_python38.so.1.71.0
 ../python/GBDTEngine.so: /usr/lib/x86_64-linux-gnu/libboost_numpy38.so.1.71.0
+../python/GBDTEngine.so: /usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
+../python/GBDTEngine.so: /usr/lib/x86_64-linux-gnu/libpthread.so
 ../python/GBDTEngine.so: /usr/lib/x86_64-linux-gnu/libboost_python38.so.1.71.0
 ../python/GBDTEngine.so: CMakeFiles/GBDTEngine.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX shared module ../python/GBDTEngine.so"

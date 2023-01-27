@@ -40,7 +40,7 @@ Tree::Tree(
 
 /*
 ****************************************************************
-Histogram Constructor
+Tree Constructor CPU
 ****************************************************************
 */
 
@@ -93,6 +93,7 @@ Tree::Tree(
 			num_leaves
 		);
 }
+
 
 std::vector<float> Tree::predict(std::vector<std::vector<float>>& X_pred) {
 	return (*root).predict(X_pred);

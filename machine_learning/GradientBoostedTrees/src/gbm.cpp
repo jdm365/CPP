@@ -114,7 +114,6 @@ void GBM::train_greedy(
 	}
 }
 
-
 void GBM::train_hist(
 		std::vector<std::vector<float>>& X, 
 		std::vector<float>& y
@@ -225,6 +224,123 @@ void GBM::train_hist(
 }
 
 
+void GBM::train_hist(
+		std::vector<std::vector<float>>& X, 
+		std::vector<float>& y,
+		std::vector<std::vector<float>>& X_validation,
+		std::vector<float>& y_validation
+		) {
+	int n_rows = int(X[0].size());
+
+	std::vector<float> gradient(n_rows, 0.00f);
+	std::vector<float> hessian(n_rows, 2.00f);
+
+	auto start_0 = std::chrono::high_resolution_clock::now();
+
+	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(X, bin_mapping, max_bin);
+	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+
+	const std::vector<std::vector<uint8_t>> X_hist_val = map_hist_bins_train(X_validation, bin_mapping, max_bin);
+	const std::vector<std::vector<uint8_t>> X_hist_rowmajor_val = get_hist_bins_rowmajor(X_hist_val);
+
+	// Get min/max bin per col to avoid unneccessary split finding. 
+	std::vector<std::vector<uint8_t>> min_max_rem = get_min_max_rem(X_hist);
+
+	auto stop_0     = std::chrono::high_resolution_clock::now();
+	auto duration_0 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_0 - start_0);
+
+	std::cout << "Hist constructed in " << duration_0.count() << " milliseconds" << std::endl;
+
+	// Add mean for better start.
+	y_mean_train = get_vector_mean(y);
+	std::vector<std::vector<float>> all_preds;
+
+	std::vector<float> round_preds(n_rows);
+	std::vector<float> preds(n_rows, y_mean_train);
+
+	auto start_1 = std::chrono::high_resolution_clock::now();
+	for (int round = 0; round < num_boosting_rounds; ++round) {
+		trees.emplace_back(
+					X_hist,
+					gradient,
+					hessian,
+					max_depth,
+					l2_reg,
+					min_data_in_leaf,
+					max_bin,
+					max_leaves,
+					col_subsample_rate,
+					min_max_rem,
+					round
+			);
+
+
+		// Init random seed.
+		srand(42);
+		if (dart) {
+			float scale_factor_0 = 0.20f;
+			float scale_factor_1 = 1.00f;
+			float drop_rate		 = 0.04f;
+			
+			round_preds = trees[round].predict_hist(X_hist_rowmajor);
+			all_preds.push_back(round_preds);
+
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] = y_mean_train;
+			}
+
+			std::vector<int> pred_idxs(std::max(1, round));
+			std::iota(pred_idxs.begin(), pred_idxs.end(), 0);
+
+			auto rng = std::default_random_engine{};
+			std::shuffle(pred_idxs.begin(), pred_idxs.end(), rng);
+
+			// Use first (rounds * ratio) random idx round preds. 20% dropped.
+			
+			// Non-dropped trees
+			for (int _idx = 0; _idx < int((1.00f - drop_rate) * round) + 1; ++_idx) {
+				for (int idx = 0; idx < n_rows; ++idx) {
+					preds[idx] += lr * all_preds[pred_idxs[_idx]][idx];
+				}
+			}
+			// Dropped trees with scale factor
+			for (int _idx = int((1.00f - drop_rate) * round) + 1; _idx < round; ++_idx) {
+				for (int idx = 0; idx < n_rows; ++idx) {
+					preds[idx] += lr * scale_factor_0 * all_preds[pred_idxs[_idx]][idx];
+				}
+			}
+			// Current round.
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] += lr * scale_factor_0 * scale_factor_1 * all_preds[round][idx];
+			}
+		}
+		else {
+			round_preds = trees[round].predict_hist(X_hist_rowmajor);
+			for (int idx = 0; idx < n_rows; ++idx) {
+				preds[idx] += lr * round_preds[idx];
+			}
+		}
+
+		gradient = calculate_gradient(preds, y);
+		hessian  = calculate_hessian(preds, y);
+
+		auto stop_1 = std::chrono::high_resolution_clock::now();
+		auto duration_1 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_1 - start_1);
+
+		if (round % verbosity == (verbosity - 1)) {
+			std::cout << std::fixed << std::setprecision(6);
+			std::cout << "Round " << round + 1 << " MSE Train Loss: " << calculate_mse_loss(preds, y);
+			std::cout << "       "; 
+			std::cout << " MSE Validation Loss: " << compute_validation_loss(X_hist_rowmajor_val, y_validation);
+			std::cout << "       "; 
+			std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
+			std::cout << "       "; 
+			std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
+		}
+	}
+}
+
+
 std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
@@ -253,19 +369,33 @@ std::vector<float> GBM::predict(std::vector<std::vector<float>>& X) {
 
 
 std::vector<float> GBM::predict_hist(std::vector<std::vector<float>>& X) {
-	std::vector<float> preds(int(X[0].size()), y_mean_train);
-	std::vector<float> tree_preds;
+	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X, bin_mapping);
+	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
 
-	std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_inference(X, bin_mapping);
-	std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+	return predict_hist_iterative(X_hist_rowmajor);
+}
+
+
+std::vector<float> GBM::predict_hist_iterative(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor) {
+	std::vector<float> preds(int(X_hist_rowmajor.size()), y_mean_train);
+	std::vector<float> tree_preds;
 
 	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
 		tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
-		for (int row = 0; row < int(X[0].size()); ++row) {
+		for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
 			preds[row] += lr * tree_preds[row];
 		}
 	}
 	return preds;
+}
+
+
+float GBM::compute_validation_loss(
+		const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
+		std::vector<float>& y
+		) {
+	std::vector<float> preds = predict_hist_iterative(X_hist_rowmajor);
+	return calculate_mse_loss(preds, y);
 }
 
 
@@ -299,14 +429,30 @@ void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
 
-	this->train_hist(X_vec, y_vec);
+	train_hist(X_vec, y_vec);
+}
+
+
+void GBM::train_hist_wrapper_validation(
+		np::ndarray const& X, 
+		np::ndarray const& y,
+		np::ndarray const& X_validation, 
+		np::ndarray const& y_validation
+		) {
+	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
+	std::vector<float> y_vec = np_to_vec(y);
+
+	std::vector<std::vector<float>> X_vec_validation = np_to_vec2d(X_validation);
+	std::vector<float> y_vec_validation = np_to_vec(y_validation);
+
+	train_hist(X_vec, y_vec, X_vec_validation, y_vec_validation);
 }
 
 np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 
 	// Need static declaration to keep pointer valid.
-	static std::vector<float> preds_vec = this->predict_hist(X_vec);
+	static std::vector<float> preds_vec = predict_hist(X_vec);
 
 	np::dtype dt    = np::dtype::get_builtin<float>();
 	p::tuple shape  = p::make_tuple(int(preds_vec.size()));
