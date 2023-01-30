@@ -145,17 +145,27 @@ if __name__ == '__main__':
             max_leaves=31, 
             max_depth=-1,
             min_data_in_leaf=20, 
-            col_subsample_rate=0.2,
+            col_subsample_rate=1.0,
             max_bin=255,
-            lr=0.01, 
-            dart=True,
+            lr=0.01,
+            dart=False,
             verbosity=100,
-            early_stopping_steps=50
+            early_stopping_steps=-1
             )
 
+    EPSILON = False
+
     #df = pd.read_csv('../data/iris_dataset.csv')
-    #df = pd.read_csv('../data/housing_price_prediction_dataset.csv')
+    df = pd.read_csv('../data/housing_price_prediction_dataset.csv')
     #df = pd.read_csv('../data/hpx10.csv')
     #df = pd.read_csv('../data/hpx100.csv')
-    df = pd.read_feather('../data/preprocessed_train.feather')
-    model.train_eval(df)
+    #df = pd.read_feather('../data/preprocessed_train.feather')
+
+    if EPSILON:
+        from catboost.dataset import epsilon
+        df_train, df_test = epsilon()
+        model.train_eval(df_train)
+    else:
+        model.train_eval(df)
+
+

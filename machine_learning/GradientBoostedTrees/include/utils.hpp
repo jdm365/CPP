@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <stdlib.h>
 
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+
 #include <boost/python.hpp>
 #include <boost/python/numpy.hpp>
 
@@ -50,3 +53,15 @@ inline float get_vector_mean(std::vector<float>& vec) {
 
 std::vector<float> np_to_vec(np::ndarray const& X);
 std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
+
+
+/*
+***************************************************************
+***************************  GPU  *****************************
+***************************************************************
+*/
+
+typedef thrust::device_vector<uint8_t>* cuda_hist; 
+// TODO: Use 1d thrust::device_vector instead and manually index. 
+// 		 Array of vecs doesn't work / is pain in the ass.
+cuda_hist convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist);

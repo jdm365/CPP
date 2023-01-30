@@ -70,6 +70,7 @@ struct GBM {
 	std::vector<float> calculate_hessian(std::vector<float>& preds, std::vector<float>& y);
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 
+
 	void train_hist_wrapper(np::ndarray const& X, np::ndarray const& y);
 	void train_hist_wrapper_validation(
 			np::ndarray const& X, 
@@ -89,5 +90,29 @@ struct GBM {
 			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor,
 			std::vector<float>& preds,
 			std::vector<float>& y
+			);
+
+
+	/*
+	***************************************************************
+	***************************  GPU  *****************************
+	***************************************************************
+	*/
+	void train_hist_gpu(
+			const std::vector<std::vector<uint8_t>>& X_hist, 
+			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor, 
+			std::vector<float>& y
+			);
+	thrust::device_vector<float> calculate_gradient_gpu(
+			thrust::device_vector<float>& preds, 
+			const thrust::device_vector<float>& y
+			);
+	thrust::device_vector<float> calculate_hessian_gpu(
+			thrust::device_vector<float>& preds, 
+			const thrust::device_vector<float>& y
+			);
+	float calculate_mse_loss_gpu(
+			thrust::device_vector<float>& preds, 
+			const thrust::device_vector<float>& y
 			);
 };

@@ -11,11 +11,6 @@
 ***************** CPU HISTOGRAMS ******************
 ***************************************************
 */
-Bin::Bin(float grad, float hess, int _bin_cnt) {
-	grad_sum = grad;
-	hess_sum = hess;
-	bin_cnt  = _bin_cnt;
-}
 
 FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
 	bins.reserve(n_cols);

@@ -1,0 +1,36 @@
+#include <iostream>
+#include <vector>
+#include <array>
+#include <algorithm>
+#include <stdlib.h>
+
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+
+#include "../include/utils.hpp"
+
+/*
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
+
+namespace np = boost::python::numpy;
+*/
+
+/*
+Cannot create thrust::vector of thrust::vectors.
+Need to create array of thrust::vectors.
+Zip iterator has no way of handling N different
+iterators as far as I can tell.
+*/
+
+cuda_hist convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist) {
+	// Assumes X_hist is columnar.
+	int n_cols = int(X_hist.size());
+
+	cuda_hist hist = new thrust::device_vector<uint8_t>[n_cols];
+
+	for (int col = 0; col < n_cols; ++col) {
+		thrust::copy(X_hist[col].begin(), X_hist[col].end(), hist[col].begin());
+	}
+	return hist;
+}

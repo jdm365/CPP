@@ -55,6 +55,10 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 file(INSTALL DESTINATION "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python" TYPE MODULE FILES "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
   if(EXISTS "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
+    file(RPATH_CHANGE
+         FILE "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so"
+         OLD_RPATH "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python:"
+         NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/jdm365/CPP/machine_learning/GradientBoostedTrees/python/GBDTEngine.so")
     endif()

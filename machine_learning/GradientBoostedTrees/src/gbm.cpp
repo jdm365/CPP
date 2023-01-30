@@ -22,6 +22,7 @@
 namespace p  = boost::python;
 namespace np = boost::python::numpy;
 
+#define INF 1048576;
 
 GBM::GBM(
 		int   _max_depth,
@@ -37,7 +38,7 @@ GBM::GBM(
 		int   _verbosity
 		) {
 	if (_max_depth <= 0) {
-		_max_depth = 1048576;
+		_max_depth = INF;
 	}
 	dart				= _dart;
 	col_subsample_rate  = _col_subsample_rate;
@@ -371,7 +372,7 @@ void GBM::train_hist(
 			std::cout << "       "; 
 			std::cout << "Num leaves: " << (trees[round].num_leaves + 1) / 2;
 			std::cout << "       "; 
-			std::cout << "Time Elapsed: " << duration_1.count() << std::endl;
+			std::cout << "Time Elapsed: " << duration_1.count() << " ms" << std::endl;
 		}
 	}
 }
@@ -417,14 +418,10 @@ std::vector<float> GBM::__predict_hist(const std::vector<std::vector<uint8_t>>& 
 	std::vector<float> preds(int(X_hist_rowmajor.size()), y_mean_train);
 	std::vector<float> tree_preds;
 
-	#pragma omp parallel num_threads(omp_get_num_procs())
-	{
-		#pragma omp for schedule(static)
-		for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
-			tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
-			for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
-				preds[row] += lr * tree_preds[row];
-			}
+	for (int tree_num = 0; tree_num < int(trees.size()); ++tree_num) {
+		tree_preds = trees[tree_num].predict_hist(X_hist_rowmajor);
+		for (int row = 0; row < int(X_hist_rowmajor.size()); ++row) {
+			preds[row] += lr * tree_preds[row];
 		}
 	}
 	return preds;
@@ -509,9 +506,9 @@ np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
 	// Need static declaration to keep pointer valid.
 	static std::vector<float> preds_vec = predict_hist(X_vec);
 
-	np::dtype dt    = np::dtype::get_builtin<float>();
-	p::tuple shape  = p::make_tuple(int(preds_vec.size()));
-	p::tuple stride = p::make_tuple(sizeof(float));
+	np::dtype dt     = np::dtype::get_builtin<float>();
+	p::tuple  shape  = p::make_tuple(int(preds_vec.size()));
+	p::tuple  stride = p::make_tuple(sizeof(float));
 
 	return np::from_data(
 			preds_vec.data(),
