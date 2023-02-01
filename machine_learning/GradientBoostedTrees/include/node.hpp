@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <thrust/device_vector.h>
+#include <thrust/tuple.h>
 
 #include "feature_histograms.hpp"
 
@@ -152,4 +153,11 @@ struct Node {
 			int& max_leaves,
 			int& num_leaves
 			);
+
+	struct is_less_than {
+		typedef thrust::tuple<int, uint8_t> Tuple;
+		__host__ __device__ bool operator()(const Tuple& x) {
+			return thrust::get<0>(x) < (int)thrust::get<1>(x);
+		}
+	};
 };

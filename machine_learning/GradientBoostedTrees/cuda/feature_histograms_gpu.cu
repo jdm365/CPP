@@ -37,48 +37,65 @@ void GPUFeatureHistograms::calc_hists(
 		) {
 	int n_rows = int(row_idxs.size());
 
+	typedef thrust::device_vector<const uint8_t>::iterator ElementIterator;
+	typedef thrust::device_vector<int>::iterator   IndexIterator;
+	typedef thrust::device_vector<float>::iterator FloatIterator;
+	typedef thrust::permutation_iterator<ElementIterator, IndexIterator> PermuteIterator;
+
+	thrust::constant_iterator<int> const_iter(1);
+
+	thrust::device_vector<int> idx_maps(n_rows);
+
 	for (const int& idx: subsample_cols) {
-		thrust::constant_iterator<int> const_iter(1);
+		PermuteIterator row_iter(
+				X_hist.begin() + idx * n_rows,
+				row_idxs.begin()
+				);
 
-		//thrust::sort_by_key(row_iter, row_iter + (sizeof(row_iter) / sizeof(float)), gradient.begin());
+		/*
+		thrust::permutation_iterator<FloatIterator, PermuteIterator> row_iter_grad(
+				gradient.begin(),
+				row_iter
+				);
+		thrust::permutation_iterator<FloatIterator, PermuteIterator> row_iter_hess(
+				hessian.begin(),
+				row_iter
+				);
+		*/
 
-		thrust::device_vector<uint8_t> idx_maps;
+		/*
+		thrust::sort_by_key(
+				row_iter, 
+				row_iter + n_rows, 
+				gradient.begin()
+				);
+		thrust::sort_by_key(
+				row_iter, 
+				row_iter + n_rows, 
+				hessian.begin()
+				);
+		*/
 
 		thrust::reduce_by_key(
-				thrust::host,
-				thrust::make_permutation_iterator(
-					X_hist.begin() + idx * n_rows,
-					row_idxs.begin()
-				),
-				thrust::make_permutation_iterator(
-					X_hist.begin() + idx * n_rows,
-					row_idxs.end()
-				),
-				grad_bins.begin(),
-				idx_maps.begin(),
-				grad_bins.begin() + idx * n_rows
+				row_iter,
+				row_iter + n_rows,
+				gradient.begin(),
+				grad_bins.begin() + idx * n_rows,
+				idx_maps.begin()
 				);
 		thrust::reduce_by_key(
-				thrust::host,
-				thrust::make_permutation_iterator(
-					X_hist.begin() + idx * n_rows,
-					row_idxs.begin()
-				),
-				thrust::make_permutation_iterator(
-					X_hist.begin() + idx * n_rows,
-					row_idxs.end()
-				),
-				hess_bins.begin(),
-				idx_maps.begin(),
-				hess_bins.begin() + idx * n_rows
+				row_iter,
+				row_iter + n_rows,
+				hessian.begin(),
+				hess_bins.begin() + idx * n_rows,
+				idx_maps.begin()
 				);
 		thrust::reduce_by_key(
-				thrust::host,
+				row_iter,
+				row_iter + n_rows,
 				const_iter,
-				const_iter + (sizeof(const_iter) / sizeof(int)),
-				const_iter,
-				idx_maps.begin(),
-				bin_cnts.begin() + idx * n_rows
+				bin_cnts.begin() + idx * n_rows,
+				idx_maps.begin()
 				);
 	}
 }

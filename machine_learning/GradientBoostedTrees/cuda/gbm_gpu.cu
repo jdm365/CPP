@@ -24,9 +24,7 @@ void GBM::train_hist_gpu(
 		) {
 	int n_rows = int(y.size());
 
-	//thrust::device_vector<float> gradient(n_rows, 0.00f);
-	thrust::device_vector<float> gradient;
-	printf("made it");
+	thrust::device_vector<float> gradient(n_rows, 0.00f);
 	thrust::device_vector<float> hessian(n_rows, 2.00f);
 
 	// Add mean for better start.

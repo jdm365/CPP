@@ -32,7 +32,7 @@ include_directories(
 	${CUDA_INCLUDE_DIRS}
 	)
 
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda-11/bin/nvcc")
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda-12/bin/nvcc")
 cuda_add_library(culib SHARED ${cuda_SRCS})
 set_target_properties(culib PROPERTIES CUDA_SEPERABLE_COMPILATION ON)
 

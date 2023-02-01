@@ -6,6 +6,12 @@
 #include <numeric>
 #include <cmath>
 #include <unordered_map>
+#include <stdio.h>
+
+#include <thrust/device_vector.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/copy.h>
+#include <thrust/remove.h>
 
 #include "../include/node.hpp"
 #include "../include/utils.hpp"
@@ -97,7 +103,7 @@ void Node::get_hist_split(
 
 	int bin_cnt_sum = 0;
 
-	for (int col = 0; col < n_cols; ++col) {
+	for (const int& col: subsample_cols) {
 		/*
 		*************************************************************
 		****************** Find Best Col Split **********************
@@ -113,6 +119,7 @@ void Node::get_hist_split(
 
 		bin_cnt_sum = 0;
 
+		// printf("grad_sum %f \n\n", grad_sum);
 		for (int bin = col * max_bin; bin < (col + 1) * max_bin; ++bin) {
 			left_gradient_sum  += hists.grad_bins[bin];
 			left_hessian_sum   += hists.hess_bins[bin];
@@ -121,6 +128,7 @@ void Node::get_hist_split(
 
 			bin_cnt_sum += hists.bin_cnts[bin];
 
+			// printf("Bin %i count %i\n", bin - (col * max_bin), (int)hists.bin_cnts[bin]);
 			if (bin_cnt_sum < min_data_in_leaf) {
 				continue;
 			}
@@ -137,7 +145,7 @@ void Node::get_hist_split(
 					);
 
 			if (score > best_score) {
-				split_bin  = bin + 1;
+				split_bin  = bin + 1 - (col * max_bin);
 				split_col  = col;
 				best_score = score;
 			}
@@ -151,6 +159,10 @@ void Node::get_hist_split(
 
 	}
 
+	printf("best_score %f\n",  best_score);
+	printf("split_col %i\n",   split_col);
+	printf("split_bin %i\n\n", split_bin);
+
 	if (best_score == -INFINITY) {
 		// If no split was found then node is leaf.
 		is_leaf = true;
@@ -160,14 +172,38 @@ void Node::get_hist_split(
 	thrust::device_vector<int> left_idxs;
 	thrust::device_vector<int> right_idxs;
 
-	for (const int& row: row_idxs) {
-		if (X_hist[split_col * n_rows + row] < split_bin) {
-			left_idxs.push_back(row);
-		}
-		else {
-			right_idxs.push_back(row);
-		}
-	}
+	// TODO: Fix this.
+	thrust::copy_if(
+			thrust::make_zip_iterator(thrust::make_tuple(
+				row_idxs.begin(), 
+				X_hist.begin() + split_col * n_rows
+				)
+			),
+			thrust::make_zip_iterator(thrust::make_tuple(
+				row_idxs.end(), 
+				X_hist.begin() + (split_col + 1) * n_rows
+				)
+			),
+			left_idxs.begin(), 
+			is_less_than()
+			);
+	thrust::remove_copy_if(
+			thrust::make_zip_iterator(thrust::make_tuple(
+				row_idxs.begin(), 
+				X_hist.begin() + split_col * n_rows
+				)
+			),
+			thrust::make_zip_iterator(thrust::make_tuple(
+				row_idxs.end(), 
+				X_hist.begin() + (split_col + 1) * n_rows
+				)
+			),
+			right_idxs.begin(), 
+			is_less_than()
+			);
+	// printf("Bin_value: %i  Split_bin: %i\n", (int)X_hist[split_col * n_rows + row], split_bin);
+
+	printf("made it");
 
 	assert(left_idxs.size()  != 0);
 	assert(right_idxs.size() != 0);

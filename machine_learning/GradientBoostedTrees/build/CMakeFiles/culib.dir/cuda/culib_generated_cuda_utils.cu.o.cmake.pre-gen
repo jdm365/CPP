@@ -71,7 +71,7 @@ set(generated_file_path "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/
 set(generated_file_internal "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles/culib.dir/cuda/./culib_generated_cuda_utils.cu.o") # path
 set(generated_cubin_file_internal "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles/culib.dir/cuda/./culib_generated_cuda_utils.cu.o.cubin.txt") # path
 
-set(CUDA_NVCC_EXECUTABLE "/usr/local/cuda-11/bin/nvcc") # path
+set(CUDA_NVCC_EXECUTABLE "/usr/local/cuda-12/bin/nvcc") # path
 set(CUDA_NVCC_FLAGS  ;; ) # list
 # Build specific configuration flags
 set(CUDA_NVCC_FLAGS_DEBUG  ; )
@@ -79,7 +79,7 @@ set(CUDA_NVCC_FLAGS_MINSIZEREL  ; )
 set(CUDA_NVCC_FLAGS_RELEASE  ; )
 set(CUDA_NVCC_FLAGS_RELWITHDEBINFO  ; )
 set(nvcc_flags -m64;-Dculib_EXPORTS) # list
-set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda-11/include;$<TARGET_PROPERTY:culib,INCLUDE_DIRECTORIES>]==]) # list (needs to be in lua quotes to address backslashes)
+set(CUDA_NVCC_INCLUDE_DIRS [==[/usr/local/cuda-12/include;$<TARGET_PROPERTY:culib,INCLUDE_DIRECTORIES>]==]) # list (needs to be in lua quotes to address backslashes)
 string(REPLACE "\\" "/" CUDA_NVCC_INCLUDE_DIRS "${CUDA_NVCC_INCLUDE_DIRS}")
 set(CUDA_NVCC_COMPILE_DEFINITIONS [==[$<TARGET_PROPERTY:culib,COMPILE_DEFINITIONS>]==]) # list (needs to be in lua quotes see #16510 ).
 set(format_flag "-c") # string
@@ -188,7 +188,7 @@ cuda_execute_process(
 # For CUDA 2.3 and below, -G -M doesn't work, so remove the -G flag
 # for dependency generation and hope for the best.
 set(depends_CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}")
-set(CUDA_VERSION 11.8)
+set(CUDA_VERSION 12.0)
 if(CUDA_VERSION VERSION_LESS "3.0")
   # Note that this will remove all occurrences of -G.
   list(REMOVE_ITEM depends_CUDA_NVCC_FLAGS "-G")
