@@ -9,9 +9,11 @@
 #include <stdio.h>
 
 #include <thrust/device_vector.h>
-#include <thrust/iterator/zip_iterator.h>
+#include <thrust/host_vector.h>
+#include <thrust/partition.h>
 #include <thrust/copy.h>
-#include <thrust/remove.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/iterator/constant_iterator.h>
 
 #include "../include/node.hpp"
 #include "../include/utils.hpp"
@@ -161,7 +163,8 @@ void Node::get_hist_split(
 
 	printf("best_score %f\n",  best_score);
 	printf("split_col %i\n",   split_col);
-	printf("split_bin %i\n\n", split_bin);
+	printf("split_bin %i\n",   split_bin);
+	printf("depth %i\n\n", 	   depth);
 
 	if (best_score == -INFINITY) {
 		// If no split was found then node is leaf.
@@ -169,44 +172,55 @@ void Node::get_hist_split(
 		return;
 	}
 
-	thrust::device_vector<int> left_idxs;
-	thrust::device_vector<int> right_idxs;
+
+	/*
+	thrust::device_vector<int> hist_cpy(n_rows);
+	thrust::transform(
+			X_hist.begin() + split_col * n_rows,
+			X_hist.begin() + (split_col + 1) * n_rows,
+			hist_cpy.begin(),
+			cast_to_int()
+			);
+
+	thrust::device_vector<int> split_bin_vec(n_rows, split_bin);
+	thrust::transform(
+			hist_cpy.begin(),
+			hist_cpy.end(),
+			hist_cpy.begin(),
+			split_bin_vec.begin(),
+			thrust::minus<int>()
+			);
+
+	thrust::device_vector<int>::iterator partition_point = thrust::partition(
+			hist_cpy.begin(),
+			hist_cpy.end(),
+			is_negative()
+			);
+
+	thrust::device_vector<int> left_idxs(row_idxs.begin(), partition_point);
+	thrust::device_vector<int> right_idxs(partition_point, row_idxs.end());
+	*/
 
 	// TODO: Fix this.
-	thrust::copy_if(
-			thrust::make_zip_iterator(thrust::make_tuple(
-				row_idxs.begin(), 
-				X_hist.begin() + split_col * n_rows
-				)
-			),
-			thrust::make_zip_iterator(thrust::make_tuple(
-				row_idxs.end(), 
-				X_hist.begin() + (split_col + 1) * n_rows
-				)
-			),
-			left_idxs.begin(), 
-			is_less_than()
-			);
-	thrust::remove_copy_if(
-			thrust::make_zip_iterator(thrust::make_tuple(
-				row_idxs.begin(), 
-				X_hist.begin() + split_col * n_rows
-				)
-			),
-			thrust::make_zip_iterator(thrust::make_tuple(
-				row_idxs.end(), 
-				X_hist.begin() + (split_col + 1) * n_rows
-				)
-			),
-			right_idxs.begin(), 
-			is_less_than()
-			);
 	// printf("Bin_value: %i  Split_bin: %i\n", (int)X_hist[split_col * n_rows + row], split_bin);
 
-	printf("made it");
+	thrust::host_vector<int> _left_idxs;
+	thrust::host_vector<int> _right_idxs;
 
-	assert(left_idxs.size()  != 0);
-	assert(right_idxs.size() != 0);
+	for (const int& row: row_idxs) {
+		if (X_hist[split_col * n_rows + row] < (uint8_t)split_bin) {
+			_left_idxs.push_back(row);
+		}
+		else {
+			_right_idxs.push_back(row);
+		}
+	}
+
+	assert(_left_idxs.size()  != 0);
+	assert(_right_idxs.size() != 0);
+
+	thrust::device_vector<int> left_idxs  = _left_idxs;
+	thrust::device_vector<int> right_idxs = _right_idxs;
 
 	depth++;
 	if (left_idxs.size() > right_idxs.size()) {

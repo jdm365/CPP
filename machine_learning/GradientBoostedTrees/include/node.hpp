@@ -155,9 +155,21 @@ struct Node {
 			);
 
 	struct is_less_than {
-		typedef thrust::tuple<int, uint8_t> Tuple;
+		typedef thrust::tuple<uint8_t, int> Tuple;
 		__host__ __device__ bool operator()(const Tuple& x) {
-			return thrust::get<0>(x) < (int)thrust::get<1>(x);
+			return (int)thrust::get<0>(x) < thrust::get<1>(x);
+		}
+	};
+
+	struct is_negative {
+		__host__ __device__ bool operator()(const int& x) {
+			return x < 0;
+		}
+	};
+
+	struct cast_to_int{
+		__host__ __device__ int operator()(const uint8_t& x) {
+			return (int)x;
 		}
 	};
 };

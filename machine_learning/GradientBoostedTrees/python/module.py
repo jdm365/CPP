@@ -173,12 +173,12 @@ if __name__ == '__main__':
             max_leaves=31, 
             max_depth=-1,
             min_data_in_leaf=20, 
-            col_subsample_rate=1.0,
+            col_subsample_rate=0.6,
             max_bin=255,
-            lr=0.5,
+            lr=0.1,
             dart=False,
             verbosity=50,
-            early_stopping_steps=-1,
+            early_stopping_steps=50,
             gpu=True
             )
 
