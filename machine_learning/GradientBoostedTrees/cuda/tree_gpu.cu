@@ -15,7 +15,7 @@
 
 
 Tree::Tree(
-		const cuda_hist& X_hist,
+		const thrust::device_vector<uint8_t>& X_hist,
 		thrust::device_vector<float>& gradient,
 		thrust::device_vector<float>& hessian,
 		int&   max_depth,
@@ -45,7 +45,6 @@ Tree::Tree(
 
 	// Creating the root node will recursively create nodes and build the tree.
 	// (Called from constructor).
-	/*
 	root = new Node(
 			X_hist,
 			subsample_cols,
@@ -61,5 +60,4 @@ Tree::Tree(
 			max_leaves,
 			num_leaves
 		);
-	*/
 }

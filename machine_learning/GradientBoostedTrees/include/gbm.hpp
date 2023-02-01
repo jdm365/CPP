@@ -103,6 +103,11 @@ struct GBM {
 			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor, 
 			std::vector<float>& y
 			);
+	void train_hist_gpu_wrapper(
+			np::ndarray const& X, 
+			np::ndarray const& y
+			);
+	/*
 	thrust::device_vector<float> calculate_gradient_gpu(
 			thrust::device_vector<float>& preds, 
 			const thrust::device_vector<float>& y
@@ -115,4 +120,5 @@ struct GBM {
 			thrust::device_vector<float>& preds, 
 			const thrust::device_vector<float>& y
 			);
+	*/
 };

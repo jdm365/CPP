@@ -21,7 +21,7 @@ find_package(PythonInterp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS python REQUIRED numpy REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Thrust 1.9.10 REQUIRED)
-find_package(CUDA 11.8 REQUIRED)
+find_package(CUDA 12.0 REQUIRED)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 

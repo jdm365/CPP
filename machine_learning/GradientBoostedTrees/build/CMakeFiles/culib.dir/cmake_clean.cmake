@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/culib.dir/cuda/culib_generated_cuda_utils.cu.o"
   "CMakeFiles/culib.dir/cuda/culib_generated_feature_histograms_gpu.cu.o"
   "CMakeFiles/culib.dir/cuda/culib_generated_gbm_gpu.cu.o"
+  "CMakeFiles/culib.dir/cuda/culib_generated_node_gpu.cu.o"
   "CMakeFiles/culib.dir/cuda/culib_generated_tree_gpu.cu.o"
 )
 

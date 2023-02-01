@@ -60,7 +60,7 @@ struct GPUFeatureHistograms {
 	GPUFeatureHistograms(int n_cols, int max_bin);
 	void calc_diff_hist(GPUFeatureHistograms& other_hist);
 	void calc_hists(
-			const cuda_hist& X_hist,
+			const thrust::device_vector<uint8_t>& X_hist,
 			const thrust::device_vector<int>& subsample_cols,
 			thrust::device_vector<float>& gradient,
 			thrust::device_vector<float>& hessian,

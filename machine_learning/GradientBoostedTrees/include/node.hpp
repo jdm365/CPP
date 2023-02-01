@@ -4,6 +4,8 @@
 #include <array>
 #include <unordered_map>
 
+#include <thrust/device_vector.h>
+
 #include "feature_histograms.hpp"
 
 struct Node {
@@ -110,4 +112,44 @@ struct Node {
 
 	float predict_obs_hist(const std::vector<uint8_t>& obs);
 	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred);
+
+
+
+	/*
+	*****************************************************************
+	***************************** GPU *******************************
+	*****************************************************************
+	*/
+	Node(
+			const thrust::device_vector<uint8_t>& X_hist,
+			const thrust::device_vector<int>& subsample_cols,
+			thrust::device_vector<float>& gradient,
+			thrust::device_vector<float>& hessian,
+			GPUFeatureHistograms& hists,
+			thrust::device_vector<int>& row_idxs,
+			float& l2_reg,
+			int& min_data_in_leaf,
+			int& max_depth,
+			int  depth,
+			int& max_bin,
+			int& max_leaves,
+			int& num_leaves
+		);
+	void get_hist_split(
+			const thrust::device_vector<uint8_t>& X_hist,
+			const thrust::device_vector<int>& subsample_cols,
+			thrust::device_vector<float>& gradient,
+			thrust::device_vector<float>& hessian,
+			GPUFeatureHistograms& hists,
+			thrust::device_vector<int>& row_idxs,
+			float& grad_sum,
+			float& hess_sum,
+			float& l2_reg,
+			int& min_data_in_leaf,
+			int& max_bin,
+			int  depth,
+			int& max_depth,
+			int& max_leaves,
+			int& num_leaves
+			);
 };

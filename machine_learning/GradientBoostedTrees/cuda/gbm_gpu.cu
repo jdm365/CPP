@@ -8,6 +8,8 @@
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+#include <thrust/inner_product.h>
+#include <thrust/execution_policy.h>
 
 #include "../include/node.hpp"
 #include "../include/tree.hpp"
@@ -17,23 +19,23 @@
 
 void GBM::train_hist_gpu(
 		const std::vector<std::vector<uint8_t>>& _X_hist, 
-		const std::vector<std::vector<uint8_t>>& _X_hist_rowmajor, 
-		std::vector<float>& _y
+		const std::vector<std::vector<uint8_t>>& X_hist_rowmajor, 
+		std::vector<float>& y
 		) {
-	int n_rows = int(_y.size());
+	int n_rows = int(y.size());
 
-	thrust::device_vector<float> gradient(n_rows, 0.00f);
+	//thrust::device_vector<float> gradient(n_rows, 0.00f);
+	thrust::device_vector<float> gradient;
+	printf("made it");
 	thrust::device_vector<float> hessian(n_rows, 2.00f);
 
 	// Add mean for better start.
-	y_mean_train = get_vector_mean(_y);
+	y_mean_train = get_vector_mean(y);
 
-	thrust::device_vector<float> round_preds(n_rows);
-	thrust::device_vector<float> preds(n_rows, y_mean_train);
+	std::vector<float> round_preds(n_rows);
+	std::vector<float> preds(n_rows, y_mean_train);
 
-	const cuda_hist X_hist 			= convert_hist_to_cuda(_X_hist);
-	const cuda_hist X_hist_rowmajor = convert_hist_to_cuda(_X_hist_rowmajor);
-	const thrust::device_vector<float> y(_y);
+	const thrust::device_vector<uint8_t> X_hist = convert_hist_to_cuda(_X_hist);
 
 	auto start_1 = std::chrono::high_resolution_clock::now();
 	for (int round = 0; round < num_boosting_rounds; ++round) {
@@ -51,19 +53,19 @@ void GBM::train_hist_gpu(
 			);
 
 
-		round_preds = trees[round].predict_hist_gpu(X_hist_rowmajor);
+		round_preds = trees[round].predict_hist(X_hist_rowmajor);
 		for (int idx = 0; idx < n_rows; ++idx) {
 			preds[idx] += lr * round_preds[idx];
 		}
 
-		gradient = calculate_gradient_gpu(preds, y);
-		hessian  = calculate_hessian_gpu(preds, y);
+		gradient = calculate_gradient(preds, y);
+		hessian  = calculate_hessian(preds, y);
 
 		auto stop_1 	= std::chrono::high_resolution_clock::now();
 		auto duration_1 = std::chrono::duration_cast<std::chrono::milliseconds>(stop_1 - start_1);
 
 		if (round % verbosity == (verbosity - 1)) {
-			printf("Round %i MSE Loss: %2.6f", round + 1, calculate_mse_loss_gpu(preds, y));
+			printf("Round %i MSE Loss: %2.6f", round + 1, calculate_mse_loss(preds, y));
 			printf("       ");
 			printf("Num leaves: %i", (trees[round].num_leaves + 1) / 2);
 			printf("       ");
@@ -71,3 +73,24 @@ void GBM::train_hist_gpu(
 		}
 	}
 }
+
+/*
+float GBM::calculate_mse_loss_gpu(
+		thrust::device_vector<float>& preds, 
+		const thrust::device_vector<float>& y
+		) {
+	thrust::device_vector<float> result(int(y.size()));
+
+	thrust::transform(preds.begin(), preds.end(), y.begin(), result.begin(), thrust::minus<float>());
+
+	float loss = 0.50f * thrust::inner_product(
+			thrust::host, 
+			result.begin(), 
+			result.end(),
+			result.begin(), 
+			0.0f
+			);
+	loss /= float(y.size());
+	return loss;
+}
+*/

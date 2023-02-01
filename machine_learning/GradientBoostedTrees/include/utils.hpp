@@ -61,7 +61,7 @@ std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
 ***************************************************************
 */
 
-typedef thrust::device_vector<uint8_t>* cuda_hist; 
+// typedef thrust::device_vector<uint8_t>* cuda_hist; 
 // TODO: Use 1d thrust::device_vector instead and manually index. 
 // 		 Array of vecs doesn't work / is pain in the ass.
-cuda_hist convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist);
+thrust::device_vector<uint8_t> convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist);

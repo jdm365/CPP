@@ -46,6 +46,6 @@ BOOST_PYTHON_MODULE(GBDTEngine) {
 					"early_stopping_steps"
 					))
 		.def("predict_hist", &GBM::predict_hist_wrapper, args("X"))
-		.def("gpu_test", &GBM::train_hist_gpu)
+		.def("train_hist_gpu", &GBM::train_hist_gpu_wrapper, args("X", "y"))
 		;
 }

@@ -29,41 +29,48 @@ void GPUFeatureHistograms::calc_diff_hist(GPUFeatureHistograms& other_hist) {
 }
 
 void GPUFeatureHistograms::calc_hists(
-		const cuda_hist& X_hist,
+		const thrust::device_vector<uint8_t>& X_hist,
 		const thrust::device_vector<int>& subsample_cols,
 		thrust::device_vector<float>& gradient,
 		thrust::device_vector<float>& hessian,
 		thrust::device_vector<int>& row_idxs
 		) {
-	typedef thrust::device_vector<float>::iterator ElementIterator;
-	typedef thrust::device_vector<int>::iterator   IndexIterator;
+	int n_rows = int(row_idxs.size());
 
-	for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
-		thrust::permutation_iterator<ElementIterator, IndexIterator> row_iter(
-				X_hist[idx].begin(),
-				row_idxs.begin()
-				);
+	for (const int& idx: subsample_cols) {
 		thrust::constant_iterator<int> const_iter(1);
 
-		thrust::sort_by_key(row_iter, row_iter + (sizeof(row_iter) / sizeof(float)), gradient.begin());
+		//thrust::sort_by_key(row_iter, row_iter + (sizeof(row_iter) / sizeof(float)), gradient.begin());
 
 		thrust::device_vector<uint8_t> idx_maps;
 
 		thrust::reduce_by_key(
 				thrust::host,
-				row_iter,
-				row_iter + (sizeof(row_iter) / sizeof(float)),
+				thrust::make_permutation_iterator(
+					X_hist.begin() + idx * n_rows,
+					row_idxs.begin()
+				),
+				thrust::make_permutation_iterator(
+					X_hist.begin() + idx * n_rows,
+					row_idxs.end()
+				),
 				grad_bins.begin(),
 				idx_maps.begin(),
-				grad_bins.begin() + idx * int(gradient.size())
+				grad_bins.begin() + idx * n_rows
 				);
 		thrust::reduce_by_key(
 				thrust::host,
-				row_iter,
-				row_iter + (sizeof(row_iter) / sizeof(float)),
+				thrust::make_permutation_iterator(
+					X_hist.begin() + idx * n_rows,
+					row_idxs.begin()
+				),
+				thrust::make_permutation_iterator(
+					X_hist.begin() + idx * n_rows,
+					row_idxs.end()
+				),
 				hess_bins.begin(),
 				idx_maps.begin(),
-				hess_bins.begin() + idx * int(gradient.size())
+				hess_bins.begin() + idx * n_rows
 				);
 		thrust::reduce_by_key(
 				thrust::host,
@@ -71,7 +78,7 @@ void GPUFeatureHistograms::calc_hists(
 				const_iter + (sizeof(const_iter) / sizeof(int)),
 				const_iter,
 				idx_maps.begin(),
-				bin_cnts.begin() + idx * int(gradient.size())
+				bin_cnts.begin() + idx * n_rows
 				);
 	}
 }

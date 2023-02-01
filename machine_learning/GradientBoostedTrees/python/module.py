@@ -22,7 +22,8 @@ class GBDT:
             col_subsample_rate:   float = 0.8,
             dart:                 bool = False,
             verbosity:            int = 1,
-            early_stopping_steps: int = 10
+            early_stopping_steps: int = 10,
+            gpu:                  bool = False
             ):
         assert max_bin < 256, 'max_bin must be <= 255'
 
@@ -40,6 +41,7 @@ class GBDT:
                 verbosity
                 )
         self.early_stopping_steps = early_stopping_steps
+        self.gpu = gpu
 
 
     def train_hist(
@@ -64,6 +66,25 @@ class GBDT:
                 early_stopping_steps=self.early_stopping_steps
                 )
 
+    def train_hist_gpu(
+            self, 
+            X: arrayable, 
+            y: arrayable, 
+            X_validation: arrayable = None, 
+            y_validation: arrayable = None
+            ) -> None:
+        X = self.convert_to_np_float32(X)
+        y = self.convert_to_np_float32(y)
+
+        if (X_validation is not None) and (y_validation is not None):
+            X_validation = self.convert_to_np_float32(X_validation)
+            y_validation = self.convert_to_np_float32(y_validation)
+
+        self.engine.train_hist_gpu(
+                X=X, 
+                y=y
+                )
+
 
     def predict_hist(self, X: arrayable) -> np.ndarray:
         X = self.convert_to_np_float32(X)
@@ -76,13 +97,15 @@ class GBDT:
 
     def train_eval(
             self, 
-            data: arrayable, 
+            train_data: arrayable, 
+            X_eval: np.ndarray = None, 
+            y_eval: np.ndarray = None, 
             train_size: float = 0.75, 
             random_seed: int = 42
             ) -> None:
         ## Assumes target col is last col.
 
-        df_train, df_test = self.train_test_split(df)
+        df_train, df_test = self.train_test_split(train_data)
 
         X_train = df_train[df_train.columns[:-1]]
         y_train = df_train[df_train.columns[-1]]
@@ -90,9 +113,14 @@ class GBDT:
         X_test = df_test[df_test.columns[:-1]]
         y_test = self.convert_to_np_float32(df_test[df_test.columns[-1]])
 
-        self.train_hist(X_train, y_train, X_test, y_test)
-        preds = model.predict_hist(X_test)
-        print(f'Test MSE: {model._calc_mse(preds, y_test)}')
+        if self.gpu:
+            self.train_hist_gpu(X_train, y_train)
+        else:
+            self.train_hist(X_train, y_train, X_test, y_test)
+
+        if X_eval is not None:
+            preds = model.predict_hist(X_eval)
+            print(f'Test MSE: {model._calc_mse(preds, y_eval)}')
 
 
     def train_test_split(
@@ -147,10 +175,11 @@ if __name__ == '__main__':
             min_data_in_leaf=20, 
             col_subsample_rate=1.0,
             max_bin=255,
-            lr=0.01,
+            lr=0.5,
             dart=False,
-            verbosity=100,
-            early_stopping_steps=-1
+            verbosity=50,
+            early_stopping_steps=-1,
+            gpu=True
             )
 
     EPSILON = False

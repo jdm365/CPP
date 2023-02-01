@@ -42,7 +42,7 @@ struct Tree {
 
 	// Histogram Constructor GPU
 	Tree(
-			const cuda_hist& X_hist,
+			const thrust::device_vector<uint8_t>& X_hist,
 			thrust::device_vector<float>& gradient,
 			thrust::device_vector<float>& hessian,
 			int&   max_depth,
@@ -61,5 +61,4 @@ struct Tree {
 			int n_cols, 
 			int tree_num
 			);
-	thrust::device_vector<float> predict_hist_gpu(const cuda_hist& X_hist_pred); 
 };

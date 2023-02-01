@@ -518,3 +518,17 @@ np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
 			p::object()	
 			);
 }
+
+void GBM::train_hist_gpu_wrapper(np::ndarray const& X, np::ndarray const& y) {
+	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
+	std::vector<float> y_vec = np_to_vec(y);
+
+	const std::vector<std::vector<uint8_t>> X_hist = map_hist_bins_train(
+			X_vec, 
+			bin_mapping, 
+			max_bin
+			);
+	const std::vector<std::vector<uint8_t>> X_hist_rowmajor = get_hist_bins_rowmajor(X_hist);
+
+	train_hist_gpu(X_hist, X_hist_rowmajor, y_vec);
+}
