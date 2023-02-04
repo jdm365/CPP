@@ -1,4 +1,4 @@
-Gradient Boosted Tree Library
+<h1>Gradient Boosted Tree Library</h1>
 
 Python accessible library for gradient boosted tree regressors and classifiers with backend in C/C++.
 
