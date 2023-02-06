@@ -29,19 +29,19 @@ int main() {
 	srand(0);
 
 	for (int iter = 0; iter < N_ITERS; ++iter) {
-		alignas(32) float A[N][N];
-		alignas(32) float B[N][N];
+		alignas(32) float A[N * N];
+		alignas(32) float B[N * N];
 
 		// Compiler wants to rip out Matmul if C is not accessed again.
-		alignas(32) float C[N][N];
+		alignas(32) float C[N * N];
 
 		double GFLOP = (double)N * (double)N * (double)(N-1) * 2 / GIGA;
 
 
 		for (int i = 0; i < N; ++i) {
 			for (int j = 0; j < N; ++j) {
-				A[i][j] = float(rand() % 10);
-				B[i][j] = float(rand() % 10);
+				A[i * N + j] = float(rand() % 10);
+				B[i * N + j] = float(rand() % 10);
 			}
 		}
 
@@ -53,7 +53,7 @@ int main() {
 			// Transpose B
 			for (int i = 0; i < N; ++i) {
 				for (int j = 0; j < N; ++j) {
-					B[i][j] = B[j][i];
+					B[i * N + j] = B[j * N + i];
 				}
 			}
 
@@ -65,9 +65,9 @@ int main() {
 
 					for (int i = 0; i < N; ++i) {
 						for (int j = jj; j < jj + BLOCK_SIZE; ++j) {
-							C[i][j] = 0.00f;
+							C[i * N + j] = 0.00f;
 							for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-								C[i][j] += A[i][k] * B[j][k];
+								C[i * N + j] += A[i * N + k] * B[j * N + k];
 							}
 						}
 					}
@@ -78,7 +78,7 @@ int main() {
 			// Transpose B
 			for (int i = 0; i < N; ++i) {
 				for (int j = 0; j < N; ++j) {
-					B[i][j] = B[j][i];
+					B[i * N + j] = B[j * N + i];
 				}
 			}
 
@@ -90,12 +90,12 @@ int main() {
 
 						for (int i = 0; i < N; ++i) {
 							for (int j = jj; j < jj + BLOCK_SIZE; j+=4) {
-								sum = _mm_load_ps(&C[i][j]);
+								sum = _mm_load_ps(&C[i * N + j]);
 								for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
 									// SAXPY
-									sum = _mm_fmadd_ps(_mm_load_ps(&C[i][j]), _mm_set1_ps(B[j][k]), sum);
+									sum = _mm_fmadd_ps(_mm_load_ps(&C[i * N + j]), _mm_set1_ps(B[j * N + k]), sum);
 								}
-								_mm_storeu_ps(&C[i][j], sum);
+								_mm_storeu_ps(&C[i * N + j], sum);
 							}
 						}
 					}
@@ -114,12 +114,12 @@ int main() {
 
 								for (int i = 0; i < N; ++i) {
 									for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-										sum = _mm256_load_ps(&C[i][j]);
+										sum = _mm256_load_ps(&C[i * N + j]);
 										for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
 											// SAXPY
-											sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i][k]), _mm256_set1_ps(B[k][j]), sum);
+											sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[k * N + j]), sum);
 										}
-										_mm256_storeu_ps(&C[i][j], sum);
+										_mm256_storeu_ps(&C[i * N + j], sum);
 									}
 								}
 							}
@@ -132,12 +132,12 @@ int main() {
 
 							for (int i = 0; i < N; ++i) {
 								for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-									sum = _mm256_load_ps(&C[i][j]);
+									sum = _mm256_load_ps(&C[i * N + j]);
 									for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
 										// SAXPY
-										sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i][k]), _mm256_set1_ps(B[k][j]), sum);
+										sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[k * N + j]), sum);
 									}
-									_mm256_storeu_ps(&C[i][j], sum);
+									_mm256_storeu_ps(&C[i * N + j], sum);
 								}
 							}
 						}
@@ -173,7 +173,7 @@ int main() {
 		double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_final - time_init).count();
 
 		// Add dependency to avoid dead code elimination.
-		double eta = duration * C[0][0] / GIGA;
+		double eta = duration * C[0] / GIGA;
 		double GFLOPS = GIGA * GFLOP / duration;
 		GFLOPS -= (eta / 10000);
 
@@ -183,20 +183,20 @@ int main() {
 		//usleep(250000);
 
 		if (N == 4 || N == 8) {
-			std::cout << "[[" << A[0][0] << ", " << A[0][1] << ", " << A[0][2] << ", " << A[0][3] << "]," << std::endl;
-			std::cout << "["  << A[1][0] << ", " << A[1][1] << ", " << A[1][2] << ", " << A[1][3] << "]," << std::endl;
-			std::cout << "["  << A[2][0] << ", " << A[2][1] << ", " << A[2][2] << ", " << A[2][3] << "]," << std::endl;
-			std::cout << "["  << A[3][0] << ", " << A[3][1] << ", " << A[3][2] << ", " << A[3][3] << "]]" << std::endl << std::endl;
+			std::cout << "[[" << A[0 * N + 0] << ", " << A[0 * N + 1] << ", " << A[0 * N + 2] << ", " << A[0 * N + 3] << "]," << std::endl;
+			std::cout << "["  << A[1 * N + 0] << ", " << A[1 * N + 1] << ", " << A[1 * N + 2] << ", " << A[1 * N + 3] << "]," << std::endl;
+			std::cout << "["  << A[2 * N + 0] << ", " << A[2 * N + 1] << ", " << A[2 * N + 2] << ", " << A[2 * N + 3] << "]," << std::endl;
+			std::cout << "["  << A[3 * N + 0] << ", " << A[3 * N + 1] << ", " << A[3 * N + 2] << ", " << A[3 * N + 3] << "]]" << std::endl << std::endl;
 
-			std::cout << "[[" << B[0][0] << ", " << B[0][1] << ", " << B[0][2] << ", " << B[0][3] << "]," << std::endl;
-			std::cout << "["  << B[1][0] << ", " << B[1][1] << ", " << B[1][2] << ", " << B[1][3] << "]," << std::endl;
-			std::cout << "["  << B[2][0] << ", " << B[2][1] << ", " << B[2][2] << ", " << B[2][3] << "]," << std::endl;
-			std::cout << "["  << B[3][0] << ", " << B[3][1] << ", " << B[3][2] << ", " << B[3][3] << "]]" << std::endl << std::endl;
+			std::cout << "[[" << B[0 * N + 0] << ", " << B[0 * N + 1] << ", " << B[0 * N + 2] << ", " << B[0 * N + 3] << "]," << std::endl;
+			std::cout << "["  << B[1 * N + 0] << ", " << B[1 * N + 1] << ", " << B[1 * N + 2] << ", " << B[1 * N + 3] << "]," << std::endl;
+			std::cout << "["  << B[2 * N + 0] << ", " << B[2 * N + 1] << ", " << B[2 * N + 2] << ", " << B[2 * N + 3] << "]," << std::endl;
+			std::cout << "["  << B[3 * N + 0] << ", " << B[3 * N + 1] << ", " << B[3 * N + 2] << ", " << B[3 * N + 3] << "]]" << std::endl << std::endl;
 
-			std::cout << "[[" << C[0][0] << ", " << C[0][1] << ", " << C[0][2] << ", " << C[0][3] << "]," << std::endl;
-			std::cout << "["  << C[1][0] << ", " << C[1][1] << ", " << C[1][2] << ", " << C[1][3] << "]," << std::endl;
-			std::cout << "["  << C[2][0] << ", " << C[2][1] << ", " << C[2][2] << ", " << C[2][3] << "]," << std::endl;
-			std::cout << "["  << C[3][0] << ", " << C[3][1] << ", " << C[3][2] << ", " << C[3][3] << "]]" << std::endl << std::endl;
+			std::cout << "[[" << C[0 * N + 0] << ", " << C[0 * N + 1] << ", " << C[0 * N + 2] << ", " << C[0 * N + 3] << "]," << std::endl;
+			std::cout << "["  << C[1 * N + 0] << ", " << C[1 * N + 1] << ", " << C[1 * N + 2] << ", " << C[1 * N + 3] << "]," << std::endl;
+			std::cout << "["  << C[2 * N + 0] << ", " << C[2 * N + 1] << ", " << C[2 * N + 2] << ", " << C[2 * N + 3] << "]," << std::endl;
+			std::cout << "["  << C[3 * N + 0] << ", " << C[3 * N + 1] << ", " << C[3 * N + 2] << ", " << C[3 * N + 3] << "]]" << std::endl << std::endl;
 			return 0;
 		}
 	}
