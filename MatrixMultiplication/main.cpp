@@ -17,20 +17,18 @@
 #define SIMD true
 
 int main() {
-	const int N = 32;
+	const int N = 256;
 	const int GIGA = 1000000000;
-	const int BLOCK_SIZE = std::min(N / 2, 8);
-	bool MULTITHREAD = true;
-
-	if (N <= 64) {
-		MULTITHREAD = false;
-	}
+	const int BLOCK_SIZE = std::min(N, 16);
+	bool MULTITHREAD = (N <= 64) ? false : true;
+	const int N_ITERS = 100;
+	float flops_arr[N_ITERS];
 
 	assert(N % 4 == 0);
 
 	srand(0);
 
-	for (int iter = 0; iter < 50; ++iter) {
+	for (int iter = 0; iter < N_ITERS; ++iter) {
 		alignas(32) float A[N][N];
 		alignas(32) float B[N][N];
 
@@ -108,7 +106,7 @@ int main() {
 				__m256 sum;
 
 				if (MULTITHREAD) {
-					#pragma omp parallel private(sum) shared(A, B, C) num_threads(omp_get_num_procs())
+					#pragma omp parallel private(sum) shared(A, B, C) num_threads(16)
 					{
 						#pragma omp for// schedule(dynamic)
 						for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
@@ -180,6 +178,7 @@ int main() {
 		GFLOPS -= (eta / 10000);
 
 		std::cout << "GFLOPS:  " << GFLOPS << std::endl;
+		flops_arr[iter] = GFLOPS;
 
 		//usleep(250000);
 
@@ -200,7 +199,14 @@ int main() {
 			std::cout << "["  << C[3][0] << ", " << C[3][1] << ", " << C[3][2] << ", " << C[3][3] << "]]" << std::endl << std::endl;
 			return 0;
 		}
-
 	}
+
+	float flops_mean = 0;
+	for (int i = 0; i < N_ITERS; ++i) {
+		flops_mean += flops_arr[i];
+	}
+	flops_mean /= N_ITERS;
+
+	std::cout << std::endl << "MEAN GFLOPS: " << flops_mean << " GFLOPS" << std::endl;
 	return 0;
 }
