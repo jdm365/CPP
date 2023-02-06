@@ -13,6 +13,7 @@ def matmult(a, b):
              for col_b in zip_b] for row_a in a]
 
 if __name__ == '__main__':
+    '''
     N = 512 
     GIGA = 1e9
     GFLOP = N * N * N * 2 / GIGA
@@ -45,3 +46,21 @@ if __name__ == '__main__':
         if idx > 1:
             print(f"Numpy - GFLOP:      {GFLOP}")
             print(f"Numpy - GFLOPS:     {GFLOPS}\n")
+    '''
+    A = np.array(
+            [[3, 7, 3, 6],
+            [9, 2, 0, 3],
+            [0, 2, 1, 7],
+            [2, 2, 7, 9]]
+            )
+
+    B = np.array(
+            [[6, 1, 6, 0],
+            [1, 7, 6, 3],
+            [6, 6, 8, 5],
+            [0, 3, 5, 2]]
+            )
+
+    print(A)
+    print(B)
+    print(A @ B)
