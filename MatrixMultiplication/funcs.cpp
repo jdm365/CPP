@@ -1,0 +1,120 @@
+#include <iostream>
+#include <immintrin.h>
+#include <emmintrin.h>
+#include <xmmintrin.h>
+#include <omp.h>
+
+#include "funcs.hpp"
+
+
+void avx2_blocked_matmul(
+		const int N, 
+		const int BLOCK_SIZE, 
+		const float* A, 
+		const float* B, 
+		float* C
+		) {
+	__m256 sum;
+	for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
+		for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
+
+			for (int i = 0; i < N; ++i) {
+				for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
+					sum = _mm256_load_ps(&C[i * N + j]);
+					for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
+						// SAXPY
+						sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[j * N + k]), sum);
+					}
+					_mm256_store_ps(&C[i * N + j], sum);
+				}
+			}
+		}
+	}
+}
+
+
+void avx2_blocked_matmul_multithread(
+		const int N, 
+		const int BLOCK_SIZE, 
+		const float* A, 
+		const float* B, 
+		float* C
+		) {
+	__m256 sum;
+	#pragma omp parallel private(sum) shared(A, B, C) num_threads(16)
+	{
+		#pragma omp for// schedule(static, 1)
+		for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
+			for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
+
+				for (int i = 0; i < N; ++i) {
+					for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
+						sum = _mm256_load_ps(&C[i * N + j]);
+						for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
+							// SAXPY
+							sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[j * N + k]), sum);
+						}
+						_mm256_store_ps(&C[i * N + j], sum);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void avx_blocked_matmul(
+		const int N, 
+		const int BLOCK_SIZE, 
+		const float* A, 
+		const float* B, 
+		float* C
+		) {
+	__m128 sum;
+	for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
+		for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
+
+			for (int i = 0; i < N; ++i) {
+				for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
+					sum = _mm_load_ps(&C[i * N + j]);
+					for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
+						// SAXPY
+						sum = _mm_fmadd_ps(_mm_load_ps(&A[i * N + k]), _mm_set1_ps(B[j * N + k]), sum);
+					}
+					_mm_store_ps(&C[i * N + j], sum);
+				}
+			}
+		}
+	}
+}
+
+
+void blocked_matmul(
+		const int N, 
+		const int BLOCK_SIZE, 
+		const float* A, 
+		const float* B, 
+		float* C
+		) {
+	for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
+		for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
+
+			for (int i = 0; i < N; ++i) {
+				for (int j = jj; j < jj + BLOCK_SIZE; ++j) {
+					C[i * N + j] = 0.00f;
+					for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
+						C[i * N + j] += A[i * N + k] * B[j * N + k];
+					}
+				}
+			}
+		}
+	}
+}
+
+void transpose(const int N, float* A) {
+	for (int i = 0; i < N; ++i) {
+		for (int j = 0; j < N; ++j) {
+			A[i * N + j] = A[j * N + i];
+		}
+	}
+}

@@ -1,25 +1,24 @@
 #include <iostream>
-#include <immintrin.h>
-#include <emmintrin.h>
-#include <xmmintrin.h>
 #include <assert.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <chrono>
-#include <cblas.h>
-#include <omp.h>
+#include <cstdio>
+#include <cstdlib>
+
+#include "funcs.hpp"
 		
 
 // i9-12900k max clock speed -> 5.2GHz
 // AVX2 fused multiply add flops / cycle = 8 * 2 = 16
 // Theoretical max single-threaded GFLOPS = 5.2 * 16 = 83.2 GFLOPS
 
+
+
 #define SIMD true
 
 int main() {
-	const int N = 256;
+	const int N = 64;
 	const int GIGA = 1000000000;
-	const int BLOCK_SIZE = std::min(N, 16);
+	const int BLOCK_SIZE = std::min(N, 32);
 	bool MULTITHREAD = (N <= 64) ? false : true;
 	const int N_ITERS = 100;
 	float flops_arr[N_ITERS];
@@ -27,13 +26,11 @@ int main() {
 	assert(N % 4 == 0);
 
 	srand(0);
-
+	
 	for (int iter = 0; iter < N_ITERS; ++iter) {
-		alignas(32) float A[N * N];
-		alignas(32) float B[N * N];
-
-		// Compiler wants to rip out Matmul if C is not accessed again.
-		alignas(32) float C[N * N];
+		float* A = static_cast<float*>(aligned_alloc(32, N * N * sizeof(float)));
+		float* B = static_cast<float*>(aligned_alloc(32, N * N * sizeof(float)));
+		float* C = static_cast<float*>(aligned_alloc(32, N * N * sizeof(float)));
 
 		double GFLOP = (double)N * (double)N * (double)(N-1) * 2 / GIGA;
 
@@ -47,103 +44,23 @@ int main() {
 
 		auto time_init = std::chrono::high_resolution_clock::now();
 
+		// Transpose B
+		transpose(N, B);
+
 		if (!SIMD) {
-			// Currently tested and working.
-
-			// Transpose B
-			for (int i = 0; i < N; ++i) {
-				for (int j = 0; j < N; ++j) {
-					B[i * N + j] = B[j * N + i];
-				}
-			}
-
-			// Matmul defualt 
-
-			// Loop Tiling
-			for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
-				for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
-
-					for (int i = 0; i < N; ++i) {
-						for (int j = jj; j < jj + BLOCK_SIZE; ++j) {
-							C[i * N + j] = 0.00f;
-							for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-								C[i * N + j] += A[i * N + k] * B[j * N + k];
-							}
-						}
-					}
-				}
-			}
+			blocked_matmul(N, BLOCK_SIZE, A, B, C);
 		}
 		else {
-			// Transpose B
-			for (int i = 0; i < N; ++i) {
-				for (int j = 0; j < N; ++j) {
-					B[i * N + j] = B[j * N + i];
-				}
-			}
-
-			// Loop Tiling
 			if (N < 16) {
-				__m128 sum;
-				for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
-					for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
-
-						for (int i = 0; i < N; ++i) {
-							for (int j = jj; j < jj + BLOCK_SIZE; j+=4) {
-								sum = _mm_load_ps(&C[i * N + j]);
-								for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-									// SAXPY
-									sum = _mm_fmadd_ps(_mm_load_ps(&C[i * N + j]), _mm_set1_ps(B[j * N + k]), sum);
-								}
-								_mm_storeu_ps(&C[i * N + j], sum);
-							}
-						}
-					}
-				}
+				avx_blocked_matmul(N, BLOCK_SIZE, A, B, C);
 			}
 			else { // if ((N >= 16) && (N < 32)) {
-				// Loop Tiling
-				__m256 sum;
-
 				if (MULTITHREAD) {
-					#pragma omp parallel private(sum) shared(A, B, C) num_threads(16)
-					{
-						#pragma omp for// schedule(dynamic)
-						for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
-							for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
-
-								for (int i = 0; i < N; ++i) {
-									for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-										sum = _mm256_load_ps(&C[i * N + j]);
-										for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-											// SAXPY
-											sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[k * N + j]), sum);
-										}
-										_mm256_storeu_ps(&C[i * N + j], sum);
-									}
-								}
-							}
-						}
-					}
+					avx2_blocked_matmul_multithread(N, BLOCK_SIZE, A, B, C);
 				}
 				else {
-					for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
-						for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
-
-							for (int i = 0; i < N; ++i) {
-								for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-									sum = _mm256_load_ps(&C[i * N + j]);
-									for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-										// SAXPY
-										sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i * N + k]), _mm256_set1_ps(B[k * N + j]), sum);
-									}
-									_mm256_storeu_ps(&C[i * N + j], sum);
-								}
-							}
-						}
-					}
+					avx2_blocked_matmul(N, BLOCK_SIZE, A, B, C);
 				}
-			}
 			/*
 			else {
 				// Loop Tiling
@@ -166,8 +83,8 @@ int main() {
 				}
 			}
 			*/
+			}
 		}
-
 
 		auto time_final = std::chrono::high_resolution_clock::now();
 		double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_final - time_init).count();
@@ -199,6 +116,9 @@ int main() {
 			std::cout << "["  << C[3 * N + 0] << ", " << C[3 * N + 1] << ", " << C[3 * N + 2] << ", " << C[3 * N + 3] << "]]" << std::endl << std::endl;
 			return 0;
 		}
+		delete[] A;
+		delete[] B;
+		delete[] C;
 	}
 
 	float flops_mean = 0;
