@@ -10,14 +10,21 @@
 #include <omp.h>
 		
 
+// i9-12900k max clock speed -> 5.2GHz
+// AVX2 fused multiply add flops / cycle = 8 * 2 = 16
+// Theoretical max single-threaded GFLOPS = 5.2 * 16 = 83.2 GFLOPS
 
-#define DEFAULT false
-#define MULTITHREAD true
+#define SIMD true
 
 int main() {
-	const int N = 768;
+	const int N = 32;
 	const int GIGA = 1000000000;
-	const int BLOCK_SIZE = std::min(N / 2, 16);
+	const int BLOCK_SIZE = std::min(N / 2, 8);
+	bool MULTITHREAD = true;
+
+	if (N <= 64) {
+		MULTITHREAD = false;
+	}
 
 	assert(N % 4 == 0);
 
@@ -42,7 +49,7 @@ int main() {
 
 		auto time_init = std::chrono::high_resolution_clock::now();
 
-		if (DEFAULT) {
+		if (!SIMD) {
 			// Currently tested and working.
 
 			// Transpose B
@@ -79,19 +86,18 @@ int main() {
 
 			// Loop Tiling
 			if (N < 16) {
-				__m128 a, b, c;
+				__m128 sum;
 				for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
 					for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
 
 						for (int i = 0; i < N; ++i) {
 							for (int j = jj; j < jj + BLOCK_SIZE; j+=4) {
-								c = _mm_load_ps(&C[i][j]);
+								sum = _mm_load_ps(&C[i][j]);
 								for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-									a = _mm_load_ps(&A[i][k]);
-									b = _mm_set1_ps(B[j][k]);
-									c = _mm_fmadd_ps(b, a, c);
+									// SAXPY
+									sum = _mm_fmadd_ps(_mm_load_ps(&C[i][j]), _mm_set1_ps(B[j][k]), sum);
 								}
-								_mm_storeu_ps(&C[i][j], c);
+								_mm_storeu_ps(&C[i][j], sum);
 							}
 						}
 					}
@@ -99,24 +105,23 @@ int main() {
 			}
 			else { // if ((N >= 16) && (N < 32)) {
 				// Loop Tiling
-				__m256 a, b, c;
+				__m256 sum;
 
 				if (MULTITHREAD) {
-					#pragma omp parallel private(a, b, c) shared(A, B, C) num_threads(omp_get_num_procs())
+					#pragma omp parallel private(sum) shared(A, B, C) num_threads(omp_get_num_procs())
 					{
-						#pragma omp for schedule(dynamic)
+						#pragma omp for// schedule(dynamic)
 						for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
 							for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
 
 								for (int i = 0; i < N; ++i) {
 									for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-										c = _mm256_load_ps(&C[i][j]);
+										sum = _mm256_load_ps(&C[i][j]);
 										for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-											a = _mm256_load_ps(&A[i][k]);
-											b = _mm256_set1_ps(B[k][j]);
-											c = _mm256_fmadd_ps(a, b, c);
+											// SAXPY
+											sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i][k]), _mm256_set1_ps(B[k][j]), sum);
 										}
-										_mm256_storeu_ps(&C[i][j], c);
+										_mm256_storeu_ps(&C[i][j], sum);
 									}
 								}
 							}
@@ -129,13 +134,12 @@ int main() {
 
 							for (int i = 0; i < N; ++i) {
 								for (int j = jj; j < jj + BLOCK_SIZE; j+=8) {
-									c = _mm256_load_ps(&C[i][j]);
+									sum = _mm256_load_ps(&C[i][j]);
 									for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-										a = _mm256_load_ps(&A[i][k]);
-										b = _mm256_set1_ps(B[j][k]);
-										c = _mm256_fmadd_ps(a, b, c);
+										// SAXPY
+										sum = _mm256_fmadd_ps(_mm256_load_ps(&A[i][k]), _mm256_set1_ps(B[k][j]), sum);
 									}
-									_mm256_storeu_ps(&C[i][j], c);
+									_mm256_storeu_ps(&C[i][j], sum);
 								}
 							}
 						}
@@ -165,6 +169,7 @@ int main() {
 			}
 			*/
 		}
+
 
 		auto time_final = std::chrono::high_resolution_clock::now();
 		double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_final - time_init).count();

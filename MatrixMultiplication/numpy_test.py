@@ -1,9 +1,6 @@
 import numpy as np
 import random
 from time import perf_counter
-import mkl
-
-mkl.set_num_threads(1)
 
 def matmult(a, b):
     zip_b = zip(*b)
