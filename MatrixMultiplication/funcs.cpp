@@ -32,6 +32,38 @@ void avx2_blocked_matmul(
 	}
 }
 
+void micro_kernel(
+		const int N, 
+		const int B_col_start, 
+		const int B_col_end,
+		const int A_row_start, 
+		const int A_row_end, 
+		const float* A, 
+		float* B, 
+		float* C
+		) {
+	// Need to keep explicit stack variable 
+	// to avoid writing to memory in each loop.
+	__m256 sums[4];
+
+	for (int k = B_col_start; k < B_col_end; ++k) {
+		__m256 b0 = _mm256_load_ps(&B[k * N + B_col_end]);
+		__m256 b1 = _mm256_load_ps(&B[k * N + B_col_end + 8]);
+
+		__m256 a0 = _mm256_load_ps(&A[B_col_start * N + B_col_end]);
+		sums[0] = _mm256_fmadd_ps(a0, b0, sums[0]);
+		sums[1] = _mm256_fmadd_ps(a0, b0, sums[1]);
+
+		__m256 a1 = _mm256_load_ps(&A[(B_col_start + 1) * N + B_col_end]);
+		sums[2] = _mm256_fmadd_ps(a0, b0, sums[2]);
+		sums[3] = _mm256_fmadd_ps(a0, b0, sums[3]);
+	}
+	
+	_mm256_store_ps(&C[A_row_start * N + B_col_start], sums[0]); // C[i][j]
+	_mm256_store_ps(&C[(A_row_start + 1) * N + B_col_start], sums[1]); // C[i+1][j]
+	_mm256_store_ps(&C[A_row_start * N + B_col_start + 8], sums[2]); // C[i][j+8]
+	_mm256_store_ps(&C[(A_row_start + 1) * N + B_col_start + 8], sums[3]); // C[i+1][j+8]
+}
 
 void avx2_blocked_matmul_multithread(
 		const int N, 

@@ -1,32 +1,10 @@
 import numpy as np
-import random
 from time import perf_counter
 
-def matmult(a, b):
-    zip_b = zip(*b)
-    # uncomment next line if python 3 : 
-    # zip_b = list(zip_b)
-    return [[sum(ele_a*ele_b for ele_a, ele_b in zip(row_a, col_b)) 
-             for col_b in zip_b] for row_a in a]
-
 if __name__ == '__main__':
-    '''
-    N = 512 
+    N = 64
     GIGA = 1e9
     GFLOP = N * N * N * 2 / GIGA
-
-    ## Pure python
-    time_init = perf_counter()
-    A = [[random.uniform(0, 10) for _ in range(N)] for _ in range(N)]
-    B = [[random.uniform(0, 10) for _ in range(N)] for _ in range(N)]
-    C = matmult(A, B)
-    time_final = perf_counter()
-
-    GFLOPS = GFLOP / (time_final - time_init)
-
-    print(f"Python - GFLOP:      {GFLOP}")
-    print(f"Python - GFLOPS:     {GFLOPS}\n")
-
 
     ## Numpy
     A = np.random.uniform(size=(N, N)).astype(np.float32)
@@ -40,7 +18,7 @@ if __name__ == '__main__':
 
         GFLOPS = GFLOP / (time_final - time_init)
 
-        if idx > 1:
+        if idx == 3:
             print(f"Numpy - GFLOP:      {GFLOP}")
             print(f"Numpy - GFLOPS:     {GFLOPS}\n")
     '''
@@ -61,3 +39,4 @@ if __name__ == '__main__':
     print(A)
     print(B)
     print(A @ B)
+    '''

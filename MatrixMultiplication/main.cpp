@@ -1,8 +1,6 @@
 #include <iostream>
 #include <assert.h>
 #include <chrono>
-#include <cstdio>
-#include <cstdlib>
 
 #include "funcs.hpp"
 		
@@ -10,7 +8,6 @@
 // i9-12900k max clock speed -> 5.2GHz
 // AVX2 fused multiply add flops / cycle = 8 * 2 = 16
 // Theoretical max single-threaded GFLOPS = 5.2 * 16 = 83.2 GFLOPS
-
 
 
 #define SIMD true
@@ -61,28 +58,6 @@ int main() {
 				else {
 					avx2_blocked_matmul(N, BLOCK_SIZE, A, B, C);
 				}
-			/*
-			else {
-				// Loop Tiling
-				__m512 a, b, c;
-				for (int ii = 0; ii < N; ii+=BLOCK_SIZE) {
-					for (int jj = 0; jj < N; jj+=BLOCK_SIZE) {
-
-						for (int i = 0; i < N; ++i) {
-							for (int j = jj; j < jj + BLOCK_SIZE; j+=16) {
-								c = _mm512_load_ps(&C[i][j]);
-								for (int k = ii; k < ii + BLOCK_SIZE; ++k) {
-									a = _mm512_load_ps(&A[i][k]);
-									b = _mm512_set1_ps(B[k][j]);
-									c = _mm512_fmadd_ps(a, b, c);
-								}
-								_mm512_storeu_ps(&C[i][j], c);
-							}
-						}
-					}
-				}
-			}
-			*/
 			}
 		}
 
@@ -96,8 +71,6 @@ int main() {
 
 		std::cout << "GFLOPS:  " << GFLOPS << std::endl;
 		flops_arr[iter] = GFLOPS;
-
-		//usleep(250000);
 
 		if (N == 4 || N == 8) {
 			std::cout << "[[" << A[0 * N + 0] << ", " << A[0 * N + 1] << ", " << A[0 * N + 2] << ", " << A[0 * N + 3] << "]," << std::endl;
