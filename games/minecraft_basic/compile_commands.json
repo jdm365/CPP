@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-O3",
+      "-ffast-math",
+      "-march=native",
+      "-stdlib=libc++",
+      "-c",
+      "-o",
+      "obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/home/jdm365/CodingProjects/CPP/games/minecraft_basic",
+    "file": "/home/jdm365/CodingProjects/CPP/games/minecraft_basic/src/main.cpp",
+    "output": "/home/jdm365/CodingProjects/CPP/games/minecraft_basic/obj/main.o"
+  }
+]
