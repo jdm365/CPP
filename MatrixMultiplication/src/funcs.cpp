@@ -4,7 +4,7 @@
 #include <xmmintrin.h>
 #include <omp.h>
 
-#include "funcs.hpp"
+#include "../include/funcs.hpp"
 
 
 void avx2_blocked_matmul(
@@ -32,6 +32,7 @@ void avx2_blocked_matmul(
 	}
 }
 
+/*
 void micro_kernel(
 		const int N, 
 		const int B_col_start, 
@@ -64,6 +65,7 @@ void micro_kernel(
 	_mm256_store_ps(&C[A_row_start * N + B_col_start + 8], sums[2]); // C[i][j+8]
 	_mm256_store_ps(&C[(A_row_start + 1) * N + B_col_start + 8], sums[3]); // C[i+1][j+8]
 }
+*/
 
 void avx2_blocked_matmul_multithread(
 		const int N, 

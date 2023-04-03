@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <chrono>
 
-#include "funcs.hpp"
+#include "../include/funcs.hpp"
 		
 
 // i9-12900k max clock speed -> 5.2GHz

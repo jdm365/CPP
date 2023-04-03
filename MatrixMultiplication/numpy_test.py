@@ -2,7 +2,7 @@ import numpy as np
 from time import perf_counter
 
 if __name__ == '__main__':
-    N = 64
+    N = 512
     GIGA = 1e9
     GFLOP = N * N * N * 2 / GIGA
 

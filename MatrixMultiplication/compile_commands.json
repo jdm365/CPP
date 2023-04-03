@@ -1,0 +1,25 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++11",
+      "-stdlib=libc++",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-g",
+      "-O3",
+      "-march=native",
+      "-mtune=native",
+      "-ffast-math",
+      "-c",
+      "-o",
+      "obj/funcs.o",
+      "src/funcs.cpp"
+    ],
+    "directory": "/home/jdm365/CodingProjects/CPP/MatrixMultiplication",
+    "file": "/home/jdm365/CodingProjects/CPP/MatrixMultiplication/src/funcs.cpp",
+    "output": "/home/jdm365/CodingProjects/CPP/MatrixMultiplication/obj/funcs.o"
+  }
+]
