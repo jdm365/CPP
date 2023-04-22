@@ -390,7 +390,7 @@ void Node::get_hist_split(
 	}
 	float best_score = -INFINITY;
 	for (const int& col: subsample_cols) {
-		if (col_splits[col].second > best_score) {
+		if (col_splits[col].second > best_score) { [[unlikely]]
 			split_bin  = col_splits[col].first;
 			best_score = col_splits[col].second;
 			split_col  = col;

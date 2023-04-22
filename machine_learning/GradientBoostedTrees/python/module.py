@@ -176,10 +176,10 @@ if __name__ == '__main__':
             col_subsample_rate=0.6,
             max_bin=255,
             lr=0.1,
-            dart=False,
+            dart=True,
             verbosity=50,
             early_stopping_steps=50,
-            gpu=True
+            gpu=False
             )
 
     EPSILON = False

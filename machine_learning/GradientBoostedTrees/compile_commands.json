@@ -1,0 +1,30 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-DBOOST_ALL_NO_LIB",
+      "-DBOOST_NUMPY_DYN_LINK",
+      "-DBOOST_PYTHON_DYN_LINK",
+      "-DGBDTEngine_EXPORTS",
+      "-I/home/jdm365/CPP/machine_learning/GradientBoostedTrees/include",
+      "-I/usr/include/python3.10",
+      "-I/usr/local/cuda-12/include",
+      "-Wall",
+      "-Wextra",
+      "-Ofast",
+      "-fopenmp",
+      "-fPIC",
+      "-march=native",
+      "-fPIC",
+      "-fopenmp",
+      "-std=gnu++20",
+      "-c",
+      "-o",
+      "CMakeFiles/GBDTEngine.dir/src/node.cpp.o",
+      "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/src/node.cpp"
+    ],
+    "directory": "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build",
+    "file": "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/src/node.cpp",
+    "output": "/home/jdm365/CPP/machine_learning/GradientBoostedTrees/build/CMakeFiles/GBDTEngine.dir/src/node.cpp.o"
+  }
+]

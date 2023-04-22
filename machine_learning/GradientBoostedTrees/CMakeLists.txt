@@ -16,12 +16,15 @@ file(GLOB cuda_SRCS
 	"${PROJECT_SOURCE_DIR}/cuda/*.cu"
 	)
 
-find_package(PythonLibs 3.9 REQUIRED)
+#Set cuda toolkit root dir
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12")
+
+find_package(PythonLibs REQUIRED)
 find_package(PythonInterp REQUIRED)
-find_package(Boost REQUIRED COMPONENTS python REQUIRED numpy REQUIRED)
+find_package(Boost 1.74.0 REQUIRED COMPONENTS python REQUIRED numpy REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(Thrust 1.9.10 REQUIRED)
-find_package(CUDA 12.0 REQUIRED)
+find_package(Thrust REQUIRED)
+find_package(CUDA REQUIRED)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
@@ -46,7 +49,7 @@ target_link_libraries(GBDTEngine PUBLIC
 	${CUDA_LIBRARIES}
 	culib
 	)
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -Ofast -fopenmp -fPIC -march=native")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Ofast -fopenmp -fPIC -march=native -mavx -mavx2")
 ## DO NOT ADD -shared TAG. WILL CAUSE SEG FAULTS!!! ##
 
 
