@@ -4,12 +4,12 @@
 #include <vector>
 #include <assert.h>
 
-#include "render_window.hpp"
-#include "entity.hpp"
-#include "entity_manager.hpp"
-#include "utils.hpp"
-#include "event_handler.hpp"
-#include "constants.h"
+#include "../include/render_window.hpp"
+#include "../include/entity.hpp"
+#include "../include/entity_manager.hpp"
+#include "../include/utils.hpp"
+#include "../include/event_handler.hpp"
+#include "../include/constants.h"
 
 
 int main(int argc, char* args[]) {
@@ -22,8 +22,8 @@ int main(int argc, char* args[]) {
 
 	RenderWindow window("Game v1.0", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	struct Textures textures(&window);
-	struct Entities entities(&textures);
+	Textures textures(&window);
+	Entities entities(&textures);
 
 	SDL_Event event;
 	bool done = false;
@@ -34,7 +34,7 @@ int main(int argc, char* args[]) {
 	int  time_elapsed;
 	int  delay_time;
 
-	int x_scroll_start_pos = 2 * WINDOW_WIDTH / 3;
+	int x_scroll_start_pos = WINDOW_WIDTH / 2;
 	int y_scroll_start_pos = WINDOW_HEIGHT / 5;
 
 	int scroll_factor_x = 0;
@@ -62,8 +62,10 @@ int main(int argc, char* args[]) {
 				);
 		update(entities.player_entity, collisions);
 
-		scroll_factor_x = int(entities.player_entity.pos.x - x_scroll_start_pos);
-		scroll_factor_y = int(y_scroll_start_pos - entities.player_entity.pos.y);
+		scroll_factor_x = (int)entities.player_entity.pos.x - x_scroll_start_pos;
+		scroll_factor_y = (int)y_scroll_start_pos - entities.player_entity.pos.y;
+
+		scroll_factor_x = std::min(scroll_factor_x, entities.level_width - WINDOW_WIDTH);
 
 		if (scroll_factor_x < 0) {
 			scroll_factor_x = 0;
@@ -116,4 +118,4 @@ int main(int argc, char* args[]) {
 }
 
 	return 0;
-}
+	}

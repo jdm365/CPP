@@ -27,4 +27,6 @@ struct Entities {
 	std::vector<Entity> ground_entities;
 	Entity player_entity;
 	// Entity rocket_entity;
+	
+	int level_width;
 };

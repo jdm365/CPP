@@ -81,10 +81,16 @@ void RenderWindow::render(
 		dst.h = entity.height;
 	}
 	else if (strcmp(entity.type, player) == 0) {
-		src.x = ((size.x / 5) * (step_index % 5));
-		src.y = ((size.y / 2) * float(step_index > 4));
-		src.x += PLAYER_CROP_FACTOR_X;
-		src.y += PLAYER_CROP_FACTOR_Y;
+		// src.x = ((size.x / 5.0f) * (step_index % 5));
+		// src.y = ((size.y / 2.0f) * float(step_index > 4));
+		Vector2f _src;
+		if (entity.vel.x == 0.0f) {
+			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
+		}
+		else {
+			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
+		}
+		src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
 
 		src.w = PLAYER_WIDTH_SRC;
 		src.h = PLAYER_HEIGHT_SRC - 1;

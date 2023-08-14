@@ -15,4 +15,8 @@ struct Vector2f {
 		x = x_in; 
 		y = y_in;
 	}
+
+	Vector2f vector_add(Vector2f& other) {
+		return Vector2f(x + other.x, y + other.y);
+	}
 };

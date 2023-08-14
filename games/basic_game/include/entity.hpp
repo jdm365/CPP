@@ -3,27 +3,30 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "math.hpp"
+#include "../include/math.hpp"
 
 
 class Entity {
 	public:
 		Entity();
 		Entity(
-				Vector2f entity_pos, 
-				Vector2f entity_vel, 
-				int w, 
-				int h, 
-				const char* entity_type,
-				SDL_Texture* player_texture
+				Vector2f pos, 
+				Vector2f vel, 
+				int width, 
+				int height, 
+				const char* type,
+				SDL_Texture* player_texture,
+				bool collidable
 				);
 		SDL_Texture* get_texture();
-		const char* type;
-		int width;
-		int height;
 		Vector2f pos;
 		Vector2f vel;
+		int width;
+		int height;
+		const char* type;
 		int gravity;
+		bool collidable;
+
 	private:
 		SDL_Texture* texture;
 }; 

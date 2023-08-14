@@ -12,13 +12,11 @@
 
 
 Textures::Textures(RenderWindow* window) {
-	//background_texture	  = (*window).load_texture(SKY_FILEPATH);
 	background_texture	  = (*window).load_texture(NAMEK_FILEPATH);
 	grass_texture         = (*window).load_texture(GRASS_FILEPATH);
 	dirt_texture          = (*window).load_texture(DIRT_FILEPATH);
 	player_texture_right  = (*window).load_texture(PLAYER_FILEPATH_RIGHT);
 	player_texture_left   = (*window).load_texture(PLAYER_FILEPATH_LEFT);
-	// rocket_texture  	  = (*window).load_texture(ROCKET_FILEPATH);
 }
 
 Entities::Entities(Textures* textures) {
@@ -33,12 +31,15 @@ Entities::Entities(Textures* textures) {
 			WINDOW_WIDTH,								// width
 			WINDOW_HEIGHT,								// height 
 			background_type,							// type
-			(*textures).background_texture				// texture	
+			(*textures).background_texture,				// texture	
+			false										// collidable
 			);
 
 	std::vector<int> level_design = read_level_csv(LEVEL_DESIGN_FILEPATH);
+	level_width = (int)level_design.size() * GROUND_SIZE;
+
 	// Define ground entities
-	for (int idx = 0; idx < int(level_design.size()); idx++) {
+	for (int idx = 0; idx < (int)level_design.size(); ++idx) {
 		if (level_design[idx] == -99) {
 			continue;
 		}
@@ -54,18 +55,35 @@ Entities::Entities(Textures* textures) {
 					GROUND_SIZE, 							// width
 					GROUND_SIZE, 							// height
 					ground_type,							// type
-					(*textures).grass_texture 				// texture
+					(*textures).grass_texture, 				// texture
+					true									// collidable
 					)
 				);
-		for (int idx_2 = 1; idx_2 < n_dirt_layers + 1; idx_2++) {
+
+		for (int jdx = 1; jdx < n_dirt_layers + 1; ++jdx) {
+			bool collidable = false;
+			if (idx == (int)level_design.size() - 1) {
+				collidable = true;
+			} 
+			else if ((level_design[idx - 1] == -99) || (level_design[idx + 1] == -99)) {
+				collidable = true;
+			}
+			else if (
+					(level_design[idx - 1] < level_design[idx] || level_design[idx + 1] < level_design[idx]) 
+						&& 
+					(jdx < (level_design[idx] - level_design[idx - 1]))
+					) {
+				collidable = true;
+			}
 			ground_entities.push_back(
 					Entity(
-						Vector2f(x_pos, height + idx_2 * GROUND_SIZE), 				// position
+						Vector2f(x_pos, height + jdx * GROUND_SIZE), 				// position
 						Vector2f(0, 0), 											// velocity
 						GROUND_SIZE, 												// width
 						GROUND_SIZE, 												// height
 						ground_type,												// type
-						(*textures).dirt_texture									// texture
+						(*textures).dirt_texture,									// texture
+						collidable													// collidable
 						)
 					);
 			}
@@ -78,6 +96,7 @@ Entities::Entities(Textures* textures) {
 			int(PLAYER_SIZE_FACTOR * PLAYER_WIDTH_SRC),						// width
 			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),					// height 
 			player_type,													// type
-			(*textures).player_texture_right								// texture
+			(*textures).player_texture_right,								// texture
+			true															// collidable
 			);
 }

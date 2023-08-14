@@ -1,5 +1,13 @@
 # Path: Makefile
-make: src/*.cpp
-	clang++ -Wall -O3 src/*.cpp -I include -stdlib=libc++ -lSDL2 -lSDL2_image -o game
-	mv game bin/release/
-	bin/release/./game
+CXX = clang++
+CXXFLAGS = -Wall -O3 -std=c++17 -stdlib=libc++
+LDFLAGS = -lSDL2 -lSDL2_image
+INCLUDES = -I include
+BIN = bin/release/game
+
+
+main:
+	$(CXX) $(CXXFLAGS) src/*.cpp $(INCLUDES) $(LDFLAGS) -o $(BIN)
+
+run: main
+	./$(BIN)
