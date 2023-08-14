@@ -26,6 +26,5 @@
 #define PLAYER_SPEED			16
 #define JUMP_SPEED				30
 #define GRAVITY					2.00f	
-#define ROCKET_POWER			5.00f	
 
 #endif

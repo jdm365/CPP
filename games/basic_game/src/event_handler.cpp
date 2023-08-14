@@ -142,10 +142,7 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 	}
 }
 
-void update(
-		Entity& player_entity, 
-		std::vector<bool>& collisions
-		) {
+void update(Entity& player_entity, std::vector<bool>& collisions) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
 	if (collisions[0]) {
 		player_entity.vel.x = 0.00f;
@@ -154,11 +151,15 @@ void update(
 		player_entity.vel.x = 0.00f;
 	}
 
-	player_entity.vel.y += player_entity.gravity;
+	float next_y = player_entity.pos.y + player_entity.vel.y - (int)(player_entity.pos.y + player_entity.vel.y) % GROUND_SIZE;
 
 	// Fix for top.
 	if (collisions[3]) {
 		player_entity.vel.y = 0.00f;
+		player_entity.pos.y = next_y;
+	}
+	else {
+		player_entity.vel.y += player_entity.gravity;
 	}
 
 	// Cap velocity
