@@ -35,7 +35,8 @@ Entities::Entities(Textures* textures) {
 			WINDOW_HEIGHT,								// height 
 			background_type,							// type
 			(*textures).background_texture,				// texture	
-			false										// collidable
+			false,										// collidable
+			true										// static_entity
 			);
 
 	std::vector<int> level_design = read_level_csv(LEVEL_DESIGN_FILEPATH);
@@ -74,7 +75,8 @@ Entities::Entities(Textures* textures) {
 					texture_height,													// height
 					enemy_type,														// type
 					(*textures).kristin_texture,									// texture
-					true															// collidable
+					true,															// collidable
+					false															// static_entity
 					);
 			continue;
 		}
@@ -92,7 +94,8 @@ Entities::Entities(Textures* textures) {
 					GROUND_SIZE, 							// height
 					ground_type,							// type
 					(*textures).grass_texture, 				// texture
-					true									// collidable
+					true,									// collidable
+					true									// static_entity
 					)
 				);
 
@@ -119,7 +122,8 @@ Entities::Entities(Textures* textures) {
 						GROUND_SIZE, 												// height
 						ground_type,												// type
 						(*textures).dirt_texture,									// texture
-						collidable													// collidable
+						collidable,													// collidable
+						true														// static_entity
 						)
 					);
 			}
@@ -133,6 +137,8 @@ Entities::Entities(Textures* textures) {
 			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),					// height 
 			player_type,													// type
 			(*textures).player_texture_right,								// texture
-			true															// collidable
+			true,															// collidable
+			false															// static_entity
 			);
+	all_entities = get_all_entities();
 }

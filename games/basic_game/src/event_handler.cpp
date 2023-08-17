@@ -12,8 +12,8 @@
 
 void detect_collision(
 		std::vector<bool>& collisions,
-		Entity& player_entity,
-		Entity& other_entity
+		Entity& src_entity,
+		Entity& dst_entity
 		) {
 	// if (!other_entity.collidable) {
 	if (false) {
@@ -23,63 +23,80 @@ void detect_collision(
 	const float EPS = 1e-3;
 
 	// Detect if collision will happen on next frame.
-	Vector2f player_next_pos = player_entity.pos.vector_add(player_entity.vel);
-	Vector2f other_next_pos = other_entity.pos.vector_add(other_entity.vel);
+	Vector2f src_next_pos = src_entity.pos.vector_add(src_entity.vel);
+	Vector2f dst_next_pos = dst_entity.pos.vector_add(dst_entity.vel);
 
-	float player_bottom = player_next_pos.y + player_entity.height;
-	float player_right  = player_next_pos.x + player_entity.width;
+	float src_bottom = src_next_pos.y + src_entity.height;
+	float src_right  = src_next_pos.x + src_entity.width;
 
-	float other_bottom = other_next_pos.y + other_entity.height;
-	float other_right  = other_next_pos.x + other_entity.width;
+	float dst_bottom = dst_next_pos.y + dst_entity.height;
+	float dst_right  = dst_next_pos.x + dst_entity.width;
 
-	// Only detect collisions for objects near player.
-	if (!(player_next_pos.x <= other_right + EPS && player_right >= other_next_pos.x - EPS
-		&& player_next_pos.y <= other_bottom + EPS && player_bottom >= other_next_pos.y - EPS)) {
+	// Only detect collisions for objects near src.
+	if (!(src_next_pos.x <= dst_right + EPS && src_right >= dst_next_pos.x - EPS
+		&& src_next_pos.y <= dst_bottom + EPS && src_bottom >= dst_next_pos.y - EPS)) {
 		return;
 	}
 
 	// Left
 	if (
-			(player_entity.vel.x - other_entity.vel.x < EPS) 
+			(src_entity.vel.x - dst_entity.vel.x < EPS) 
 				&&
-			(player_next_pos.x - other_right <= EPS)
+			(src_next_pos.x - dst_right <= EPS)
 			) {
 		local_collisions[0] = true;
 	}
 
 	// Right
 	else if (
-			(player_entity.vel.x - other_entity.vel.x > -EPS) 
+			(src_entity.vel.x - dst_entity.vel.x > -EPS) 
 				&&
-			(player_right - other_next_pos.x >= -EPS)
+			(src_right - dst_next_pos.x >= -EPS)
 			) {
 		local_collisions[2] = true;
 	}
 
 	// Bottom
 	if (
-			(player_bottom - other_next_pos.y >= -EPS) 
+			(src_bottom - dst_next_pos.y >= -EPS) 
 				&& 
-			(-EPS <= (player_entity.vel.y - other_entity.vel.y) - (player_bottom - other_next_pos.y))
+			(-EPS <= (src_entity.vel.y - dst_entity.vel.y) - (src_bottom - dst_next_pos.y))
 			) {
 		local_collisions[3] = true; // Bottom collision
 	}
+
 	// Top
 	else if (
-			(player_next_pos.y - other_bottom <= EPS)
+			(src_next_pos.y - dst_bottom <= EPS)
 				&& 
-			((player_entity.vel.y - other_entity.vel.y) - (player_next_pos.y - other_bottom) <= EPS)
+			((src_entity.vel.y - dst_entity.vel.y) - (src_next_pos.y - dst_bottom) <= EPS)
 			) {
 		local_collisions[1] = true; // Top collision
 	}
 
-	if (local_collisions[3]) { 
-		player_entity.vel.y = other_entity.vel.y;
-		player_entity.pos.y = other_entity.pos.y - player_entity.height;
-		collisions[3] = true;
-		if (strcmp(other_entity.type, "enemy") == 0) {
-			player_entity.vel.y += GRAVITY;
+	if (strcmp(src_entity.type, "player") == 0 && strcmp(dst_entity.type, "enemy") == 0) {
+		for (int idx = 0; idx < 4; idx++) {
+			if (local_collisions[idx]) {
+				src_entity.health -= ENEMY_DPF;
+				break;
+			}
 		}
+	}
+
+	if (local_collisions[3]) { 
+		if (strcmp(src_entity.type, "player") == 0) {
+			src_entity.vel.y = dst_entity.vel.y;
+			src_entity.pos.y = dst_entity.pos.y - src_entity.height;
+			if (std::abs(dst_entity.vel.y) > EPS) {
+				src_entity.vel.y += GRAVITY;
+			}
+		}
+		else if (strcmp(src_entity.type, "enemy") == 0 && strcmp(dst_entity.type, "enemy") == 0) {
+			src_entity.vel.y = -src_entity.vel.y;
+			dst_entity.vel.y = -dst_entity.vel.y;
+		}
+
+		collisions[3] = true;
 		return;
 	}
 
@@ -111,7 +128,6 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 				break;
 			case SDLK_w:
 				if (collisions[3]) {
-					std::cout << "Jumping" << std::endl;
 					player_entity.vel.y -= JUMP_SPEED;
 				}
 				break;
@@ -161,7 +177,7 @@ void update(
 	// Update enemies
 	for (auto& enemy_entity: enemy_entities) {
 		float pos_diff = std::abs(player_entity.pos.x - enemy_entity.pos.x);
-		if (pos_diff < GROUND_SIZE * 8 && enemy_entity.vel.y == 0.00f && enemy_entity.pos.y == WINDOW_HEIGHT) {
+		if (pos_diff < GROUND_SIZE * 8 && enemy_entity.pos.y == WINDOW_HEIGHT) {
 			enemy_entity.vel.y -= 1.75f * JUMP_SPEED;
 		}
 		else {
@@ -194,10 +210,18 @@ void update(
 
 	// Respawn if player falls off map.
 	if (player_entity.pos.y > WINDOW_HEIGHT) {
-		player_entity.pos.x = 100.00f;
-		player_entity.pos.y = PLATFORM_HEIGHT - 250.0f;
-		player_entity.vel.x = 0.00f;
-		player_entity.vel.y = 0.00f;
+		respawn(player_entity);
 	}
 
 }
+
+void respawn(Entity& player_entity) {
+	player_entity.alive  = true;
+	player_entity.health = 100;
+
+	player_entity.pos.x = 100.00f;
+	player_entity.pos.y = PLATFORM_HEIGHT - 250.0f;
+	player_entity.vel.x = 0.00f;
+	player_entity.vel.y = 0.00f;
+}
+

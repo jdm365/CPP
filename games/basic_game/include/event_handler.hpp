@@ -22,3 +22,4 @@ void detect_collision(
 		Entity& player_entity, 
 		Entity& other_entity
 		);
+void respawn(Entity& player_entity);

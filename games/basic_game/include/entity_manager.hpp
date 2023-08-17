@@ -27,6 +27,20 @@ struct Entities {
 	Entity player_entity;
 	std::vector<Entity> enemy_entities;
 	std::vector<Entity> ground_entities;
+	std::vector<Entity*> all_entities;
 	
 	int level_width;
+
+	// Get all entities
+	std::vector<Entity*> get_all_entities() {
+		std::vector<Entity*> all_entities;
+		all_entities.push_back(&player_entity);
+		for (int idx = 0; idx < (int)enemy_entities.size(); ++idx) {
+			all_entities.push_back(&enemy_entities[idx]);
+		}
+		for (int idx = 0; idx < (int)ground_entities.size(); ++idx) {
+			all_entities.push_back(&ground_entities[idx]);
+		}
+		return all_entities;
+	}
 };

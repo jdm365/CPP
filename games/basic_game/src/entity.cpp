@@ -22,13 +22,15 @@ Entity::Entity(
 		int height,
 		const char* type,
 		SDL_Texture* default_texture,
-		bool collidable
+		bool collidable,
+		bool static_entity
 		) : pos(pos), 
 			vel(vel), 
 			width(width), 
 			height(height), 
 			type(type), 
-			collidable(collidable) {
+			collidable(collidable),
+			static_entity(static_entity) {
 
 	texture = default_texture;
 	gravity = GRAVITY;

@@ -44,6 +44,8 @@ int main(int argc, char* args[]) {
 	int screen_pos;
 	std::vector<bool> collisions = {false, false, false, false};
 
+	int last_player_health = 0;
+
 	// Game Loop
 	while (!done) {
 		start_time = int(SDL_GetTicks());
@@ -56,19 +58,23 @@ int main(int argc, char* args[]) {
 			handle(event, entities.player_entity, collisions);
 		}
 		collisions = {false, false, false, false};
-		for (Entity& entity: entities.ground_entities) {
-			detect_collision(
-					collisions, 
-					entities.player_entity, 
-					entity
-					);
+
+		for (int idx = 0; idx < (int)entities.all_entities.size(); ++idx) {
+			if (entities.all_entities[idx]->static_entity) {
+				continue;
+			}
+			for (int jdx = idx + 1; jdx < (int)entities.all_entities.size(); ++jdx) {
+				detect_collision(
+						collisions, 
+						*entities.all_entities[idx],
+						*entities.all_entities[jdx]
+						);
+			}
 		}
-		for (Entity& entity: entities.enemy_entities) {
-			detect_collision(
-					collisions, 
-					entities.player_entity, 
-					entity
-					);
+
+		entities.player_entity.alive = (entities.player_entity.health > 0);
+		if (!entities.player_entity.alive) {
+			respawn(entities.player_entity);
 		}
 		update(entities.player_entity, entities.enemy_entities, collisions);
 
@@ -122,6 +128,13 @@ int main(int argc, char* args[]) {
 				scroll_factor_x,
 				scroll_factor_y
 				);
+		window.render_health_bar(
+				WINDOW_WIDTH - 120,
+				50,
+				100,
+				20,
+				entities.player_entity.health * 0.01f
+				);
 
 		window.display();
 
@@ -132,6 +145,9 @@ int main(int argc, char* args[]) {
 		// (and is surely terrible).
 		assert(delay_time > 0);
 
+		if (entities.player_entity.health != last_player_health) {
+			last_player_health = entities.player_entity.health;
+		}
 		if (delay_time > 0) {
 			SDL_Delay(delay_time);
 		}

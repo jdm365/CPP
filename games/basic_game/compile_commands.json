@@ -5,16 +5,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/entity.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/entity.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/entity.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -22,16 +23,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/entity_manager.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/entity_manager.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/entity_manager.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -39,16 +41,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/event_handler.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/event_handler.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/event_handler.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -56,16 +59,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/main.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/main.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/main.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -73,16 +77,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/read_level.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/read_level.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/read_level.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -90,16 +95,17 @@
       "-c",
       "-Wall",
       "-O3",
+      "-std=c++17",
+      "-stdlib=libc++",
       "-I",
       "include",
-      "-stdlib=libc++",
       "-o",
-      "game",
+      "bin/release/game",
       "src/render_window.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/render_window.cpp",
-    "output": "/home/jdm365/CodingProjects/CPP/games/basic_game/game"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/render_window.cpp",
+    "output": "/home/jdm365/CPP/games/basic_game/bin/release/game"
   },
   {
     "arguments": [
@@ -132,7 +138,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -153,8 +159,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -168,12 +175,12 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/entity-8a7f86.o",
+      "/tmp/entity-94c0c8.o",
       "src/entity.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/entity.cpp",
-    "output": "/tmp/entity-8a7f86.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/entity.cpp",
+    "output": "/tmp/entity-94c0c8.o"
   },
   {
     "arguments": [
@@ -206,7 +213,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -227,8 +234,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -242,12 +250,12 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/entity_manager-981f32.o",
+      "/tmp/entity_manager-22569c.o",
       "src/entity_manager.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/entity_manager.cpp",
-    "output": "/tmp/entity_manager-981f32.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/entity_manager.cpp",
+    "output": "/tmp/entity_manager-22569c.o"
   },
   {
     "arguments": [
@@ -280,7 +288,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -301,8 +309,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -316,12 +325,12 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/event_handler-de3295.o",
+      "/tmp/event_handler-d9776f.o",
       "src/event_handler.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/event_handler.cpp",
-    "output": "/tmp/event_handler-de3295.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/event_handler.cpp",
+    "output": "/tmp/event_handler-d9776f.o"
   },
   {
     "arguments": [
@@ -354,7 +363,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -375,8 +384,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -390,12 +400,12 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/main-3a1100.o",
+      "/tmp/main-a873ad.o",
       "src/main.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/main.cpp",
-    "output": "/tmp/main-3a1100.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/main.cpp",
+    "output": "/tmp/main-a873ad.o"
   },
   {
     "arguments": [
@@ -428,7 +438,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -449,8 +459,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -464,12 +475,12 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/read_level-db835e.o",
+      "/tmp/read_level-5cb6f0.o",
       "src/read_level.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/read_level.cpp",
-    "output": "/tmp/read_level-db835e.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/read_level.cpp",
+    "output": "/tmp/read_level-5cb6f0.o"
   },
   {
     "arguments": [
@@ -502,7 +513,7 @@
       "-mllvm",
       "-treat-scalable-fixed-error-as-warning",
       "-debugger-tuning=gdb",
-      "-fcoverage-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fcoverage-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-resource-dir",
       "/usr/lib/llvm-14/lib/clang/14.0.0",
       "-I",
@@ -523,8 +534,9 @@
       "/usr/include",
       "-O3",
       "-Wall",
+      "-std=c++17",
       "-fdeprecated-macro",
-      "-fdebug-compilation-dir=/home/jdm365/CodingProjects/CPP/games/basic_game",
+      "-fdebug-compilation-dir=/home/jdm365/CPP/games/basic_game",
       "-ferror-limit",
       "19",
       "-fgnuc-version=4.2.1",
@@ -538,11 +550,11 @@
       "-x",
       "c++",
       "-o",
-      "/tmp/render_window-7d8ec0.o",
+      "/tmp/render_window-b84781.o",
       "src/render_window.cpp"
     ],
-    "directory": "/home/jdm365/CodingProjects/CPP/games/basic_game",
-    "file": "/home/jdm365/CodingProjects/CPP/games/basic_game/src/render_window.cpp",
-    "output": "/tmp/render_window-7d8ec0.o"
+    "directory": "/home/jdm365/CPP/games/basic_game",
+    "file": "/home/jdm365/CPP/games/basic_game/src/render_window.cpp",
+    "output": "/tmp/render_window-b84781.o"
   }
 ]

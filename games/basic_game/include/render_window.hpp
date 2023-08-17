@@ -18,12 +18,22 @@ class RenderWindow {
 				int scroll_factor_x = 0,
 				int scroll_factor_y = 0
 				);
+		void render_health_bar(
+				int x, 
+				int y, 
+				int w, 
+				int h, 
+				float percent, 
+				SDL_Color fg_color = {255, 0, 0, 255},
+				SDL_Color bg_color = {0, 0, 0, 255}
+				);
 		void display();
 		void quit();
 	private:
 		SDL_Window* window;
 		SDL_Renderer* renderer;
 };
+
 
 const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
 	Vector2f(18, 2),

@@ -2,15 +2,15 @@
 #define CONSTANTS_H
 
 // Textures
-#define GRASS_FILEPATH   		"textures/grass_texture.png"
-#define DIRT_FILEPATH   		"textures/dirt_texture.jpg"
-#define SKY_FILEPATH  			"textures/sky_texture.jpg"
-#define NAMEK_FILEPATH  		"textures/namek_texture.png"
-#define ROCKET_FILEPATH 		"textures/rocket_texture.jpg"
-#define PLAYER_FILEPATH_RIGHT  	"textures/knight_texture.png"
-#define PLAYER_FILEPATH_LEFT  	"textures/knight_texture_left.png"
-#define LEVEL_DESIGN_FILEPATH  	"textures/level_design.csv"
-#define KRISTIN_FILEPATH		"textures/kristin_goggles.jpg"
+#define GRASS_FILEPATH   		"assets/grass_texture.png"
+#define DIRT_FILEPATH   		"assets/dirt_texture.jpg"
+#define SKY_FILEPATH  			"assets/sky_texture.jpg"
+#define NAMEK_FILEPATH  		"assets/namek_texture.png"
+#define ROCKET_FILEPATH 		"assets/rocket_texture.jpg"
+#define PLAYER_FILEPATH_RIGHT  	"assets/knight_texture.png"
+#define PLAYER_FILEPATH_LEFT  	"assets/knight_texture_left.png"
+#define LEVEL_DESIGN_FILEPATH  	"assets/level_design.csv"
+#define KRISTIN_FILEPATH		"assets/kristin_goggles.jpg"
 
 // Frame sizing
 #define PLAYER_WIDTH_SRC		32
@@ -27,5 +27,8 @@
 #define PLAYER_SPEED			8
 #define JUMP_SPEED				16
 #define GRAVITY					(float)0.60f
+
+// Enemy behavior
+#define ENEMY_DPF				2		// Damage per frame
 
 #endif
