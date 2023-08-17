@@ -19,8 +19,6 @@
 #include "../include/utils.hpp"
 
 
-
-
 Node::Node(
 		const thrust::device_vector<uint8_t>& X_hist,
 		const thrust::device_vector<int>& subsample_cols,

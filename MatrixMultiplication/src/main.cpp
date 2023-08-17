@@ -13,7 +13,7 @@
 #define SIMD true
 
 int main() {
-	const int N = 64;
+	const int N = 256;
 	const int GIGA = 1000000000;
 	const int BLOCK_SIZE = std::min(N, 32);
 	bool MULTITHREAD = (N <= 64) ? false : true;

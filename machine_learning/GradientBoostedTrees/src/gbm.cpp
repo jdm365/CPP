@@ -120,6 +120,9 @@ void GBM::train_hist(
 		std::vector<std::vector<float>>& X, 
 		std::vector<float>& y
 		) {
+	// Init random seed.
+	srand(42);
+
 	int n_rows = int(X[0].size());
 
 	std::vector<float> gradient(n_rows, 0.00f);
@@ -162,8 +165,6 @@ void GBM::train_hist(
 			);
 
 
-		// Init random seed.
-		srand(42);
 		if (dart) {
 			float scale_factor_0 = 0.20f;
 			float scale_factor_1 = 1.00f;

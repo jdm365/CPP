@@ -171,12 +171,12 @@ if __name__ == '__main__':
     model = GBDT(
             num_boosting_rounds=1000,
             max_leaves=31, 
-            max_depth=-1,
+            max_depth=5,
             min_data_in_leaf=20, 
             col_subsample_rate=0.6,
             max_bin=255,
             lr=0.1,
-            dart=True,
+            dart=False,
             verbosity=50,
             early_stopping_steps=50,
             gpu=False
@@ -190,6 +190,7 @@ if __name__ == '__main__':
     #df = pd.read_csv('../data/hpx100.csv')
     #df = pd.read_feather('../data/preprocessed_train.feather')
 
+    print(len(df))
     if EPSILON:
         from catboost.dataset import epsilon
         df_train, df_test = epsilon()

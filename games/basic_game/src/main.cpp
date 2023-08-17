@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <assert.h>
+#include <omp.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -59,6 +60,7 @@ int main(int argc, char* args[]) {
 		}
 		collisions = {false, false, false, false};
 
+		// #pragma omp parallel for schedule(static)
 		for (int idx = 0; idx < (int)entities.all_entities.size(); ++idx) {
 			if (entities.all_entities[idx]->static_entity) {
 				continue;
