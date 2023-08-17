@@ -56,10 +56,6 @@ void RenderWindow::render(
 	SDL_Point size;
 	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
-	// Left sprite sheet is reflected about the y-axis.
-	if (entity.vel.x < 0) {
-		step_index = abs(step_index - 4);
-	}
 	
 	// Used to choose correct sprite on sprite sheet.
 	SDL_Rect src;
@@ -70,18 +66,27 @@ void RenderWindow::render(
 	const char* player = "player";
 	const char* enemy  = "enemy";
 
+	SDL_Texture* entity_texture;
+
 	if (strcmp(entity.type, ground) == 0) {
 		src.x = 0;
 		src.y = 0;
-		// src.w = size.x;
-		// src.h = size.y;
+		src.w = size.x;
+		src.h = size.y;
 
 		dst.x = entity.pos.x - scroll_factor_x;
 		dst.y = entity.pos.y + scroll_factor_y;
 		dst.w = entity.width;
 		dst.h = entity.height;
+
+		entity_texture = entity.get_texture();
 	}
 	else if (strcmp(entity.type, player) == 0) {
+		// Left sprite sheet is reflected about the y-axis.
+		if (!entity.facing_right) {
+			step_index = abs(step_index - 4);
+		}
+
 		Vector2f _src;
 		if (entity.vel.x == 0.0f) {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
@@ -89,6 +94,7 @@ void RenderWindow::render(
 		else {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
 		}
+		if (!entity.facing_right) _src.x = size.x - _src.x - PLAYER_WIDTH_SRC;
 		src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
 
 		src.w = PLAYER_WIDTH_SRC;
@@ -98,17 +104,21 @@ void RenderWindow::render(
 		dst.y = entity.pos.y + scroll_factor_y;
 		dst.w = entity.width;
 		dst.h = entity.height;
+
+		entity_texture = entity.facing_right ? entity.get_texture() : left_texture;
 	}
 	else if (strcmp(entity.type, enemy) == 0) {
 		src.x = 0;
 		src.y = 0;
-		// src.w = size.x;
-		// src.h = size.y;
+		src.w = size.x;
+		src.h = size.y;
 
 		dst.x = entity.pos.x - scroll_factor_x;
 		dst.y = entity.pos.y + scroll_factor_y;
 		dst.w = entity.width;
 		dst.h = entity.height;
+
+		entity_texture = entity.get_texture();
 	}
 	else {
 		src.x = 0;
@@ -120,14 +130,11 @@ void RenderWindow::render(
 		dst.y = entity.pos.y;
 		dst.w = entity.width;
 		dst.h = entity.height;
+
+		entity_texture = entity.get_texture();
 	}
 
-	if (entity.vel.x < 0) {
-		SDL_RenderCopy(renderer, left_texture, &src, &dst);
-	}
-	else {
-		SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
-	}
+	SDL_RenderCopy(renderer, entity_texture, &src, &dst);
 }
 
 void RenderWindow::display() {

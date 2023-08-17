@@ -20,6 +20,7 @@ void detect_collision(
 		return;
 	}
 	bool local_collisions[4] = {false, false, false, false};
+	const float EPS = 1e-3;
 
 	// Detect if collision will happen on next frame.
 	Vector2f player_next_pos = player_entity.pos.vector_add(player_entity.vel);
@@ -32,52 +33,51 @@ void detect_collision(
 	float other_right  = other_next_pos.x + other_entity.width;
 
 	// Only detect collisions for objects near player.
-	if (!(player_next_pos.x <= other_right && player_right >= other_next_pos.x
-		&& player_next_pos.y <= other_bottom && player_bottom >= other_next_pos.y)) {
+	if (!(player_next_pos.x <= other_right + EPS && player_right >= other_next_pos.x - EPS
+		&& player_next_pos.y <= other_bottom + EPS && player_bottom >= other_next_pos.y - EPS)) {
 		return;
 	}
+
 	// Left
 	if (
-			player_entity.vel.x < 0.00f 
-				&& 
-			player_next_pos.x < other_right 
+			(player_entity.vel.x - other_entity.vel.x < EPS) 
+				&&
+			(player_next_pos.x - other_right <= EPS)
 			) {
 		local_collisions[0] = true;
 	}
 
 	// Right
 	else if (
-			player_entity.vel.x > 0.00f 
-				&& 
-			player_right > other_next_pos.x
+			(player_entity.vel.x - other_entity.vel.x > -EPS) 
+				&&
+			(player_right - other_next_pos.x >= -EPS)
 			) {
 		local_collisions[2] = true;
 	}
 
 	// Bottom
 	if (
-			(player_bottom >= other_next_pos.y) 
+			(player_bottom - other_next_pos.y >= -EPS) 
 				&& 
-			((player_bottom - other_next_pos.y) <= (player_entity.vel.y - other_entity.vel.y))
+			(-EPS <= (player_entity.vel.y - other_entity.vel.y) - (player_bottom - other_next_pos.y))
 			) {
 		local_collisions[3] = true; // Bottom collision
 	}
 	// Top
 	else if (
-			(player_next_pos.y <= other_bottom) 
+			(player_next_pos.y - other_bottom <= EPS)
 				&& 
-			((other_bottom - player_next_pos.y) <= (other_entity.vel.y - player_entity.vel.y))
+			((player_entity.vel.y - other_entity.vel.y) - (player_next_pos.y - other_bottom) <= EPS)
 			) {
 		local_collisions[1] = true; // Top collision
 	}
-
 
 	if (local_collisions[3]) { 
 		player_entity.vel.y = other_entity.vel.y;
 		player_entity.pos.y = other_entity.pos.y - player_entity.height;
 		collisions[3] = true;
 		if (strcmp(other_entity.type, "enemy") == 0) {
-			std::cout << "Bottom collision: " << rand() % 9 << std::endl;
 			player_entity.vel.y += GRAVITY;
 		}
 		return;
@@ -100,20 +100,19 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 						-PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
 						);
+				player_entity.facing_right = false;
 				break;
 			case SDLK_d:
 				player_entity.vel = Vector2f(
 						PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
 						);
+				player_entity.facing_right = true;
 				break;
 			case SDLK_w:
 				if (collisions[3]) {
 					std::cout << "Jumping" << std::endl;
-					player_entity.vel = Vector2f(
-							player_entity.vel.x,
-							-JUMP_SPEED
-							);
+					player_entity.vel.y -= JUMP_SPEED;
 				}
 				break;
 
@@ -188,22 +187,6 @@ void update(
 	if (!collisions[3]) {
 		player_entity.vel.y += GRAVITY;
 	}
-
-
-	/*
-	float next_y = player_entity.pos.y + player_entity.vel.y
-					- (int)(player_entity.pos.y + player_entity.vel.y) % GROUND_SIZE;
-
-	if (collisions[3]) {
-		player_entity.vel.y = 0.00f;
-		std::cout << "Current y: " << player_entity.pos.y << std::endl;
-		std::cout << "Next y: " << next_y << std::endl << std::endl;
-		player_entity.pos.y = next_y;
-	}
-	else {
-		player_entity.vel.y += player_entity.gravity;
-	}
-	*/
 
 	player_entity.pos.x += player_entity.vel.x;
 	player_entity.pos.y += player_entity.vel.y;

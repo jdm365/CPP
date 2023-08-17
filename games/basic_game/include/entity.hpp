@@ -27,6 +27,7 @@ class Entity {
 		int gravity;
 		bool collidable;
 		float speed_multiplier = 1.0f;
+		bool facing_right = true;
 
 	private:
 		SDL_Texture* texture;
