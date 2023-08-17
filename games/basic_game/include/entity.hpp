@@ -26,6 +26,7 @@ class Entity {
 		const char* type;
 		int gravity;
 		bool collidable;
+		float speed_multiplier = 1.0f;
 
 	private:
 		SDL_Texture* texture;

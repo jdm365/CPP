@@ -10,6 +10,7 @@
 #define PLAYER_FILEPATH_RIGHT  	"textures/knight_texture.png"
 #define PLAYER_FILEPATH_LEFT  	"textures/knight_texture_left.png"
 #define LEVEL_DESIGN_FILEPATH  	"textures/level_design.csv"
+#define KRISTIN_FILEPATH		"textures/kristin_goggles.jpg"
 
 // Frame sizing
 #define PLAYER_WIDTH_SRC		32
@@ -22,9 +23,9 @@
 #define PADDING  				(int)WINDOW_WIDTH * 0.1
 
 // Animation factors
-#define TIME_STEP  				0.04f
-#define PLAYER_SPEED			16
-#define JUMP_SPEED				30
-#define GRAVITY					2.00f	
+#define TIME_STEP  				1.0f / 60.0f
+#define PLAYER_SPEED			8
+#define JUMP_SPEED				16
+#define GRAVITY					(float)0.60f
 
 #endif

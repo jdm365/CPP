@@ -1,14 +1,15 @@
 #include <iostream>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <vector>
 
-#include "entity_manager.hpp"
-#include "entity.hpp"
-#include "math.hpp"
-#include "render_window.hpp"
-#include "read_level.hpp"
-#include "constants.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
+#include "../include/entity_manager.hpp"
+#include "../include/entity.hpp"
+#include "../include/math.hpp"
+#include "../include/render_window.hpp"
+#include "../include/read_level.hpp"
+#include "../include/constants.h"
 
 
 Textures::Textures(RenderWindow* window) {
@@ -17,12 +18,14 @@ Textures::Textures(RenderWindow* window) {
 	dirt_texture          = (*window).load_texture(DIRT_FILEPATH);
 	player_texture_right  = (*window).load_texture(PLAYER_FILEPATH_RIGHT);
 	player_texture_left   = (*window).load_texture(PLAYER_FILEPATH_LEFT);
+	kristin_texture		  = (*window).load_texture(KRISTIN_FILEPATH);
 }
 
 Entities::Entities(Textures* textures) {
 	const char* background_type = "background";
 	const char* ground_type  	= "ground";
 	const char* player_type 	= "player";
+	const char* enemy_type  	= "enemy";
 
 	// Define background entity
 	background_entity = Entity(
@@ -38,11 +41,44 @@ Entities::Entities(Textures* textures) {
 	std::vector<int> level_design = read_level_csv(LEVEL_DESIGN_FILEPATH);
 	level_width = (int)level_design.size() * GROUND_SIZE;
 
+	int width_counter = 0;
+
 	// Define ground entities
 	for (int idx = 0; idx < (int)level_design.size(); ++idx) {
 		if (level_design[idx] == -99) {
+			width_counter++;
 			continue;
 		}
+		else if (level_design[idx] == -50) {
+			int gap_width = GROUND_SIZE * (2 * width_counter + 1);
+
+			SDL_Point size;
+			SDL_QueryTexture(
+					(*textures).kristin_texture,
+					NULL, 
+					NULL, 
+					&size.x, 
+					&size.y
+					);
+			float scale_height = size.y / (float)size.x;
+			float texture_width  = gap_width - 2 * GROUND_SIZE;
+			float texture_height = scale_height * texture_width;
+
+			float enemy_x_pos = (idx + 1.5f) * GROUND_SIZE - gap_width * 0.5f;
+			float enemy_y_pos = WINDOW_HEIGHT + 2 * player_entity.height;
+
+			enemy_entities.emplace_back(
+					Vector2f(enemy_x_pos, enemy_y_pos), 							// position
+					Vector2f(0, 0),													// velocity 
+					texture_width,													// width
+					texture_height,													// height
+					enemy_type,														// type
+					(*textures).kristin_texture,									// texture
+					true															// collidable
+					);
+			continue;
+		}
+		width_counter = 0;
 
 		int x_pos  		  = GROUND_SIZE * idx;
 		int height		  = PLATFORM_HEIGHT - level_design[idx] * GROUND_SIZE;
@@ -71,7 +107,7 @@ Entities::Entities(Textures* textures) {
 			else if (
 					(level_design[idx - 1] < level_design[idx] || level_design[idx + 1] < level_design[idx]) 
 						&& 
-					(jdx < (level_design[idx] - level_design[idx - 1]))
+					((jdx < (level_design[idx] - level_design[idx - 1])) || (jdx < (level_design[idx] - level_design[idx + 1])))
 					) {
 				collidable = true;
 			}

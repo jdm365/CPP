@@ -5,9 +5,9 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 
-#include "render_window.hpp"
-#include "entity.hpp"
-#include "constants.h"
+#include "../include/render_window.hpp"
+#include "../include/entity.hpp"
+#include "../include/constants.h"
 
 
 struct Textures {
@@ -17,16 +17,16 @@ struct Textures {
 	SDL_Texture* dirt_texture;
 	SDL_Texture* player_texture_right;
 	SDL_Texture* player_texture_left;
-	// SDL_Texture* rocket_texture;
+	SDL_Texture* kristin_texture;
 };
 
 
 struct Entities {
 	Entities(Textures* textures);
 	Entity background_entity;
-	std::vector<Entity> ground_entities;
 	Entity player_entity;
-	// Entity rocket_entity;
+	std::vector<Entity> enemy_entities;
+	std::vector<Entity> ground_entities;
 	
 	int level_width;
 };

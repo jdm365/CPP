@@ -68,12 +68,13 @@ void RenderWindow::render(
 	SDL_Rect dst;
 	const char* ground = "ground";
 	const char* player = "player";
+	const char* enemy  = "enemy";
 
 	if (strcmp(entity.type, ground) == 0) {
 		src.x = 0;
 		src.y = 0;
-		src.w = size.x;
-		src.h = size.y;
+		// src.w = size.x;
+		// src.h = size.y;
 
 		dst.x = entity.pos.x - scroll_factor_x;
 		dst.y = entity.pos.y + scroll_factor_y;
@@ -81,8 +82,6 @@ void RenderWindow::render(
 		dst.h = entity.height;
 	}
 	else if (strcmp(entity.type, player) == 0) {
-		// src.x = ((size.x / 5.0f) * (step_index % 5));
-		// src.y = ((size.y / 2.0f) * float(step_index > 4));
 		Vector2f _src;
 		if (entity.vel.x == 0.0f) {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
@@ -94,6 +93,17 @@ void RenderWindow::render(
 
 		src.w = PLAYER_WIDTH_SRC;
 		src.h = PLAYER_HEIGHT_SRC - 1;
+
+		dst.x = entity.pos.x - scroll_factor_x;
+		dst.y = entity.pos.y + scroll_factor_y;
+		dst.w = entity.width;
+		dst.h = entity.height;
+	}
+	else if (strcmp(entity.type, enemy) == 0) {
+		src.x = 0;
+		src.y = 0;
+		// src.w = size.x;
+		// src.h = size.y;
 
 		dst.x = entity.pos.x - scroll_factor_x;
 		dst.y = entity.pos.y + scroll_factor_y;

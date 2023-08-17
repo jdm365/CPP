@@ -10,77 +10,80 @@
 #include "../include/constants.h"
 #include "../include/math.hpp"
 
-void detect_collisions(
+void detect_collision(
 		std::vector<bool>& collisions,
 		Entity& player_entity,
-		std::vector<Entity>& collidable_entities,
-		int scroll_factor_x
+		Entity& other_entity
 		) {
-	// Need fuzzy_factor to allow for between frame gaps in space.
-	int fuzzy_factor = std::max((int)std::abs(player_entity.vel.y), (int)GRAVITY * 2);
-
-	// Reset collisions to false
-	collisions[0] = false;
-	collisions[1] = false;
-	collisions[2] = false;
-	collisions[3] = false;
+	// if (!other_entity.collidable) {
+	if (false) {
+		return;
+	}
+	bool local_collisions[4] = {false, false, false, false};
 
 	// Detect if collision will happen on next frame.
-	Vector2f next_pos = player_entity.pos.vector_add(player_entity.vel);
+	Vector2f player_next_pos = player_entity.pos.vector_add(player_entity.vel);
+	Vector2f other_next_pos = other_entity.pos.vector_add(other_entity.vel);
 
-	for (Entity& entity: collidable_entities) {
-		if (!entity.collidable) {
-			continue;
-		}
+	float player_bottom = player_next_pos.y + player_entity.height;
+	float player_right  = player_next_pos.x + player_entity.width;
 
-		std::vector<bool> local_collisions(4, false);
+	float other_bottom = other_next_pos.y + other_entity.height;
+	float other_right  = other_next_pos.x + other_entity.width;
 
-		float player_bottom = next_pos.y + player_entity.height;
-		float player_right  = next_pos.x + player_entity.width;
-		float entity_bottom = entity.pos.y + entity.height;
-		float entity_right  = entity.pos.x + entity.width;
-
-		// Only detect collisions for objects near player.
-		if (!(next_pos.x < entity_right && player_right > entity.pos.x 
-      		&& next_pos.y < entity_bottom && player_bottom > entity.pos.y)) {
-			continue;
-		}
-
-		// Top
-		if (player_entity.vel.y < 0.00f && next_pos.y < entity.pos.y) {
-			local_collisions[1] = true; // Top collision
-		}
-		// Bottom
-		else if (player_entity.vel.y >= 0.00f && player_bottom > entity.pos.y) {
-			local_collisions[3] = true; // Bottom collision
-		}
-
-		// Left
-		if (
-				player_entity.vel.x < 0.00f 
-					&& 
-				next_pos.x < entity_right 
-					&& 
-				std::abs((player_entity.pos.y + player_entity.height) - entity.pos.y) > fuzzy_factor
-				) {
-			local_collisions[0] = true;
-		}
-		// Right
-		else if (
-				player_entity.vel.x > 0.00f 
-					&& 
-				player_right > entity.pos.x 
-					&& 
-				std::abs((player_entity.pos.y + player_entity.height) - entity.pos.y) > fuzzy_factor
-				) {
-			local_collisions[2] = true;
-		}
-
-		collisions[0] = collisions[0] || local_collisions[0];
-		collisions[1] = collisions[1] || local_collisions[1];
-		collisions[2] = collisions[2] || local_collisions[2];
-		collisions[3] = collisions[3] || local_collisions[3];	
+	// Only detect collisions for objects near player.
+	if (!(player_next_pos.x <= other_right && player_right >= other_next_pos.x
+		&& player_next_pos.y <= other_bottom && player_bottom >= other_next_pos.y)) {
+		return;
 	}
+	// Left
+	if (
+			player_entity.vel.x < 0.00f 
+				&& 
+			player_next_pos.x < other_right 
+			) {
+		local_collisions[0] = true;
+	}
+
+	// Right
+	else if (
+			player_entity.vel.x > 0.00f 
+				&& 
+			player_right > other_next_pos.x
+			) {
+		local_collisions[2] = true;
+	}
+
+	// Bottom
+	if (
+			(player_bottom >= other_next_pos.y) 
+				&& 
+			((player_bottom - other_next_pos.y) <= (player_entity.vel.y - other_entity.vel.y))
+			) {
+		local_collisions[3] = true; // Bottom collision
+	}
+	// Top
+	else if (
+			(player_next_pos.y <= other_bottom) 
+				&& 
+			((other_bottom - player_next_pos.y) <= (other_entity.vel.y - player_entity.vel.y))
+			) {
+		local_collisions[1] = true; // Top collision
+	}
+
+
+	if (local_collisions[3]) { 
+		player_entity.vel.y = other_entity.vel.y;
+		player_entity.pos.y = other_entity.pos.y - player_entity.height;
+		collisions[3] = true;
+		if (strcmp(other_entity.type, "enemy") == 0) {
+			std::cout << "Bottom collision: " << rand() % 9 << std::endl;
+			player_entity.vel.y += GRAVITY;
+		}
+		return;
+	}
+
+	collisions.assign(local_collisions, local_collisions + 4);
 }
 
 void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisions) {
@@ -94,18 +97,19 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 
 			case SDLK_a:
 				player_entity.vel = Vector2f(
-						-PLAYER_SPEED, 
+						-PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
 						);
 				break;
 			case SDLK_d:
 				player_entity.vel = Vector2f(
-						PLAYER_SPEED, 
+						PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
 						);
 				break;
 			case SDLK_w:
 				if (collisions[3]) {
+					std::cout << "Jumping" << std::endl;
 					player_entity.vel = Vector2f(
 							player_entity.vel.x,
 							-JUMP_SPEED
@@ -114,10 +118,12 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 				break;
 
 			case SDLK_SPACE:
-				if (std::abs(player_entity.vel.x) <= std::abs(PLAYER_SPEED)) {
-					player_entity.vel.x = 2.0f * player_entity.vel.x;
-					// break;
+				if (player_entity.speed_multiplier == 2.0f) {
+					break;
 				}
+				player_entity.speed_multiplier = 2.0f;
+				player_entity.vel.x *= player_entity.speed_multiplier;
+				break;
  		}
 	}
 
@@ -136,14 +142,42 @@ void handle(SDL_Event& event, Entity& player_entity, std::vector<bool>& collisio
 						);
 				break;
 			case SDLK_SPACE:
-				player_entity.vel.x = player_entity.vel.x / 2.0f;
+				if (player_entity.speed_multiplier == 1.0f) {
+					break;
+				}
+				player_entity.speed_multiplier = 1.0f;
+				player_entity.vel.x *= 0.5f;
 				break;
 		}
 	}
 }
 
-void update(Entity& player_entity, std::vector<bool>& collisions) {
+void update(
+		Entity& player_entity, 
+		std::vector<Entity>& enemy_entities,
+		std::vector<bool>& collisions
+		) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
+	
+	// Update enemies
+	for (auto& enemy_entity: enemy_entities) {
+		float pos_diff = std::abs(player_entity.pos.x - enemy_entity.pos.x);
+		if (pos_diff < GROUND_SIZE * 8 && enemy_entity.vel.y == 0.00f && enemy_entity.pos.y == WINDOW_HEIGHT) {
+			enemy_entity.vel.y -= 1.75f * JUMP_SPEED;
+		}
+		else {
+			enemy_entity.vel.y += GRAVITY;
+		}
+
+		if (enemy_entity.pos.y > WINDOW_HEIGHT) {
+			enemy_entity.pos.y = WINDOW_HEIGHT;
+			enemy_entity.vel.y = 0.00f;
+		}
+		else {
+			enemy_entity.pos.y += enemy_entity.vel.y;
+		}
+	}
+
 	if (collisions[0]) {
 		player_entity.vel.x = 0.00f;
 	}
@@ -151,27 +185,29 @@ void update(Entity& player_entity, std::vector<bool>& collisions) {
 		player_entity.vel.x = 0.00f;
 	}
 
-	float next_y = player_entity.pos.y + player_entity.vel.y - (int)(player_entity.pos.y + player_entity.vel.y) % GROUND_SIZE;
+	if (!collisions[3]) {
+		player_entity.vel.y += GRAVITY;
+	}
 
-	// Fix for top.
+
+	/*
+	float next_y = player_entity.pos.y + player_entity.vel.y
+					- (int)(player_entity.pos.y + player_entity.vel.y) % GROUND_SIZE;
+
 	if (collisions[3]) {
 		player_entity.vel.y = 0.00f;
+		std::cout << "Current y: " << player_entity.pos.y << std::endl;
+		std::cout << "Next y: " << next_y << std::endl << std::endl;
 		player_entity.pos.y = next_y;
 	}
 	else {
 		player_entity.vel.y += player_entity.gravity;
 	}
-
-	// Cap velocity
-	if (player_entity.vel.y > 0) {
-		player_entity.vel.y = std::min(player_entity.vel.y, 2.0f * (float)PLAYER_SPEED);
-	}
-	else {
-		player_entity.vel.y = std::max(player_entity.vel.y, -2.0f * (float)PLAYER_SPEED);
-	}
+	*/
 
 	player_entity.pos.x += player_entity.vel.x;
 	player_entity.pos.y += player_entity.vel.y;
+
 
 	// Respawn if player falls off map.
 	if (player_entity.pos.y > WINDOW_HEIGHT) {
@@ -180,4 +216,5 @@ void update(Entity& player_entity, std::vector<bool>& collisions) {
 		player_entity.vel.x = 0.00f;
 		player_entity.vel.y = 0.00f;
 	}
+
 }

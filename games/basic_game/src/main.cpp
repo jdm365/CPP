@@ -55,18 +55,30 @@ int main(int argc, char* args[]) {
 			}
 			handle(event, entities.player_entity, collisions);
 		}
-		detect_collisions(
-				collisions, 
-				entities.player_entity, 
-				entities.ground_entities, 
-				scroll_factor_x
-				);
-		update(entities.player_entity, collisions);
+		collisions = {false, false, false, false};
+		for (Entity& entity: entities.ground_entities) {
+			detect_collision(
+					collisions, 
+					entities.player_entity, 
+					entity
+					);
+		}
+		for (Entity& entity: entities.enemy_entities) {
+			detect_collision(
+					collisions, 
+					entities.player_entity, 
+					entity
+					);
+		}
+		update(entities.player_entity, entities.enemy_entities, collisions);
 
 		scroll_factor_x = (int)entities.player_entity.pos.x - x_scroll_start_pos;
 		scroll_factor_y = (int)y_scroll_start_pos - entities.player_entity.pos.y;
 
-		scroll_factor_x = std::min(scroll_factor_x, entities.level_width - WINDOW_WIDTH);
+		scroll_factor_x = std::min(
+				scroll_factor_x, 
+				entities.level_width - WINDOW_WIDTH
+				);
 
 		if (scroll_factor_x < 0) {
 			scroll_factor_x = 0;
@@ -75,13 +87,16 @@ int main(int argc, char* args[]) {
 			scroll_factor_y = 0;
 		}
 
+		// 60 FPS
+		// Complete 7 phase walking animation in 1 second.
+		// 60 / 7 = 8.57 frames per walk cycle. Call it 8.
 		step_idx++;
 		if (entities.player_entity.vel.x != 0) {
-			final_idx = int(step_idx / 3);
+			final_idx = int(step_idx / 8);
 			final_idx = final_idx % 6;
 		}
 		else {
-			final_idx = int(step_idx / 3) % 3;
+			final_idx = int(step_idx / 8) % 3;
 			final_idx += 7;
 		}
 
@@ -95,6 +110,10 @@ int main(int argc, char* args[]) {
 			if ((screen_pos + PADDING > 0) && (screen_pos < WINDOW_WIDTH)) {
 				window.render(entity, 0, NULL, scroll_factor_x, scroll_factor_y);
 			}
+		}
+		for (Entity& entity: entities.enemy_entities) {
+			screen_pos = entity.pos.x - scroll_factor_x;
+			window.render(entity, 0, NULL, scroll_factor_x, scroll_factor_y);
 		}
 		window.render(
 				entities.player_entity, 
@@ -110,8 +129,8 @@ int main(int argc, char* args[]) {
 		delay_time   = int(1000 * TIME_STEP - time_elapsed);
 
 		// If delay time is less than zero then code is updating too slowly 
-		// (and surely is terrible).
-		// assert(delay_time > 0);
+		// (and is surely terrible).
+		assert(delay_time > 0);
 
 		if (delay_time > 0) {
 			SDL_Delay(delay_time);

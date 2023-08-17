@@ -13,12 +13,12 @@ void handle(
 		std::vector<bool>& collisions
 		);
 void update(
-		Entity& entity,
+		Entity& player_entity,
+		std::vector<Entity>& enemy_entities,
 		std::vector<bool>& collisions
 		);
-void detect_collisions(
+void detect_collision(
 		std::vector<bool>& collisions,
 		Entity& player_entity, 
-		std::vector<Entity>& collidable_entities,
-		int scroll_factor_x
+		Entity& other_entity
 		);
