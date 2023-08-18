@@ -32,6 +32,8 @@ class Entity {
 		bool facing_right = true;
 		bool alive = true;
 		int health = 100;
+		bool bottom_collision = false;
+		Vector2f respawn_pos;
 
 	private:
 		SDL_Texture* texture;

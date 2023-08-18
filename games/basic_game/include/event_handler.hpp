@@ -4,22 +4,22 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 
-#include "entity.hpp"
-#include "constants.h"
+#include "../include/entity.hpp"
+#include "../include/constants.h"
 
-void handle(
-		SDL_Event& event, 
-		Entity& entity,
-		std::vector<bool>& collisions
-		);
-void update(
-		Entity& player_entity,
-		std::vector<Entity>& enemy_entities,
-		std::vector<bool>& collisions
-		);
+
 void detect_collision(
 		std::vector<bool>& collisions,
 		Entity& player_entity, 
 		Entity& other_entity
+		);
+void update(
+		Entity& player_entity,
+		Vector2f& player_pos,
+		std::vector<bool>& collisions
+		);
+void handle(
+		SDL_Event& event, 
+		Entity& entity
 		);
 void respawn(Entity& player_entity);

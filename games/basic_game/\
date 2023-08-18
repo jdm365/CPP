@@ -40,7 +40,7 @@ void detect_collision(
 
 	// Bottom
 	if (
-			(EPS >= (src_bottom - dst_next_pos.y) - (src_entity.vel.y - dst_entity.vel.y))
+			(-EPS <= (src_entity.vel.y - dst_entity.vel.y) - (src_bottom - dst_next_pos.y))
 				&& 
 			(-EPS <= src_bottom - dst_next_pos.y)
 		) {
@@ -58,7 +58,7 @@ void detect_collision(
 
 	// Left
 	else if (
-			((src_entity.vel.x - dst_entity.vel.x) - (src_next_pos.x - dst_right) <= EPS)
+			((src_entity.vel.x - dst_entity.vel.x) - (src_right - dst_next_pos.x) <= EPS)
 				&&
 			((src_next_pos.x - dst_right) <= EPS)
 		) {
@@ -67,22 +67,11 @@ void detect_collision(
 
 	// Right
 	else if (
-			((src_entity.vel.x - dst_entity.vel.x) - (src_right - dst_next_pos.x) >= -EPS)
+			((src_entity.vel.x - dst_entity.vel.x) - (src_right - dst_next_pos.x) >= EPS)
 				&&
-			(src_right - dst_next_pos.x >= -EPS)
+			(src_next_pos.x - dst_right >= EPS)
 		) {
 		local_collisions[2] = true;
-	}
-
-	if (strcmp(src_entity.type, "player") == 0) {
-		if (!local_collisions[0] && !local_collisions[1] && !local_collisions[2] && !local_collisions[3]) {
-			std::cout << "No collision detected" << std::endl;
-			std::cout << (src_entity.vel.y - dst_entity.vel.y) - (src_bottom - dst_next_pos.y) << std::endl;
-			std::cout << src_entity.vel.y << " " << dst_entity.vel.y << std::endl;
-			std::cout << src_entity.bottom_collision << std::endl;
-			std::exit(1);
-			return;
-		}
 	}
 
 	if (strcmp(src_entity.type, "player") == 0 && strcmp(dst_entity.type, "enemy") == 0) {
@@ -96,7 +85,6 @@ void detect_collision(
 
 	// if (local_collisions[3]) { 
 	if (strcmp(src_entity.type, "player") == 0 && strcmp(dst_entity.type, "enemy") == 0) {
-		/*
 		if (local_collisions[0]) {
 			src_entity.vel.x = dst_entity.vel.x;
 			src_entity.pos.x = dst_next_pos.x - src_entity.width;
@@ -113,64 +101,32 @@ void detect_collision(
 		if (std::abs(dst_entity.vel.y) > EPS) {
 			src_entity.vel.y += GRAVITY;
 		}
-		*/
-		src_entity.vel.y = dst_entity.vel.y;
-		if (local_collisions[3]) {
-			src_entity.pos.y = dst_entity.pos.y - src_entity.height;
-			src_entity.vel.x = dst_entity.vel.x;
-			src_entity.vel.y = dst_entity.vel.y + GRAVITY * (dst_entity.bottom_collision ? 0 : 1);
-		}
-		else if (local_collisions[0]) {
-			src_entity.pos.x = dst_entity.pos.x + dst_entity.width;
-			src_entity.vel.y -= GRAVITY;
-			src_entity.vel.x = dst_entity.vel.x;
-		}
-		else if (local_collisions[2]) {
-			src_entity.pos.x = dst_entity.pos.x - src_entity.width - 1;
-			src_entity.vel.y -= GRAVITY;
-			src_entity.vel.x = dst_entity.vel.x;
-		}
-	}
-	else if (strcmp(src_entity.type, "player") == 0 && strcmp(dst_entity.type, "ground") == 0) [[likely]] {
-		src_entity.vel.y = dst_entity.vel.y;
-		if (local_collisions[3]) {
-			src_entity.pos.y = dst_entity.pos.y - src_entity.height;
-		}
-		else if (local_collisions[0]) {
-			src_entity.pos.x = dst_entity.pos.x + dst_entity.width;
-			src_entity.vel.y -= GRAVITY;
-			src_entity.vel.x = dst_entity.vel.x;
-		}
-		else if (local_collisions[2]) {
-			src_entity.pos.x = dst_entity.pos.x - src_entity.width - 1;
-			src_entity.vel.y -= GRAVITY;
-			src_entity.vel.x = dst_entity.vel.x;
-		}
 	}
 	else if (strcmp(src_entity.type, "enemy") == 0 && strcmp(dst_entity.type, "enemy") == 0) {
 		Vector2f src_vel = src_entity.vel;
 		src_entity.vel = dst_entity.vel;
 		dst_entity.vel = src_vel;
 	}
-	else if (strcmp(src_entity.type, "enemy") == 0 && strcmp(dst_entity.type, "ground") == 0) {
-		/*
-		src_entity.pos.y = dst_entity.pos.y - src_entity.height;
-		src_entity.vel.y = dst_entity.vel.y;
-		*/
+	else if (strcmp(src_entity.type, "player") == 0 && strcmp(dst_entity.type, "ground") == 0) {
 		src_entity.vel.y = dst_entity.vel.y;
 		if (local_collisions[3]) {
 			src_entity.pos.y = dst_entity.pos.y - src_entity.height;
 		}
-		else if (local_collisions[0]) {
-			src_entity.pos.x = dst_entity.pos.x + dst_entity.width;
-			src_entity.vel.y -= GRAVITY;
-			src_entity.vel.x = -src_entity.vel.x;
-		}
 		else if (local_collisions[2]) {
-			src_entity.pos.x = dst_entity.pos.x - src_entity.width - 1;
-			src_entity.vel.x = -src_entity.vel.x;
-			src_entity.vel.y -= GRAVITY;
+			src_entity.pos.x = dst_entity.pos.x - src_entity.width;
+			src_entity.pos.y -= GRAVITY;
 		}
+		// src_entity.vel.x = (local_collisions[0] || local_collisions[2]) ? 0.0f : src_entity.vel.x;
+		if (local_collisions[0]) {
+			std::cout << "Left Collision" << std::endl;
+		}
+		if (local_collisions[2]) {
+			std::cout << "Right Collision" << std::endl << std::endl;
+		}
+	}
+	else if (strcmp(src_entity.type, "enemy") == 0 && strcmp(dst_entity.type, "ground") == 0) {
+		src_entity.pos.y = dst_entity.pos.y - src_entity.height;
+		src_entity.vel.y = dst_entity.vel.y;
 	}
 
 	if (local_collisions[3]) {
@@ -178,7 +134,6 @@ void detect_collision(
 		return;
 	}
 
-	/*
 	if (local_collisions[0] || local_collisions[2]) {
 		if (strcmp(src_entity.type, "enemy") == 0 && strcmp(dst_entity.type, "ground") == 0) {
 			src_entity.vel.x = -src_entity.vel.x;
@@ -190,12 +145,11 @@ void detect_collision(
 			dst_entity.vel = src_vel;
 		}
 	}
-	*/
 
 	collisions.assign(local_collisions, local_collisions + 4);
 }
 
-void handle(SDL_Event& event, Entity& player_entity) {
+void handle(SDL_Event& event, Entity& player_entity, bool bottom_collision) {
 	// Collisions -> horizontal: 0, vertical: 1
 	// Update player velocity.
 	if (event.type == SDL_KEYDOWN) {
@@ -219,7 +173,7 @@ void handle(SDL_Event& event, Entity& player_entity) {
 				player_entity.facing_right = true;
 				break;
 			case SDLK_w:
-				if (player_entity.bottom_collision) {
+				if (bottom_collision) {
 					player_entity.vel.y -= JUMP_SPEED;
 				}
 				break;
@@ -277,7 +231,7 @@ void update(
 			if (!collisions[3]) {
 				entity.vel.y += GRAVITY;
 
-				if (entity.bottom_collision && !(collisions[0] || collisions[2])) {
+				if (entity.bottom_collision) {
 					entity.vel.x = -entity.vel.x;
 					entity.vel.y -= GRAVITY;
 				}

@@ -32,6 +32,7 @@ Entity::Entity(
 			collidable(collidable),
 			static_entity(static_entity) {
 
+	respawn_pos = pos;
 	texture = default_texture;
 	gravity = GRAVITY;
 }

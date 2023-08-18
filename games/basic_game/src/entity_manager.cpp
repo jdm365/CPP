@@ -80,14 +80,42 @@ Entities::Entities(Textures* textures) {
 					);
 			continue;
 		}
+		else if (level_design[idx] == -25) {
+			SDL_Point size;
+			SDL_QueryTexture(
+					(*textures).kristin_texture,
+					NULL, 
+					NULL, 
+					&size.x, 
+					&size.y
+					);
+			float scale_height = size.y / (float)size.x;
+			float texture_width  = 2 * GROUND_SIZE;
+			float texture_height = scale_height * texture_width;
+
+			float enemy_x_pos = (idx - 1) * GROUND_SIZE;
+			float enemy_y_pos = WINDOW_HEIGHT - level_design[idx - 1] * GROUND_SIZE - texture_height;
+
+			enemy_entities.emplace_back(
+					Vector2f(enemy_x_pos, enemy_y_pos), 							// position
+					Vector2f(0.25f * PLAYER_SPEED, 0),								// velocity 
+					texture_width,													// width
+					texture_height,													// height
+					enemy_type,														// type
+					(*textures).kristin_texture,									// texture
+					true,															// collidable
+					false															// static_entity
+					);
+			// continue;
+		}
 		width_counter = 0;
 
 		int x_pos  		  = GROUND_SIZE * idx;
-		int height		  = PLATFORM_HEIGHT - level_design[idx] * GROUND_SIZE;
+		int diff          = (level_design[idx] == -25) ? level_design[idx - 1] : level_design[idx];
+		int height		  = WINDOW_HEIGHT - diff * GROUND_SIZE;
 		int n_dirt_layers = (WINDOW_HEIGHT - height) / GROUND_SIZE;
 		
-		ground_entities.push_back(
-				Entity(
+		ground_entities.emplace_back(
 					Vector2f(x_pos, height),				// position
 					Vector2f(0, 0), 						// velocity
 					GROUND_SIZE, 							// width
@@ -96,7 +124,6 @@ Entities::Entities(Textures* textures) {
 					(*textures).grass_texture, 				// texture
 					true,									// collidable
 					true									// static_entity
-					)
 				);
 
 		for (int jdx = 1; jdx < n_dirt_layers + 1; ++jdx) {
@@ -114,31 +141,34 @@ Entities::Entities(Textures* textures) {
 					) {
 				collidable = true;
 			}
-			ground_entities.push_back(
-					Entity(
+			ground_entities.emplace_back(
 						Vector2f(x_pos, height + jdx * GROUND_SIZE), 				// position
 						Vector2f(0, 0), 											// velocity
 						GROUND_SIZE, 												// width
 						GROUND_SIZE, 												// height
 						ground_type,												// type
-						(*textures).dirt_texture,									// texture
+						// (*textures).dirt_texture,									// texture
+						collidable ? (*textures).grass_texture : (*textures).dirt_texture,	// texture
 						collidable,													// collidable
 						true														// static_entity
-						)
 					);
 			}
 		}
 	
 	// Define player entity 
+	Vector2f respawn_pos = Vector2f(
+			4 * GROUND_SIZE, 
+			WINDOW_HEIGHT - level_design[4] * GROUND_SIZE - PLAYER_HEIGHT_SRC * PLAYER_SIZE_FACTOR
+			);
 	player_entity = Entity(
-			Vector2f(100, PLATFORM_HEIGHT - (250)), 						// position
-			Vector2f(0, 0),													// velocity 
-			int(PLAYER_SIZE_FACTOR * PLAYER_WIDTH_SRC),						// width
-			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),					// height 
-			player_type,													// type
-			(*textures).player_texture_right,								// texture
-			true,															// collidable
-			false															// static_entity
+			respawn_pos,																// position
+			Vector2f(0, 0),																// velocity 
+			int(PLAYER_SIZE_FACTOR * PLAYER_WIDTH_SRC),									// width
+			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),								// height 
+			player_type,																// type
+			(*textures).player_texture_right,											// texture
+			true,																		// collidable
+			false																		// static_entity
 			);
 	all_entities = get_all_entities();
 }

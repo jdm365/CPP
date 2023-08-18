@@ -68,11 +68,12 @@ void RenderWindow::render(
 
 	// Size and location to display on screen.
 	SDL_Rect dst;
-	const char* ground = "ground";
-	const char* player = "player";
-	const char* enemy  = "enemy";
+	const char* ground 	   = "ground";
+	const char* player 	   = "player";
+	const char* enemy  	   = "enemy";
+	const char* background = "background";
 
-	SDL_Texture* entity_texture;
+	SDL_Texture* entity_texture = nullptr;
 
 	if (strcmp(entity.type, ground) == 0) {
 		src.x = 0;
@@ -126,7 +127,7 @@ void RenderWindow::render(
 
 		entity_texture = entity.get_texture();
 	}
-	else {
+	else if (strcmp(entity.type, background) == 0) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;

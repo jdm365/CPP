@@ -19,7 +19,6 @@
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
-#define PLATFORM_HEIGHT  		(float)WINDOW_HEIGHT * 2.0f / 3.0f
 #define PADDING  				(int)WINDOW_WIDTH * 0.1
 
 // Animation factors
