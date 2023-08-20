@@ -63,6 +63,7 @@ int main(int argc, char* args[]) {
 			if (entities.all_entities[idx]->static_entity) {
 				continue;
 			}
+			entities.all_entities[idx]->overhang = true;
 			std::vector<bool> collisions = { false, false, false, false };
 			for (int jdx = idx + 1; jdx < (int)entities.all_entities.size(); ++jdx) {
 				detect_collision(
@@ -124,6 +125,7 @@ int main(int argc, char* args[]) {
 				20,
 				entities.player_entity.health * 0.01f
 				);
+		window.render_score(entities.player_entity.score);
 
 		window.display();
 

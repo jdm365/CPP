@@ -27,6 +27,7 @@ class RenderWindow {
 				SDL_Color fg_color = {255, 0, 0, 255},
 				SDL_Color bg_color = {0, 0, 0, 255}
 				);
+		void render_score(int score);
 		void display();
 		void quit();
 	private:

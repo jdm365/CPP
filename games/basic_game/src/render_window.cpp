@@ -35,9 +35,12 @@ SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 	SDL_Texture* texture = NULL;
 	texture = IMG_LoadTexture(renderer, filepath);
 
-	// Tint red
+	// Tint enemies color.
 	if (strcmp(filepath, "assets/kristin_goggles.jpg") == 0) {
-		SDL_SetTextureColorMod(texture, 255, 0, 0);
+		SDL_SetTextureColorMod(texture, 205, 50, 50);
+	}
+	else if (strcmp(filepath, "assets/kristin_moustache.jpg") == 0) {
+		SDL_SetTextureColorMod(texture, 50, 200, 255);
 	}
 
 	if (texture == NULL) {
@@ -63,19 +66,15 @@ void RenderWindow::render(
 	SDL_Point size;
 	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
-	// Used to choose correct sprite on sprite sheet.
+	// Size and location of the sprite on the sprite sheet.
 	SDL_Rect src;
-
 	// Size and location to display on screen.
 	SDL_Rect dst;
-	const char* ground 	   = "ground";
-	const char* player 	   = "player";
-	const char* enemy  	   = "enemy";
-	const char* background = "background";
+
 
 	SDL_Texture* entity_texture = nullptr;
 
-	if (strcmp(entity.type, ground) == 0) {
+	if (entity.type == GROUND) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
@@ -88,7 +87,7 @@ void RenderWindow::render(
 
 		entity_texture = entity.get_texture();
 	}
-	else if (strcmp(entity.type, player) == 0) {
+	else if (entity.type == PLAYER) {
 		// Left sprite sheet is reflected about the y-axis.
 		if (!entity.facing_right) {
 			step_index = abs(step_index - 4);
@@ -114,7 +113,7 @@ void RenderWindow::render(
 
 		entity_texture = entity.facing_right ? entity.get_texture() : left_texture;
 	}
-	else if (strcmp(entity.type, enemy) == 0) {
+	else if (entity.type == ENEMY) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
@@ -127,7 +126,7 @@ void RenderWindow::render(
 
 		entity_texture = entity.get_texture();
 	}
-	else if (strcmp(entity.type, background) == 0) {
+	else if (entity.type == BACKGROUND) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
@@ -194,6 +193,47 @@ void RenderWindow::render_health_bar(int x, int y, int w, int h, float percent, 
    message_rect = { 
 	   x + (w / 2) - 4 * num_chars, 
 	   y + 2, 
+	   8 * num_chars, 
+	   16
+   };
+   SDL_RenderCopy(renderer, message, NULL, &message_rect);
+
+   SDL_FreeSurface(surface_message);
+   SDL_DestroyTexture(message);
+   TTF_CloseFont(font);
+}
+
+void RenderWindow::render_score(int score) {
+   TTF_Font* font = TTF_OpenFont("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 48);
+   if (font == NULL) {
+	  std::cout << "Failed to load font." << std::endl;
+	  // std::exit(1);
+   }
+
+   SDL_Color color = { 255, 255, 255 };
+
+   // Display Text "Score"
+   SDL_Surface* surface_message = TTF_RenderText_Solid(font, "Score", color);
+   SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface_message);
+   SDL_Rect message_rect = { 
+	   (WINDOW_WIDTH / 2) - 25, 
+	   10,
+	   50,
+	   20
+   };
+   SDL_RenderCopy(renderer, message, NULL, &message_rect);
+   TTF_CloseFont(font);
+
+   // Display Score
+   int num_chars = 4;
+
+   font = TTF_OpenFont("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 36);
+   std::string score_string = std::to_string(score);
+   surface_message = TTF_RenderText_Solid(font, score_string.c_str(), color);
+   message = SDL_CreateTextureFromSurface(renderer, surface_message);
+   message_rect = { 
+	   (WINDOW_WIDTH / 2) - 4 * num_chars, 
+	   30, 
 	   8 * num_chars, 
 	   16
    };

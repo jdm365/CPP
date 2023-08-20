@@ -14,7 +14,7 @@ class Entity {
 				Vector2f vel, 
 				int width, 
 				int height, 
-				const char* type,
+				uint8_t type,
 				SDL_Texture* player_texture,
 				bool collidable,
 				bool static_entity = false
@@ -24,17 +24,25 @@ class Entity {
 		Vector2f vel;
 		int width;
 		int height;
-		const char* type;
-		int gravity;
+		uint8_t type;
 		bool collidable;
 		float speed_multiplier = 1.0f;
 		bool static_entity = true;
 		bool facing_right = true;
 		bool alive = true;
 		int health = 100;
-		bool bottom_collision = false;
+		bool bottom_collision = true;
 		Vector2f respawn_pos;
+		bool overhang = true;
+		int score = 0;
 
 	private:
 		SDL_Texture* texture;
 }; 
+
+enum EntityType {
+	BACKGROUND,
+	PLAYER,
+	ENEMY,
+	GROUND
+};

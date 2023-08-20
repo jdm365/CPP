@@ -8,10 +8,9 @@ Entity::Entity() {
 	pos 	= Vector2f();
 	vel 	= Vector2f();
 	texture = NULL;
-	type 	= NULL;
+	type 	= GROUND;
 	width   = 0;
 	height  = 0;
-	gravity = GRAVITY;
 	collidable = false;
 }
 
@@ -20,7 +19,7 @@ Entity::Entity(
 		Vector2f vel, 
 		int width,
 		int height,
-		const char* type,
+		uint8_t type,
 		SDL_Texture* default_texture,
 		bool collidable,
 		bool static_entity
@@ -34,7 +33,6 @@ Entity::Entity(
 
 	respawn_pos = pos;
 	texture = default_texture;
-	gravity = GRAVITY;
 }
 
 SDL_Texture* Entity::get_texture() {

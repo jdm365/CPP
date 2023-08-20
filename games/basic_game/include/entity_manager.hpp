@@ -17,7 +17,8 @@ struct Textures {
 	SDL_Texture* dirt_texture;
 	SDL_Texture* player_texture_right;
 	SDL_Texture* player_texture_left;
-	SDL_Texture* kristin_texture;
+	SDL_Texture* kristin_jump_texture;
+	SDL_Texture* kristin_moustache_texture;
 };
 
 

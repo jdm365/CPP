@@ -2,15 +2,16 @@
 #define CONSTANTS_H
 
 // Textures
-#define GRASS_FILEPATH   		"assets/grass_texture.png"
-#define DIRT_FILEPATH   		"assets/dirt_texture.jpg"
-#define SKY_FILEPATH  			"assets/sky_texture.jpg"
-#define NAMEK_FILEPATH  		"assets/namek_texture.png"
-#define ROCKET_FILEPATH 		"assets/rocket_texture.jpg"
-#define PLAYER_FILEPATH_RIGHT  	"assets/knight_texture.png"
-#define PLAYER_FILEPATH_LEFT  	"assets/knight_texture_left.png"
-#define LEVEL_DESIGN_FILEPATH  	"assets/level_design.csv"
-#define KRISTIN_FILEPATH		"assets/kristin_goggles.jpg"
+#define GRASS_FILEPATH   			"assets/grass_texture.png"
+#define DIRT_FILEPATH   			"assets/dirt_texture.jpg"
+#define SKY_FILEPATH  				"assets/sky_texture.jpg"
+#define NAMEK_FILEPATH  			"assets/namek_texture.png"
+#define ROCKET_FILEPATH 			"assets/rocket_texture.jpg"
+#define PLAYER_FILEPATH_RIGHT  		"assets/knight_texture.png"
+#define PLAYER_FILEPATH_LEFT  		"assets/knight_texture_left.png"
+#define LEVEL_DESIGN_FILEPATH  		"assets/level_design.csv"
+#define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.jpg"
+#define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.jpg"
 
 // Frame sizing
 #define PLAYER_WIDTH_SRC		32
@@ -23,7 +24,7 @@
 
 // Animation factors
 #define TIME_STEP  				1.0f / 60.0f
-#define PLAYER_SPEED			8
+#define PLAYER_SPEED			6
 #define JUMP_SPEED				16
 #define GRAVITY					(float)0.60f
 
