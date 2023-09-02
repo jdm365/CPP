@@ -13,8 +13,6 @@
 
 // GBM -> GradientBoostingMachine
 
-// namespace np = pybind11::numpy;
-
 
 struct GBM {
 	int   max_depth;
@@ -102,7 +100,6 @@ struct GBM {
 			std::vector<float>& preds,
 			std::vector<float>& y
 			);
-
 
 	/*
 	***************************************************************

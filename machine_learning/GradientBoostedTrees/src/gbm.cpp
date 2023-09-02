@@ -12,8 +12,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-// namespace np = pybind11::numpy;
-
 #include "../include/node.hpp"
 #include "../include/tree.hpp"
 #include "../include/gbm.hpp"

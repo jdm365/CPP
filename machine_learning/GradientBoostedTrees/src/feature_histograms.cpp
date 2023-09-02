@@ -13,17 +13,7 @@
 */
 
 FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
-	bins.reserve(n_cols);
-	std::vector<Bin> bin_col;
-	bin_col.reserve(max_bin);
-
-	for (int col = 0; col < n_cols; ++col) {
-		for (int bin = 0; bin < max_bin; ++bin) {
-			bin_col.emplace_back();
-		}
-		bins.push_back(bin_col);
-		bin_col.clear();
-	}
+	bins.resize(n_cols, std::vector<Bin>(max_bin));
 }
 
 void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {

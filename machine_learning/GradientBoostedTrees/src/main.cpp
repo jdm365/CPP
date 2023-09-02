@@ -10,8 +10,8 @@
 
 int main() {
 	// const char* FILENAME = "data/iris_dataset.csv";
-	// const char* FILENAME = "data/housing_price_prediction_dataset.csv";
-	const char* FILENAME = "data/hpx10.csv";
+	const char* FILENAME = "data/housing_price_prediction_dataset.csv";
+	// const char* FILENAME = "data/hpx10.csv";
 	// const char* FILENAME = "data/hpx100.csv";
 
 	std::vector<std::vector<float>> X = read_csv_columnar(FILENAME);
@@ -27,18 +27,32 @@ int main() {
 	std::vector<float>& y_train = splits.first.second;
 	std::vector<float>& y_test  = splits.second.second;
 
+	const int   max_depth 			= 5;
+	const float l2_reg 				= 0.00f;
+	const float lr 					= 0.10f;
+	const float min_child_weight 	= 1.00f;
+	const int   min_data_in_leaf 	= 20;
+	const int   num_boosting_rounds = 1000;
+	const int   max_bin 			= 255;
+	const int   max_leaves 			= 31;
+	const float col_subsample_rate  = 0.20f;
+	const bool  enable_dart 		= false;
+	const int   verbosity 			= 50;
+
 	GBM model(
-			-1,				// max_depth (<= 0 implies no limit)
-			0.00f,			// l2_reg
-			0.10f,			// lr
-			1.00f,			// min_child_weight (NOT USED IN HIST)
-			20,				// min_data_in_leaf
-			50,				// num_boosting_rounds
-			255,			// max_bin
-			127,			// max_leaves
-			0.80f,			// col_subsample_rate [0.0, 1.0]
-			true			// enable_dart
+			max_depth,
+			l2_reg,
+			lr,
+			min_child_weight,
+			min_data_in_leaf,
+			num_boosting_rounds,
+			max_bin,
+			max_leaves,
+			col_subsample_rate,
+			enable_dart,
+			verbosity
 			);
+
 	// model.train_greedy(X_train, y_train);
 	model.train_hist(X_train, y_train);
 

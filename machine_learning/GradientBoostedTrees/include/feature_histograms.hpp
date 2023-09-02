@@ -5,7 +5,6 @@
 
 #include "utils.hpp"
 
-// #define NUM_THREADS	16
 
 struct __attribute__ ((packed)) Bin {
 	float grad_sum;
@@ -16,7 +15,6 @@ struct __attribute__ ((packed)) Bin {
 															hess_sum(hess),
 															bin_cnt(bin_cnt){}
 };
-
 
 struct FeatureHistograms {
 	std::vector<std::vector<Bin>> bins;
