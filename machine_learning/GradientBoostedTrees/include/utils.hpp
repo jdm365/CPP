@@ -6,13 +6,8 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
-
-namespace np = boost::python::numpy;
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 std::pair<
 		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
@@ -47,12 +42,14 @@ inline float get_vector_mean(std::vector<float>& vec) {
 	for (const float& val: vec) {
 		mean_val += val;
 	}
-	return mean_val / int(vec.size());
+	return mean_val / (int)vec.size();
 }
 
 
-std::vector<float> np_to_vec(np::ndarray const& X);
-std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
+// std::vector<float> np_to_vec(np::ndarray const& X);
+// std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
+std::vector<float> np_to_vec(const pybind11::array_t<float>& X);
+std::vector<std::vector<float>> np_to_vec2d(const pybind11::array_t<float>& X);
 
 
 /*
@@ -64,4 +61,4 @@ std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X);
 // typedef thrust::device_vector<uint8_t>* cuda_hist; 
 // TODO: Use 1d thrust::device_vector instead and manually index. 
 // 		 Array of vecs doesn't work / is pain in the ass.
-thrust::device_vector<uint8_t> convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist);
+// thrust::device_vector<uint8_t> convert_hist_to_cuda(const std::vector<std::vector<uint8_t>>& X_hist);

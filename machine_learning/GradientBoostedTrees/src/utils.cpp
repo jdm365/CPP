@@ -4,12 +4,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include "../include/utils.hpp"
-
-namespace np = boost::python::numpy;
 
 std::pair<
 		std::pair<std::vector<std::vector<float>>, std::vector<float>>,
@@ -174,34 +172,27 @@ std::vector<float> get_ordered_gradients(
 }
 
 
-std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
-
-	std::vector<std::vector<float>> X_vec;
-	std::vector<float> x_vec_col;
-
-	int n_cols = X.shape(1);
+// std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
+std::vector<std::vector<float>> np_to_vec2d(const pybind11::array_t<float>& X) {
 	int n_rows = X.shape(0);
+	int n_cols = X.shape(1);
 
-	float* X_arr = reinterpret_cast<float*>(X.get_data());
+	std::vector<std::vector<float>> X_vec(n_cols, std::vector<float>(n_rows));
+
+	// float* X_arr = reinterpret_cast<float*>(X.get_data());
+	// Get X_arr from pybind11::array_t<float> X.
 
 	for (int col = 0; col < n_cols; ++col) {
 		for (int row = 0; row < n_rows; ++row) {
-			x_vec_col.push_back(float(X_arr[col * n_rows + row]));
+			X_vec[col][row] = float(X.at(row, col));
 		}
-		X_vec.emplace_back(x_vec_col);
-		x_vec_col.clear();
 	}
 	return X_vec;
 }
 
-std::vector<float> np_to_vec(np::ndarray const& y) {
-	std::vector<float> y_vec;
-	int n_rows = y.shape(0);
-
-	float* y_arr = reinterpret_cast<float*>(y.get_data());
-
-	for (int row = 0; row < n_rows; ++row) {
-		y_vec.push_back(y_arr[row]);
-	}
+// std::vector<float> np_to_vec(np::ndarray const& y) {
+std::vector<float> np_to_vec(const pybind11::array_t<float>& y) {
+	pybind11::buffer_info info = y.request();
+	std::vector<float> y_vec = std::vector<float>((float *)info.ptr, (float *)info.ptr + info.size);
 	return y_vec;
 }

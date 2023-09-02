@@ -9,8 +9,10 @@
 #include <assert.h>
 #include <omp.h>
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
+// namespace np = pybind11::numpy;
 
 #include "../include/node.hpp"
 #include "../include/tree.hpp"
@@ -19,8 +21,6 @@
 #include "../include/utils.hpp"
 #include "../include/loss_functions.hpp"
 
-namespace p  = boost::python;
-namespace np = boost::python::numpy;
 
 #define INF 1048576;
 
@@ -477,7 +477,9 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 }
 
 
-void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
+// void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
+void GBM::train_hist_wrapper(const pybind11::array_t<float>& X, const pybind11::array_t<float>& y) {
+	// Convert pyarray to vec 2d
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
 
@@ -485,11 +487,20 @@ void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
 }
 
 
+/*
 void GBM::train_hist_wrapper_validation(
-		np::ndarray const& X, 
+		np::ndarray const& X,
 		np::ndarray const& y,
-		np::ndarray const& X_validation, 
+		np::ndarray const& X_validation,
 		np::ndarray const& y_validation,
+		int early_stopping_steps
+		) {
+*/
+void GBM::train_hist_wrapper_validation(
+		const pybind11::array_t<float>& X,
+		const pybind11::array_t<float>& y,
+		const pybind11::array_t<float>& X_validation,
+		const pybind11::array_t<float>& y_validation,
 		int early_stopping_steps
 		) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
@@ -501,12 +512,14 @@ void GBM::train_hist_wrapper_validation(
 	train_hist(X_vec, y_vec, X_vec_validation, y_vec_validation, early_stopping_steps);
 }
 
-np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
+// pybind11::array_t<float> GBM::predict_hist_wrapper(np::ndarray const& X) {
+pybind11::array_t<float> GBM::predict_hist_wrapper(const pybind11::array_t<float>& X) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 
 	// Need static declaration to keep pointer valid.
 	static std::vector<float> preds_vec = predict_hist(X_vec);
 
+	/*
 	np::dtype dt     = np::dtype::get_builtin<float>();
 	p::tuple  shape  = p::make_tuple(int(preds_vec.size()));
 	p::tuple  stride = p::make_tuple(sizeof(float));
@@ -518,9 +531,16 @@ np::ndarray GBM::predict_hist_wrapper(np::ndarray const& X) {
 			stride,
 			p::object()	
 			);
+	*/
+
+	// Create pybind11 array from vector
+	pybind11::array_t<float> preds = pybind11::array_t<float>(preds_vec.size(), preds_vec.data());
+	return preds;
 }
 
-void GBM::train_hist_gpu_wrapper(np::ndarray const& X, np::ndarray const& y) {
+// void GBM::train_hist_gpu_wrapper(np::ndarray const& X, np::ndarray const& y) {
+/*
+void GBM::train_hist_gpu_wrapper(const pybind11::array_t<float>& X, const pybind11::array_t<float>& y) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
 
@@ -533,3 +553,4 @@ void GBM::train_hist_gpu_wrapper(np::ndarray const& X, np::ndarray const& y) {
 
 	train_hist_gpu(X_hist, X_hist_rowmajor, y_vec);
 }
+*/

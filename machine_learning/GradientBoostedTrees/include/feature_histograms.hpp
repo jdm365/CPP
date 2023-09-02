@@ -3,9 +3,6 @@
 #include <iostream>
 #include <vector>
 
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-
 #include "utils.hpp"
 
 // #define NUM_THREADS	16
@@ -52,6 +49,7 @@ struct FeatureHistograms {
 };
 
 
+/*
 struct GPUFeatureHistograms {
 	thrust::device_vector<float> grad_bins;
 	thrust::device_vector<float> hess_bins;
@@ -68,3 +66,4 @@ struct GPUFeatureHistograms {
 			); 
 	thrust::pair<float, float> get_col_sums(int max_bin);
 };
+*/

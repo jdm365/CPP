@@ -5,15 +5,15 @@
 #include <unordered_map>
 #include <map>
 
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include "node.hpp"
 #include "tree.hpp"
 
 // GBM -> GradientBoostingMachine
 
-namespace np = boost::python::numpy;
+// namespace np = pybind11::numpy;
 
 
 struct GBM {
@@ -71,7 +71,9 @@ struct GBM {
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 
 
-	void train_hist_wrapper(np::ndarray const& X, np::ndarray const& y);
+	// void train_hist_wrapper(np::ndarray const& X, np::ndarray const& y);
+	void train_hist_wrapper(const pybind11::array_t<float>& X, const pybind11::array_t<float>& y);
+	/*
 	void train_hist_wrapper_validation(
 			np::ndarray const& X, 
 			np::ndarray const& y,
@@ -79,7 +81,16 @@ struct GBM {
 			np::ndarray const& y_validation,
 			int early_stopping_steps
 			);
-	np::ndarray predict_hist_wrapper(np::ndarray const& X);
+	*/
+	void train_hist_wrapper_validation(
+			const pybind11::array_t<float>& X, 
+			const pybind11::array_t<float>& y,
+			const pybind11::array_t<float>& X_validation, 
+			const pybind11::array_t<float>& y_validation,
+			int early_stopping_steps
+			);
+	// np::ndarray predict_hist_wrapper(np::ndarray const& X);
+	pybind11::array_t<float> predict_hist_wrapper(const pybind11::array_t<float>& X);
 
 	std::vector<float> __predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_rowmajor);
 	void predict_hist_iterative(
@@ -98,6 +109,8 @@ struct GBM {
 	***************************  GPU  *****************************
 	***************************************************************
 	*/
+
+	/*
 	void train_hist_gpu(
 			const std::vector<std::vector<uint8_t>>& X_hist, 
 			const std::vector<std::vector<uint8_t>>& X_hist_rowmajor, 
@@ -107,6 +120,8 @@ struct GBM {
 			np::ndarray const& X, 
 			np::ndarray const& y
 			);
+	*/
+
 	/*
 	thrust::device_vector<float> calculate_gradient_gpu(
 			thrust::device_vector<float>& preds, 

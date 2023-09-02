@@ -41,6 +41,7 @@ struct Tree {
 		);
 
 	// Histogram Constructor GPU
+	/*
 	Tree(
 			const thrust::device_vector<uint8_t>& X_hist,
 			thrust::device_vector<float>& gradient,
@@ -53,6 +54,7 @@ struct Tree {
 			float& col_subsample_rate,
 			int&   tree_num
 		);
+	*/
 
 	std::vector<float> predict(std::vector<std::vector<float>>& X_pred);
 	std::vector<float> predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred); 

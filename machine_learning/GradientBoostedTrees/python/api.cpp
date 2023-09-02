@@ -1,7 +1,5 @@
-#include <boost/python.hpp>
-#include <boost/python/numpy.hpp>
-#include <boost/smart_ptr/detail/yield_k.hpp>
-#include <pylifecycle.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include <iostream>
 #include <iterator>
@@ -14,16 +12,12 @@
 #include "../include/gbm.hpp"
 
 
-using namespace boost::python;
-namespace np = boost::python::numpy;
 
+PYBIND11_MODULE(GBDTEngine, m) {
+	m.doc() = "gbdt engine";
 
-BOOST_PYTHON_MODULE(GBDTEngine) {
-	Py_Initialize();
-	np::initialize();
-
-	class_<GBM>("GBM")
-		.def(init<
+	pybind11::class_<GBM>(m, "GBM")
+		.def(pybind11::init<
 				int,
 				float,
 				float,
@@ -37,15 +31,9 @@ BOOST_PYTHON_MODULE(GBDTEngine) {
 				int
 				>()
 		)
-		.def("train_hist", &GBM::train_hist_wrapper, args("X", "y"))
-		.def("train_hist", &GBM::train_hist_wrapper_validation, args(
-					"X", 
-					"y", 
-					"X_validation", 
-					"y_validation",
-					"early_stopping_steps"
-					))
-		.def("predict_hist", &GBM::predict_hist_wrapper, args("X"))
-		.def("train_hist_gpu", &GBM::train_hist_gpu_wrapper, args("X", "y"))
+		.def("train_hist", &GBM::train_hist_wrapper)
+		.def("train_hist", &GBM::train_hist_wrapper_validation)
+		.def("predict_hist", &GBM::predict_hist_wrapper)
+		// .def("train_hist_gpu", &GBM::train_hist_gpu_wrapper, args("X", "y"))
 		;
 }

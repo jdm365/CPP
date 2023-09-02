@@ -4,8 +4,8 @@
 #include <array>
 #include <unordered_map>
 
-#include <thrust/device_vector.h>
-#include <thrust/tuple.h>
+// #include <thrust/device_vector.h>
+// #include <thrust/tuple.h>
 
 #include "feature_histograms.hpp"
 
@@ -121,6 +121,7 @@ struct Node {
 	***************************** GPU *******************************
 	*****************************************************************
 	*/
+	/*
 	Node(
 			const thrust::device_vector<uint8_t>& X_hist,
 			const thrust::device_vector<int>& subsample_cols,
@@ -172,4 +173,5 @@ struct Node {
 			return (int)x;
 		}
 	};
+	*/
 };
