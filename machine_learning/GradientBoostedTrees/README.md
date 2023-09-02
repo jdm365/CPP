@@ -9,10 +9,9 @@ it is not as featurefull and is far less thoroughly tested and maintained.
 
 
 
-To compile:
+To install:
 ```
-cd build
-cmake ../ ; make all
+make
 ```
 
 To access python module:
