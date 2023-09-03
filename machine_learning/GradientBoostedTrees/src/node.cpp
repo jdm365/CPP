@@ -84,7 +84,7 @@ Node::Node(
 		int&   num_leaves
 		) {
 
-	is_leaf	= (depth >= max_depth) || (int(X_hist[0].size()) < min_data_in_leaf);
+	is_leaf	= (depth >= max_depth) || ((int)X_hist[0].size() < min_data_in_leaf);
 	num_leaves++;
 
 	float grad_sum; 
@@ -171,7 +171,7 @@ std::vector<float> Node::predict(std::vector<std::vector<float>>& X_pred) {
 
 	// X_pred is rowmajor storage.
 	for (int row = 0; row < int(X_pred.size()); ++row) {
-		preds.push_back(predict_obs(X_pred[row]));
+		preds.emplace_back(predict_obs(X_pred[row]));
 	}
 	return preds;
 }
@@ -189,9 +189,10 @@ float Node::predict_obs_hist(const std::vector<uint8_t>& obs) {
 
 
 std::vector<float> Node::predict_hist(const std::vector<std::vector<uint8_t>>& X_hist_pred) {
-	std::vector<float> preds(int(X_hist_pred.size()));
+	int n_rows = (int)X_hist_pred.size();
+	std::vector<float> preds(n_rows, 0.0f);
 
-	for (int row = 0; row < int(X_hist_pred.size()); ++row) {
+	for (int row = 0; row < n_rows; ++row) {
 		preds[row] = predict_obs_hist(X_hist_pred[row]);
 	}
 	return preds;
@@ -210,8 +211,8 @@ void Node::get_greedy_split(
 		int& max_depth,
 		int depth
 		) {
-	int n_cols = int(X.size());
-	int n_rows = int(X[0].size());
+	int n_cols = (int)X.size();
+	int n_rows = (int)X[0].size();
 
 	std::vector<float> X_col;
 
@@ -292,6 +293,12 @@ void Node::get_greedy_split(
 	std::vector<float> hessian_left;
 	std::vector<float> hessian_right;
 
+	// Reserve n_rows for each gradient. Okay use of extra memory.
+	gradient_left.reserve(n_rows);
+	gradient_right.reserve(n_rows);
+	hessian_left.reserve(n_rows);
+	hessian_right.reserve(n_rows);
+
 	for (int col = 0; col < n_cols; ++col) {
 		for (int row = 0; row < n_rows; ++row) {
 			if (X[split_col][row] <= split_val) {
@@ -353,7 +360,6 @@ void Node::get_hist_split(
 				int& num_leaves
 		) {
 	int n_cols = int(subsample_cols.size());
-	int col;
 
 	int min_bin_col;
 	int max_bin_col;
@@ -365,15 +371,15 @@ void Node::get_hist_split(
 		col_splits[col] = {0, 0.00f};
 	}
 
-	#pragma omp parallel num_threads(omp_get_num_procs()) private(col)
+	#pragma omp parallel num_threads(omp_get_num_procs())
 	{
 		#pragma omp for schedule(static)
 		for (int idx = 0; idx < n_cols; ++idx) {
-			col = subsample_cols[idx];
+			int col = subsample_cols[idx];
 
 			// Get min and max bin in hist col and only iterate over those buckets.
-			min_bin_col = int(min_max_rem[col][0]);
-			max_bin_col = int(min_max_rem[col][1]);
+			min_bin_col = (int)min_max_rem[col][0];
+			max_bin_col = (int)min_max_rem[col][1];
 			
 			col_splits[col] = find_hist_split_col(
 					hists.bins[idx],
@@ -383,13 +389,14 @@ void Node::get_hist_split(
 					hess_sum,
 					min_bin_col,
 					max_bin_col,
-					int(row_idxs.size())	
+					(int)row_idxs.size()
 					);
 		}
 	}
+
 	float best_score = -INFINITY;
 	for (const int& col: subsample_cols) {
-		if (col_splits[col].second > best_score) { [[unlikely]]
+		if (col_splits[col].second > best_score) [[unlikely]] {
 			split_bin  = col_splits[col].first;
 			best_score = col_splits[col].second;
 			split_col  = col;
@@ -563,11 +570,12 @@ std::pair<int, float> Node::find_hist_split_col(
 				right_hessian_sum,
 				l2_reg
 				);
+
 		if (score > best_score) {
 			split_bin_  = bin + 1;
 			best_score  = score;
 		}
 	}
-	std::pair<int, float> best_split(split_bin_, best_score);
+	std::pair<int, float> best_split = {split_bin_, best_score};
 	return best_split;
 }
