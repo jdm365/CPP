@@ -19,30 +19,30 @@ struct GBM {
 	float l2_reg;
 	float lr;
 	float min_child_weight;
-	float y_mean_train;
 	int   min_data_in_leaf;
 	int   num_boosting_rounds;
 	int   max_bin;
 	int   max_leaves;
-	bool  dart;
 	float col_subsample_rate;
-	int verbosity;
+	bool  dart;
+	int   verbosity;
+	float y_mean_train;
 	std::vector<Tree> trees;
 	std::vector<std::vector<float>> bin_mapping;
 
-	GBM() {}
+	// GBM() {}
 	GBM(
-			int   _max_depth,
-			float _l2_reg,
-			float _lr,
-			float _min_child_weight,
-			int   _min_data_in_leaf,
-			int   _num_boosting_rounds,
-			int   _max_bin,
-			int   _max_leaves,
-			float _col_subsample_rate = 1.00f,
-			bool  _dart = false,
-			int   _verbosity = 50
+			int   max_depth,
+			float l2_reg,
+			float lr,
+			float min_child_weight,
+			int   min_data_in_leaf,
+			int   num_boosting_rounds,
+			int   max_bin,
+			int   max_leaves,
+			float col_subsample_rate = 1.00f,
+			bool  dart = false,
+			int   verbosity = 50
 		);
 	~GBM() {}
 

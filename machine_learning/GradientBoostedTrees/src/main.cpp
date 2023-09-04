@@ -1,8 +1,7 @@
 #include <iostream>
-#include <iterator>
 #include <vector>
-#include <array>
-#include <assert.h>
+#include <omp.h>
+#include <cstdlib>
 
 #include "../include/read_data.hpp"
 #include "../include/utils.hpp"

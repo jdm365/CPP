@@ -57,9 +57,13 @@ Tree::Tree(
 		std::vector<std::vector<uint8_t>>& min_max_rem ,
 		int &  tree_num
 		) {
+	const int num_cols = X_hist.size();
+	const int num_rows = X_hist[0].size();
+	const int num_cols_subsample = (int)(num_cols * col_subsample_rate);
+
 	const std::vector<int> subsample_cols = get_subsample_cols(
 			col_subsample_rate, 
-			int(X_hist.size()),
+			num_cols,
 			tree_num
 			);
 
@@ -67,12 +71,11 @@ Tree::Tree(
 	int depth  = 0;
 	num_leaves = 0;
 	
-	std::vector<int> row_idxs(X_hist[0].size());
+	std::vector<int> row_idxs(num_rows);
 	std::iota(row_idxs.begin(), row_idxs.end(), 0);
 
-	struct FeatureHistograms hists(int(subsample_cols.size()), max_bin);
+	struct FeatureHistograms hists(num_cols_subsample, max_bin);
 	hists.calc_hists(X_hist, subsample_cols, gradient, hessian, row_idxs, true);
-
 
 	// Creating the root node will recursively create nodes and build the tree.
 	// (Called from constructor).
@@ -110,7 +113,7 @@ std::vector<int> Tree::get_subsample_cols(float& col_subsample_rate, int n_cols,
 	std::shuffle(col_idxs.begin(), col_idxs.end(), std::default_random_engine(tree_num));
 
 	std::vector<int> subsample_cols;
-	for (int idx = 0; idx < std::max(1, int(n_cols * col_subsample_rate)); ++idx) {
+	for (int idx = 0; idx < std::max(1, (int)(n_cols * col_subsample_rate)); ++idx) {
 		subsample_cols.push_back(col_idxs[idx]);
 	}
 	return subsample_cols;

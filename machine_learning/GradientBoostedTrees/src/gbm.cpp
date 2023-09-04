@@ -24,34 +24,34 @@
 
 GBM::GBM(
 		int   _max_depth,
-		float _l2_reg,
-		float _lr,
-		float _min_child_weight,
-		int   _min_data_in_leaf,
-		int   _num_boosting_rounds,
-		int   _max_bin,
+		float l2_reg,
+		float lr,
+		float min_child_weight,
+		int   min_data_in_leaf,
+		int   num_boosting_rounds,
+		int   max_bin,
 		int   _max_leaves,
-		float _col_subsample_rate,
-		bool  _dart,
-		int   _verbosity
-		) {
-	if (_max_depth <= 0) {
-		_max_depth = INF;
-	}
-	dart				= _dart;
-	col_subsample_rate  = _col_subsample_rate;
-	max_depth 			= _max_depth;
-	l2_reg 				= _l2_reg;
-	lr 					= _lr;
-	min_child_weight 	= _min_child_weight;
-	min_data_in_leaf 	= _min_data_in_leaf;
-	num_boosting_rounds = _num_boosting_rounds;
-	max_bin				= _max_bin;
-	max_leaves			= 2 * _max_leaves + 1; // This represents max nodes to
-											   // get max leaves.
-	verbosity			= _verbosity;
+		float col_subsample_rate,
+		bool  dart,
+		int   verbosity
+		) : l2_reg(l2_reg),
+			lr(lr),
+			min_child_weight(min_child_weight),
+			min_data_in_leaf(min_data_in_leaf),
+			num_boosting_rounds(num_boosting_rounds),
+			max_bin(max_bin),
+			col_subsample_rate(col_subsample_rate),
+			dart(dart),
+			verbosity(verbosity) {
 
-	trees.reserve(_num_boosting_rounds);
+	if (_max_depth <= 0) {
+		max_depth = INF;
+	}
+	else {
+		max_depth = _max_depth;
+	}
+	max_leaves = 1 + (_max_leaves << 1);
+	trees.reserve(num_boosting_rounds);
 }
 
 

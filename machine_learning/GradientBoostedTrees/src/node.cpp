@@ -371,7 +371,7 @@ void Node::get_hist_split(
 		col_splits[col] = {0, 0.00f};
 	}
 
-	#pragma omp parallel num_threads(omp_get_num_procs())
+	#pragma omp parallel num_threads(omp_get_num_threads())
 	{
 		#pragma omp for schedule(static)
 		for (int idx = 0; idx < n_cols; ++idx) {

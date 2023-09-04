@@ -58,6 +58,7 @@ class GBDT:
             X_validation = self.convert_to_np_float32(X_validation)
             y_validation = self.convert_to_np_float32(y_validation)
 
+        '''
         self.engine.train_hist(
                 X, 
                 y,
@@ -65,6 +66,8 @@ class GBDT:
                 y_validation,
                 self.early_stopping_steps
                 )
+        '''
+        self.engine.train_hist(X, y)
 
     def train_hist_gpu(
             self, 

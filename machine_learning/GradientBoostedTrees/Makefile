@@ -1,17 +1,21 @@
 ## Makefile
 .PHONY: run cpu clean
 
-CXX = clang++
+#CXX = clang++
+CXX = g++
 CXX_FLAGS = -std=c++17 -Wall -Wextra -Ofast -g -march=native
 CPU_SRCS = $(wildcard src/*)
 CPU_INCLUDES = -Iinclude/
-#LIBS = -lstdc++ -lgomp -stdlib=libc++
 ifeq ($(shell uname), Darwin)
-	LIBS = -Xpreprocessor -fopenmp -lomp -lstdc++ -stdlib=libc++
+	LIBS = -Xpreprocessor -fopenmp -lomp -lstdc++
 	LD_FLAGS = -L/Users/jakemehlman/opt/anaconda3/lib -lpython3.8 -Wl,-rpath,/Users/jakemehlman/opt/anaconda3/lib
 else
-	LIBS = -fopenmp -lstdc++ -lgomp -stdlib=libc++
+	LIBS = -fopenmp -lstdc++ -lgomp
 	LD_FLAGS = -L/home/jdm365/miniconda3/lib -lpython3.11
+endif
+
+ifeq ($(CXX), clang++)
+	CXX_FLAGS += -stdlib=libc++
 endif
 BIN = bin/release/GBDT
 
@@ -29,6 +33,7 @@ run:
 	./$(BIN)
 
 clean:
-	rm -f $(PYBIN).so
-	rm -f bin/release/*
-	rm -f bin/debug/*
+	pip uninstall -y GBDT
+	rm -rf $(PYBIN).so
+	rm -rf bin/release/*
+	rm -rf bin/debug/*

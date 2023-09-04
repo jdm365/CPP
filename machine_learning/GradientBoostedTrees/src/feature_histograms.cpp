@@ -17,7 +17,8 @@ FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
 }
 
 void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
-	#pragma omp parallel num_threads(omp_get_num_procs())
+	const int num_threads = std::min(omp_get_max_threads(), (int)bins.size());
+	#pragma omp parallel num_threads(num_threads)
 	{
 		#pragma omp for schedule(static)
 		for (int col = 0; col < (int)bins.size(); ++col) {
@@ -42,6 +43,8 @@ void FeatureHistograms::calc_hists(
 	const int num_rows = (int)row_idxs.size();
 	const int num_cols = (int)subsample_cols.size();
 
+	const int num_threads = std::min(omp_get_max_threads(), num_cols);
+
 	if (!const_hessian) {
 		if (!root) {
 			// Create new gradient and hessian vectors contiguous in memory
@@ -55,7 +58,7 @@ void FeatureHistograms::calc_hists(
 				ordered_hessians.push_back(hessian[row]);
 			}
 
-			#pragma omp parallel num_threads(omp_get_num_procs())
+			#pragma omp parallel num_threads(num_threads)
 			{
 				#pragma omp for schedule(static)
 				for (int idx = 0; idx < num_cols; ++idx) {
@@ -70,10 +73,10 @@ void FeatureHistograms::calc_hists(
 			}
 		}
 		else {
-			#pragma omp parallel num_threads(omp_get_num_procs())
+			#pragma omp parallel num_threads(num_threads)
 			{
 				#pragma omp for schedule(static)
-				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
+				for (int idx = 0; idx < num_cols; ++idx) {
 					calc_hists_single_feature(
 							X_hist[subsample_cols[idx]],
 							gradient,
@@ -88,16 +91,16 @@ void FeatureHistograms::calc_hists(
 	else {
 		if (!root) {
 			std::vector<float> ordered_gradients;
-			ordered_gradients.reserve(row_idxs.size());
+			ordered_gradients.reserve(num_rows);
 
 			for (const int& row: row_idxs) {
 				ordered_gradients.push_back(gradient[row]);
 			}
 
-			#pragma omp parallel num_threads(omp_get_num_procs())
+			#pragma omp parallel num_threads(num_threads)
 			{
 				#pragma omp for schedule(static)
-				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
+				for (int idx = 0; idx < num_cols; ++idx) {
 					calc_hists_grad_single_feature(
 							X_hist[subsample_cols[idx]],
 							ordered_gradients,
@@ -108,10 +111,10 @@ void FeatureHistograms::calc_hists(
 			}
 		}
 		else {
-			#pragma omp parallel num_threads(omp_get_num_procs())
+			#pragma omp parallel num_threads(num_threads)
 			{
 				#pragma omp for schedule(static)
-				for (int idx = 0; idx < int(subsample_cols.size()); ++idx) {
+				for (int idx = 0; idx < num_cols; ++idx) {
 					calc_hists_grad_single_feature(
 							X_hist[subsample_cols[idx]],
 							gradient,
@@ -142,6 +145,7 @@ void FeatureHistograms::calc_hists_single_feature(
 	int final_step = ((int)num_rows / 4) * 4;
 
 	std::vector<Bin>& bin_col = bins[bin_idx];
+	#pragma omp simd
 	for (int idx = 0; idx < final_step; idx += 4) {
 		bin_0 = X_hist_col[row_idxs[idx]];
 		bin_1 = X_hist_col[row_idxs[idx + 1]];
@@ -167,9 +171,9 @@ void FeatureHistograms::calc_hists_single_feature(
 	for (int idx = final_step; idx < num_rows; ++idx) {
 		bin_0 = X_hist_col[row_idxs[idx]];
 
-		bins[bin_idx][bin_0].grad_sum += ordered_gradients[idx];
-		bins[bin_idx][bin_0].hess_sum += ordered_hessians[idx];
-		bins[bin_idx][bin_0].bin_cnt++;
+		bin_col[bin_0].grad_sum += ordered_gradients[idx];
+		bin_col[bin_0].hess_sum += ordered_hessians[idx];
+		bin_col[bin_0].bin_cnt++;
 	}
 }
 
