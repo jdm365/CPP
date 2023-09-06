@@ -16,8 +16,7 @@ Textures::Textures(RenderWindow* window) {
 	background_texture	  	  = (*window).load_texture(NAMEK_FILEPATH);
 	grass_texture         	  = (*window).load_texture(GRASS_FILEPATH);
 	dirt_texture          	  = (*window).load_texture(DIRT_FILEPATH);
-	player_texture_right  	  = (*window).load_texture(PLAYER_FILEPATH_RIGHT);
-	player_texture_left   	  = (*window).load_texture(PLAYER_FILEPATH_LEFT);
+	player_texture		  	  = (*window).load_texture(PLAYER_FILEPATH);
 	kristin_jump_texture  	  = (*window).load_texture(KRISTIN_JUMP_FILEPATH);
 	kristin_moustache_texture = (*window).load_texture(KRISTIN_MOUSTACHE_FILEPATH);
 }
@@ -25,8 +24,8 @@ Textures::Textures(RenderWindow* window) {
 Entities::Entities(Textures* textures) {
 	// Define background entity
 	background_entity = Entity(
-			Vector2f(0, 0),								// position 
-			Vector2f(0, 0),								// velocity 
+			Vector2f {0, 0},								// position 
+			Vector2f {0, 0},								// velocity 
 			WINDOW_WIDTH,								// width
 			WINDOW_HEIGHT,								// height 
 			BACKGROUND,									// type
@@ -65,8 +64,8 @@ Entities::Entities(Textures* textures) {
 			float enemy_y_pos = WINDOW_HEIGHT + 2 * player_entity.height;
 
 			enemy_entities.emplace_back(
-					Vector2f(enemy_x_pos, enemy_y_pos), 							// position
-					Vector2f(0, 0),													// velocity 
+					Vector2f {enemy_x_pos, enemy_y_pos}, 							// position
+					Vector2f {0, 0},												// velocity 
 					texture_width,													// width
 					texture_height,													// height
 					ENEMY,															// type
@@ -93,8 +92,8 @@ Entities::Entities(Textures* textures) {
 			float enemy_y_pos = WINDOW_HEIGHT - level_design[idx - 1] * GROUND_SIZE - (int)texture_height;
 
 			enemy_entities.emplace_back(
-					Vector2f(enemy_x_pos, enemy_y_pos), 							// position
-					Vector2f(0.25f * PLAYER_SPEED, 0),								// velocity 
+					Vector2f {enemy_x_pos, enemy_y_pos}, 							// position
+					Vector2f {0.25f * PLAYER_SPEED, 0},								// velocity 
 					texture_width,													// width
 					texture_height,													// height
 					ENEMY,															// type
@@ -110,10 +109,14 @@ Entities::Entities(Textures* textures) {
 		int diff          = (level_design[idx] == -25) ? level_design[idx - 1] : level_design[idx];
 		int height		  = WINDOW_HEIGHT - diff * GROUND_SIZE;
 		int n_dirt_layers = (WINDOW_HEIGHT - height) / GROUND_SIZE;
+
+		Vector2f position;
+		position.x = x_pos;
+		position.y = height;
 		
 		ground_entities.emplace_back(
-					Vector2f(x_pos, height),				// position
-					Vector2f(0, 0), 						// velocity
+					position, 								// position
+					Vector2f {0, 0}, 						// velocity
 					GROUND_SIZE, 							// width
 					GROUND_SIZE, 							// height
 					GROUND,									// type
@@ -137,9 +140,12 @@ Entities::Entities(Textures* textures) {
 					) {
 				collidable = true;
 			}
+			Vector2f position;
+			position.x = x_pos;
+			position.y = height + jdx * GROUND_SIZE;
 			ground_entities.emplace_back(
-						Vector2f(x_pos, height + jdx * GROUND_SIZE), 				// position
-						Vector2f(0, 0), 											// velocity
+						position, 													// position
+						Vector2f {0, 0}, 											// velocity
 						GROUND_SIZE, 												// width
 						GROUND_SIZE, 												// height
 						GROUND,														// type
@@ -151,19 +157,22 @@ Entities::Entities(Textures* textures) {
 		}
 	
 	// Define player entity 
-	Vector2f respawn_pos = Vector2f(
-			4 * GROUND_SIZE, 
-			WINDOW_HEIGHT - level_design[4] * GROUND_SIZE - PLAYER_HEIGHT_SRC * PLAYER_SIZE_FACTOR
-			);
+	float scale_height = PLAYER_HEIGHT_SRC / (float)PLAYER_WIDTH_SRC;
+	int player_width = 110;
+	int player_height = scale_height * player_width;
+
+	Vector2f respawn_pos;
+	respawn_pos.x = 4 * GROUND_SIZE;
+	respawn_pos.y = WINDOW_HEIGHT - level_design[4] * GROUND_SIZE - player_height;
+
 	player_entity = Entity(
 			respawn_pos,																// position
-			Vector2f(0, 0),																// velocity 
-			int(PLAYER_SIZE_FACTOR * PLAYER_WIDTH_SRC),									// width
-			int(PLAYER_SIZE_FACTOR * PLAYER_HEIGHT_SRC),								// height 
+			Vector2f {0, 0},															// velocity 
+			player_width,																// width
+			player_height,																// height 
 			PLAYER,																		// type
-			(*textures).player_texture_right,											// texture
+			(*textures).player_texture,													// texture
 			true,																		// collidable
 			false																		// static_entity
 			);
-	all_entities = get_all_entities();
 }

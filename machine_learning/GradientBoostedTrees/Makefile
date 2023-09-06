@@ -2,8 +2,10 @@
 .PHONY: run cpu clean
 
 #CXX = clang++
-CXX = g++
-CXX_FLAGS = -std=c++17 -Wall -Wextra -Ofast -g -march=native
+CXX = gcc
+#CXX = g++
+#CXX_FLAGS = -std=c++2a -Wall -Wextra -Ofast -g -march=native
+CXX_FLAGS = -std=c++2a -Wall -Wextra -O3 -g -march=native
 CPU_SRCS = $(wildcard src/*)
 CPU_INCLUDES = -Iinclude/
 ifeq ($(shell uname), Darwin)
@@ -21,7 +23,7 @@ BIN = bin/release/GBDT
 
 MODULE_NAME = GBDTEngine
 PYBIN = bin/python/GBDT/$(MODULE_NAME)
-PYBIND11_FLAGS = `python3-config --extension-suffix` python/* -shared -std=c++17 -fPIC `python3 -m pybind11 --includes`
+PYBIND11_FLAGS = `python3-config --extension-suffix` python/* -shared -std=c++2a -fPIC `python3 -m pybind11 --includes`
 
 
 cpu:

@@ -1,6 +1,5 @@
 setup.py
 GBDT/GBDTEngine.cpython-311-x86_64-linux-gnu.so
-GBDT/GBDTEngine.cpython-38-darwin.so
 GBDT/__init__.py
 GBDT/module.py
 GBDT.egg-info/PKG-INFO

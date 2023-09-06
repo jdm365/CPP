@@ -17,30 +17,31 @@ struct __attribute__ ((packed)) Bin {
 };
 
 struct FeatureHistograms {
-	std::vector<std::vector<Bin>> bins;
+	// Align on separate cache lines
+	alignas(64) std::vector<std::vector<Bin>> bins;
 
 	FeatureHistograms(int n_cols, int max_bin);
 	void calc_diff_hist(FeatureHistograms& other_hist);
 	void calc_hists(
 			const std::vector<std::vector<uint8_t>>& X_hist,
 			const std::vector<int>& subsample_cols,
-			std::vector<float>& gradient,
-			std::vector<float>& hessian,
-			std::vector<int>& row_idxs,
+			const std::vector<float>& gradient,
+			const std::vector<float>& hessian,
+			const std::vector<int>& row_idxs,
 			bool root=false,
 			bool const_hessian=false 
 			); 
 	void calc_hists_single_feature(
 			const std::vector<uint8_t>& X_hist_col,
-			std::vector<float>& ordered_gradients,
-			std::vector<float>& ordered_hessians,
-			std::vector<int>& row_idxs,
+			const std::vector<float>& ordered_gradients,
+			const std::vector<float>& ordered_hessians,
+			const std::vector<int>& row_idxs,
 			int col
 			); 
 	void calc_hists_grad_single_feature(
 			const std::vector<uint8_t>& X_hist_col,
-			std::vector<float>& ordered_gradients,
-			std::vector<int>& row_idxs,
+			const std::vector<float>& ordered_gradients,
+			const std::vector<int>& row_idxs,
 			int col
 			); 
 	std::pair<float, float> get_col_sums(int max_bin);

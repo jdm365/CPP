@@ -115,7 +115,10 @@ class GBDT:
         if self.gpu:
             self.train_hist_gpu(X_train, y_train)
         else:
-            self.train_hist(X_train, y_train, X_test, y_test)
+            ## self.train_hist(X_train, y_train, X_test, y_test)
+            X = np.concatenate([X_train, X_test], axis=0)
+            y = np.concatenate([y_train, y_test], axis=0)
+            self.train_hist(X, y)
 
         if X_eval is not None:
             preds = model.predict_hist(X_eval)

@@ -5,8 +5,8 @@
 #include "../include/constants.h"
 
 Entity::Entity() {
-	pos 	= Vector2f();
-	vel 	= Vector2f();
+	pos 	= Vector2f {};
+	vel 	= Vector2f {};
 	texture = NULL;
 	type 	= GROUND;
 	width   = 0;

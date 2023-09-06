@@ -5,21 +5,15 @@
 #include <vector>
 
 #include "../include/entity.hpp"
+#include "../include/render_window.hpp"
 #include "../include/constants.h"
 
 
-void detect_collision(
-		std::vector<bool>& collisions,
-		Entity& player_entity, 
-		Entity& other_entity
+void detect_collisions(std::vector<Entity*> entities);
+void _detect_collision(
+		Entity& src_entity, 
+		Entity& dst_entity
 		);
-void update(
-		Entity& player_entity,
-		Vector2f& player_pos,
-		std::vector<bool>& collisions
-		);
-void handle(
-		SDL_Event& event, 
-		Entity& entity
-		);
+void update(Entity& entity);
+void handle_keyboard(SDL_Event& event, Entity& player_entity);
 void respawn(Entity& player_entity);

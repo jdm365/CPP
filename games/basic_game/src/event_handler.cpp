@@ -1,7 +1,10 @@
+#include <SDL2/SDL_keycode.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <omp.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
@@ -10,8 +13,27 @@
 #include "../include/constants.h"
 #include "../include/math.hpp"
 
-void detect_collision(
-		std::vector<bool>& collisions,
+
+void detect_collisions(std::vector<Entity*> entities) {
+	#pragma omp parallel for schedule(static)
+	for (int idx = 0; idx < (int)entities.size(); ++idx) {
+		if (entities[idx]->static_entity) {
+			continue;
+		}
+		entities[idx]->overhang = true;
+		memset(entities[idx]->collisions, false, sizeof(entities[idx]->collisions));
+		for (int jdx = idx + 1; jdx < (int)entities.size(); ++jdx) {
+			_detect_collision(
+					*entities[idx],
+					*entities[jdx]
+					);
+		}
+		update(*entities[idx]);
+	}
+}
+
+
+void _detect_collision(
 		Entity& src_entity,
 		Entity& dst_entity
 		) {
@@ -22,8 +44,8 @@ void detect_collision(
 	const float EPS = 1e-3;
 
 	// Detect if collision will happen on next frame.
-	Vector2f src_next_pos = src_entity.pos.vector_add(src_entity.vel);
-	Vector2f dst_next_pos = dst_entity.pos.vector_add(dst_entity.vel);
+	Vector2f src_next_pos = vector_add(src_entity.pos, src_entity.vel);
+	Vector2f dst_next_pos = vector_add(dst_entity.pos, dst_entity.vel);
 
 	float src_bottom = src_next_pos.y + src_entity.height;
 	float src_right  = src_next_pos.x + src_entity.width;
@@ -40,10 +62,10 @@ void detect_collision(
 
 	// Bottom
 	if (
-			(EPS >= (src_bottom - dst_next_pos.y) - (src_entity.vel.y - dst_entity.vel.y))
+			(EPS > (src_bottom - dst_next_pos.y) - (src_entity.vel.y - dst_entity.vel.y))
 				&& 
 			(-EPS <= src_bottom - dst_next_pos.y)
-		) {
+		) [[likely]] {
 		local_collisions[3] = true; // Bottom collision
 	}
 
@@ -91,6 +113,10 @@ void detect_collision(
 	switch(src_entity.type) {
 		case PLAYER:
 			if (dst_entity.type == ENEMY) {
+				dst_entity.distance_from_player = Vector2f {
+						std::abs(src_entity.pos.x - dst_entity.pos.x),
+						std::abs(src_entity.pos.y - dst_entity.pos.y)
+				};
 				if (local_collisions[0] || local_collisions[2]) {
 					src_entity.health -= ENEMY_DPF;
 				}
@@ -100,7 +126,7 @@ void detect_collision(
 					if (dst_entity.health <= 0) {
 						src_entity.score += 100 * (int)(dst_entity.width * 0.5f / GROUND_SIZE);
 						dst_entity.collidable = false;
-						collisions = {false, false, false, false};
+						memset(src_entity.collisions, false, sizeof(src_entity.collisions));
 						// src_entity.vel.x = 0.0f;
 						return;
 					}
@@ -164,10 +190,17 @@ void detect_collision(
 			break;
 		}
 
-	collisions.assign(local_collisions, local_collisions + 4);
+	src_entity.collisions[0] = local_collisions[0];
+	src_entity.collisions[1] = local_collisions[1];
+	src_entity.collisions[2] = local_collisions[2];
+	src_entity.collisions[3] = local_collisions[3];
 }
 
-void handle(SDL_Event& event, Entity& player_entity) {
+// void handle_keyboard(SDL_Event& event, Entity& player_entity) {
+void handle_keyboard(
+		SDL_Event& event, 
+		Entity& player_entity
+		) {
 	// Collisions -> horizontal: 0, vertical: 1
 	// Update player velocity.
 	if (event.type == SDL_KEYDOWN) {
@@ -177,17 +210,17 @@ void handle(SDL_Event& event, Entity& player_entity) {
 				break;
 
 			case SDLK_a:
-				player_entity.vel = Vector2f(
+				player_entity.vel = Vector2f {
 						-PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
-						);
+				};
 				player_entity.facing_right = false;
 				break;
 			case SDLK_d:
-				player_entity.vel = Vector2f(
+				player_entity.vel = Vector2f {
 						PLAYER_SPEED * player_entity.speed_multiplier, 
 						player_entity.vel.y
-						);
+				};
 				player_entity.facing_right = true;
 				break;
 			case SDLK_w:
@@ -195,7 +228,8 @@ void handle(SDL_Event& event, Entity& player_entity) {
 					player_entity.vel.y -= JUMP_SPEED;
 				}
 				break;
-
+			case SDLK_k:
+				break;
 			case SDLK_SPACE:
 				if (player_entity.speed_multiplier == 2.0f) {
 					break;
@@ -209,16 +243,16 @@ void handle(SDL_Event& event, Entity& player_entity) {
 	else if (event.type == SDL_KEYUP) {
 		switch(event.key.keysym.sym) {
 			case SDLK_a:
-				player_entity.vel = Vector2f(
+				player_entity.vel = Vector2f {
 						0.00f,
 						player_entity.vel.y
-						);
+				};
 				break;
 			case SDLK_d:
-				player_entity.vel = Vector2f(
+				player_entity.vel = Vector2f{
 						0.00f,
 						player_entity.vel.y
-						);
+				};
 				break;
 			case SDLK_SPACE:
 				if (player_entity.speed_multiplier == 1.0f) {
@@ -232,22 +266,18 @@ void handle(SDL_Event& event, Entity& player_entity) {
 }
 
 
-void update(
-		Entity& entity, 
-		Vector2f& player_pos,
-		std::vector<bool>& collisions
-		) {
+void update(Entity& entity) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
 	
 	switch(entity.type) {
 		case ENEMY:
-			if (std::abs(player_pos.x - entity.pos.x) < GROUND_SIZE * 8 && entity.pos.y == WINDOW_HEIGHT) {
+			if (entity.distance_from_player.x < GROUND_SIZE * 8 && entity.pos.y == WINDOW_HEIGHT) {
 				// Flying enemy logic
 				entity.vel.y -= 1.5f * JUMP_SPEED;
 			}
 			else {
 				// Walking enemy logic
-				if (!collisions[3]) {
+				if (!entity.collisions[3]) {
 					entity.vel.y += GRAVITY;
 					entity.bottom_collision = false;
 				}
@@ -264,8 +294,8 @@ void update(
 
 			if (entity.health <= 0) {
 				entity.alive = false;
-				entity.vel = Vector2f(0.00f, 0.00f);
-				entity.pos = Vector2f(-1000.00f, -1000.00f);
+				entity.vel = Vector2f {0.00f, 0.00f};
+				entity.pos = Vector2f {-1000.00f, -1000.00f};
 			}
 
 			// If below screen set at rest and y at WINDOW_HEIGHT.
@@ -275,7 +305,9 @@ void update(
 			}
 			break;
 		case PLAYER:
-			if (!collisions[3]) {
+			entity.alive = entity.health > 0;
+
+			if (!entity.collisions[3]) {
 				entity.vel.y += GRAVITY;
 				entity.bottom_collision = false;
 			}
@@ -287,7 +319,7 @@ void update(
 			entity.pos.y += entity.vel.y;
 
 			// Respawn if player falls off map.
-			if (entity.pos.y > WINDOW_HEIGHT) {
+			if (entity.pos.y > WINDOW_HEIGHT || !entity.alive) {
 				respawn(entity);
 			}
 			break;

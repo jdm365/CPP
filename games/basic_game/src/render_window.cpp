@@ -4,11 +4,18 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-#include "render_window.hpp"
-#include "entity.hpp"
-#include "constants.h"
+#include "../include/render_window.hpp"
+#include "../include/entity.hpp"
+#include "../include/constants.h"
 
 RenderWindow::RenderWindow(const char* title, int width, int height) {
+	if (SDL_Init(SDL_INIT_VIDEO) > 0) {
+		std::cout << "SDL initialization failed." << SDL_GetError() << std::endl;
+	}
+	if (!(IMG_Init(IMG_INIT_PNG))) {
+		std::cout << "IMG_Init failed" << SDL_GetError() << std::endl;
+	}
+
 	// Initialize with NULL to catch errors.
 	window	 = NULL;
 	renderer = NULL;
@@ -55,24 +62,49 @@ void RenderWindow::clear() {
 	SDL_RenderClear(renderer);
 }
 
+int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
+	scroll_factor_x = player_pos.x - (int)(WINDOW_WIDTH / 2);
+	scroll_factor_y = -(player_pos.y - (int)(WINDOW_HEIGHT / 5));
 
-void RenderWindow::render(
-		Entity& entity, 
-		int step_index, 
-		SDL_Texture* left_texture, 
-		int scroll_factor_x,
-		int scroll_factor_y
-		) {
+	scroll_factor_x = std::min(
+			scroll_factor_x, 
+			level_width - WINDOW_WIDTH
+			);
+
+	scroll_factor_x = std::max(scroll_factor_x, 0);
+	scroll_factor_y = std::max(scroll_factor_y, 0);
+
+	// 60 FPS
+	// Complete 7 phase walking animation in 1 second.
+	// 60 / 7 = 8.57 frames per walk cycle. Call it 8.
+	int final_idx;
+
+	step_idx++;
+	if (player_vel.x != 0) {
+		final_idx = int(step_idx / 8);
+		final_idx = final_idx % 6;
+	}
+	else {
+		final_idx = int(step_idx / 8) % 3;
+		final_idx += 7;
+	}
+	return final_idx;
+}
+
+
+void RenderWindow::render_entity(Entity& entity) {
 	SDL_Point size;
 	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
-	// Size and location of the sprite on the sprite sheet.
-	SDL_Rect src;
-	// Size and location to display on screen.
-	SDL_Rect dst;
-
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
 
 	SDL_Texture* entity_texture = nullptr;
+
+	if (entity.type != BACKGROUND && entity.type != PLAYER) {
+		if (entity.pos.x > scroll_factor_x + WINDOW_WIDTH) return;
+		if (entity.pos.x + entity.width < scroll_factor_x) return;
+	}
 
 	if (entity.type == GROUND) {
 		src.x = 0;
@@ -88,6 +120,8 @@ void RenderWindow::render(
 		entity_texture = entity.get_texture();
 	}
 	else if (entity.type == PLAYER) {
+		int step_index = get_sprite_index(entity.pos, entity.vel);
+
 		// Left sprite sheet is reflected about the y-axis.
 		if (!entity.facing_right) {
 			step_index = abs(step_index - 4);
@@ -100,7 +134,6 @@ void RenderWindow::render(
 		else {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
 		}
-		if (!entity.facing_right) _src.x = size.x - _src.x - PLAYER_WIDTH_SRC;
 		src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
 
 		src.w = PLAYER_WIDTH_SRC;
@@ -111,7 +144,20 @@ void RenderWindow::render(
 		dst.w = entity.width;
 		dst.h = entity.height;
 
-		entity_texture = entity.facing_right ? entity.get_texture() : left_texture;
+		if (!entity.facing_right) {
+			SDL_RenderCopyEx(
+					renderer, 
+					entity.get_texture(),
+					&src, 
+					&dst, 
+					0.0, 
+					NULL, 
+					SDL_FLIP_HORIZONTAL
+					);
+		}
+		else {
+			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
+		}
 	}
 	else if (entity.type == ENEMY) {
 		src.x = 0;
@@ -124,7 +170,21 @@ void RenderWindow::render(
 		dst.w = entity.width;
 		dst.h = entity.height;
 
-		entity_texture = entity.get_texture();
+		entity.facing_right = entity.vel.x > 0.0f;
+		if (entity.facing_right) {
+			SDL_RenderCopyEx(
+					renderer, 
+					entity.get_texture(),
+					&src, 
+					&dst, 
+					0.0, 
+					NULL, 
+					SDL_FLIP_HORIZONTAL
+					);
+		}
+		else {
+			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
+		}
 	}
 	else if (entity.type == BACKGROUND) {
 		src.x = 0;
@@ -152,7 +212,24 @@ void RenderWindow::quit() {
 	SDL_Quit();
 }
 
-void RenderWindow::render_health_bar(int x, int y, int w, int h, float percent, SDL_Color fg_color, SDL_Color bg_color) {
+void RenderWindow::tick() {
+	time_elapsed = (int)SDL_GetTicks() - start_time;
+	delay_time   = (int)1000 * TIME_STEP - time_elapsed;
+
+	// If delay time is less than zero then code is updating too slowly 
+	// (and is surely terrible).
+	if (delay_time < 0) {
+		std::cout << "Delay Time: " << delay_time << std::endl;
+		std::cout << "Delay time is negative. Code is updating too slowly." << std::endl;
+	}
+
+	if (delay_time > 0) {
+		SDL_Delay(delay_time);
+	}
+	start_time = (int)SDL_GetTicks();
+}
+
+void RenderWindow::render_health_bar(float percent, int x, int y, int w, int h, SDL_Color fg_color, SDL_Color bg_color) {
    SDL_Color old;
    int pw = (int)w * percent;
 

@@ -366,12 +366,12 @@ void Node::get_hist_split(
 
 	std::unordered_map<int, std::pair<int, float>> col_splits;
 
-	// Init col hashes. OMP has problems hashing multithreaded. Maybe collisions? (prob not)
 	for (const int& col: subsample_cols) {
 		col_splits[col] = {0, 0.00f};
 	}
 
-	#pragma omp parallel num_threads(omp_get_num_threads())
+	const int num_threads = std::min(omp_get_max_threads(), n_cols);
+	#pragma omp parallel num_threads(num_threads)
 	{
 		#pragma omp for schedule(static)
 		for (int idx = 0; idx < n_cols; ++idx) {

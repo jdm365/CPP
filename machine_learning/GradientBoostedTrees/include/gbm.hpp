@@ -69,17 +69,10 @@ struct GBM {
 	float calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y); 
 
 
-	// void train_hist_wrapper(np::ndarray const& X, np::ndarray const& y);
-	void train_hist_wrapper(const pybind11::array_t<float>& X, const pybind11::array_t<float>& y);
-	/*
-	void train_hist_wrapper_validation(
-			np::ndarray const& X, 
-			np::ndarray const& y,
-			np::ndarray const& X_validation, 
-			np::ndarray const& y_validation,
-			int early_stopping_steps
+	void train_hist_wrapper(
+			const pybind11::array_t<float>& X, 
+			const pybind11::array_t<float>& y
 			);
-	*/
 	void train_hist_wrapper_validation(
 			const pybind11::array_t<float>& X, 
 			const pybind11::array_t<float>& y,

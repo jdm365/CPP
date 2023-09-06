@@ -54,8 +54,8 @@ Tree::Tree(
 		int&   max_bin,
 		int&   max_leaves,
 		float& col_subsample_rate,
-		std::vector<std::vector<uint8_t>>& min_max_rem ,
-		int &  tree_num
+		std::vector<std::vector<uint8_t>>& min_max_rem,
+		int&  tree_num
 		) {
 	const int num_cols = X_hist.size();
 	const int num_rows = X_hist[0].size();

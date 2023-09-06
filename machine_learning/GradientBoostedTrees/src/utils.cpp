@@ -172,27 +172,25 @@ std::vector<float> get_ordered_gradients(
 }
 
 
-// std::vector<std::vector<float>> np_to_vec2d(np::ndarray const& X) {
 std::vector<std::vector<float>> np_to_vec2d(const pybind11::array_t<float>& X) {
 	int n_rows = X.shape(0);
 	int n_cols = X.shape(1);
 
-	std::vector<std::vector<float>> X_vec(n_cols, std::vector<float>(n_rows));
-
-	// float* X_arr = reinterpret_cast<float*>(X.get_data());
-	// Get X_arr from pybind11::array_t<float> X.
+	alignas(64) std::vector<std::vector<float>> X_vec(n_cols, std::vector<float>(n_rows));
 
 	for (int col = 0; col < n_cols; ++col) {
 		for (int row = 0; row < n_rows; ++row) {
-			X_vec[col][row] = float(X.at(row, col));
+			X_vec[col][row] = (float)X.at(row, col);
 		}
 	}
 	return X_vec;
 }
 
-// std::vector<float> np_to_vec(np::ndarray const& y) {
 std::vector<float> np_to_vec(const pybind11::array_t<float>& y) {
 	pybind11::buffer_info info = y.request();
-	std::vector<float> y_vec = std::vector<float>((float *)info.ptr, (float *)info.ptr + info.size);
+	alignas(64) std::vector<float> y_vec = std::vector<float>(
+			(float*)info.ptr, 
+			(float*)info.ptr + info.size
+			);
 	return y_vec;
 }

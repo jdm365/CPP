@@ -19,7 +19,8 @@ std::vector<std::vector<uint8_t>> map_hist_bins_train(
 
 	int bin_size   = std::ceil(n_rows / max_bin);
 
-	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
+	// Align cols in different cache lines
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 
 	X_col.reserve(n_rows);
@@ -65,7 +66,7 @@ std::vector<std::vector<uint8_t>> map_hist_bins_inference(
 	int n_rows = int(X[0].size());
 	int n_cols = int(X.size());
 
-	std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist(n_cols, std::vector<uint8_t>(n_rows));
 	std::vector<float> X_col;
 	X_col.reserve(n_rows);
 
@@ -97,7 +98,7 @@ std::vector<std::vector<uint8_t>> map_hist_bins_inference(
 std::vector<std::vector<uint8_t>> get_hist_bins_rowmajor(
 		const std::vector<std::vector<uint8_t>>& X_hist
 		) {
-	std::vector<std::vector<uint8_t>> X_hist_rowmajor;
+	alignas(64) std::vector<std::vector<uint8_t>> X_hist_rowmajor;
 	std::vector<uint8_t>  X_hist_rowmajor_row;
 
 	for (int row = 0; row < int(X_hist[0].size()); ++row) {

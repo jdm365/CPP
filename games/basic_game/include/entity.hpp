@@ -35,6 +35,8 @@ class Entity {
 		Vector2f respawn_pos;
 		bool overhang = true;
 		int score = 0;
+		bool collisions[4] = {false, false, false, false};
+		Vector2f distance_from_player = Vector2f {0.0f, 0.0f};
 
 	private:
 		SDL_Texture* texture;

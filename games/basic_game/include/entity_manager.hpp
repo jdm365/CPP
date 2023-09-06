@@ -15,8 +15,7 @@ struct Textures {
 	SDL_Texture* background_texture;
 	SDL_Texture* grass_texture;
 	SDL_Texture* dirt_texture;
-	SDL_Texture* player_texture_right;
-	SDL_Texture* player_texture_left;
+	SDL_Texture* player_texture;
 	SDL_Texture* kristin_jump_texture;
 	SDL_Texture* kristin_moustache_texture;
 };
@@ -28,7 +27,6 @@ struct Entities {
 	Entity player_entity;
 	std::vector<Entity> enemy_entities;
 	std::vector<Entity> ground_entities;
-	std::vector<Entity*> all_entities;
 	
 	int level_width;
 

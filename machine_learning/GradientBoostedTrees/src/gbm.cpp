@@ -121,7 +121,7 @@ void GBM::train_hist(
 	// Init random seed.
 	srand(42);
 
-	int n_rows = int(X[0].size());
+	int n_rows = (int)X[0].size();
 
 	std::vector<float> gradient(n_rows, 0.00f);
 	std::vector<float> hessian(n_rows, 2.00f);
@@ -475,8 +475,10 @@ float GBM::calculate_mse_loss(std::vector<float>& preds, std::vector<float>& y) 
 }
 
 
-// void GBM::train_hist_wrapper(np::ndarray const& X, np::ndarray const& y) {
-void GBM::train_hist_wrapper(const pybind11::array_t<float>& X, const pybind11::array_t<float>& y) {
+void GBM::train_hist_wrapper(
+		const pybind11::array_t<float>& X, 
+		const pybind11::array_t<float>& y
+		) {
 	// Convert pyarray to vec 2d
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
