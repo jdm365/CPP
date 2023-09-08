@@ -483,19 +483,15 @@ void GBM::train_hist_wrapper(
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 	std::vector<float> y_vec = np_to_vec(y);
 
+	// Release GIL
+	pybind11::gil_scoped_release release;
+
 	train_hist(X_vec, y_vec);
+
+	pybind11::gil_scoped_acquire acquire;
 }
 
 
-/*
-void GBM::train_hist_wrapper_validation(
-		np::ndarray const& X,
-		np::ndarray const& y,
-		np::ndarray const& X_validation,
-		np::ndarray const& y_validation,
-		int early_stopping_steps
-		) {
-*/
 void GBM::train_hist_wrapper_validation(
 		const pybind11::array_t<float>& X,
 		const pybind11::array_t<float>& y,
@@ -512,7 +508,6 @@ void GBM::train_hist_wrapper_validation(
 	train_hist(X_vec, y_vec, X_vec_validation, y_vec_validation, early_stopping_steps);
 }
 
-// pybind11::array_t<float> GBM::predict_hist_wrapper(np::ndarray const& X) {
 pybind11::array_t<float> GBM::predict_hist_wrapper(const pybind11::array_t<float>& X) {
 	std::vector<std::vector<float>> X_vec = np_to_vec2d(X);
 

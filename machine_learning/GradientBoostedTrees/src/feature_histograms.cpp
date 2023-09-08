@@ -31,6 +31,39 @@ void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
 	}
 }
 
+void FeatureHistograms::calc_hists_dataparallel(
+		const std::vector<std::vector<uint8_t>>& X_hist,
+		const std::vector<int>& subsample_cols,
+		const std::vector<float>& gradient,
+		const std::vector<float>& hessian,
+		const std::vector<int>& row_idxs,
+		bool root,
+		bool const_hessian
+		) {
+	const int num_rows = (int)row_idxs.size();
+	const int num_cols = (int)subsample_cols.size();
+
+	int num_threads = std::min(omp_get_max_threads(), num_cols);
+
+	if (!root) {
+		// Create new gradient and hessian vectors contiguous in memory
+		std::vector<float> ordered_gradients;
+		std::vector<float> ordered_hessians;
+		ordered_gradients.reserve(num_rows);
+		ordered_hessians.reserve(num_rows);
+
+		for (const int& row: row_idxs) {
+			ordered_gradients.push_back(gradient[row]);
+			ordered_hessians.push_back(hessian[row]);
+		}
+
+		// Calculate histograms data parallel
+		// Use map reduce style
+	}
+	else {
+	}
+}
+
 void FeatureHistograms::calc_hists(
 		const std::vector<std::vector<uint8_t>>& X_hist,
 		const std::vector<int>& subsample_cols,

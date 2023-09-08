@@ -4,7 +4,6 @@
 #CXX = clang++
 CXX = gcc
 #CXX = g++
-#CXX_FLAGS = -std=c++2a -Wall -Wextra -Ofast -g -march=native
 CXX_FLAGS = -std=c++2a -Wall -Wextra -O3 -g -march=native
 CPU_SRCS = $(wildcard src/*)
 CPU_INCLUDES = -Iinclude/

@@ -20,15 +20,17 @@ int main() {
 	// std::vector<std::vector<float>> X = read_csv_rowmajor(FILENAME);
 	
 	// Instead generate random data with 100 columns and 1,000,000 rows
+	const int NUM_ROWS = 100000;
+	const int NUM_COLS = 100;
 	std::vector<std::vector<float>> X;
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_real_distribution<> dis(0.0, 1.0);
 
-	for (int i = 0; i <= 100; i++) {
+	for (int i = 0; i <= NUM_COLS; i++) {
 		std::vector<float> column;
-		for (int j = 0; j < 1000000; j++) {
+		for (int j = 0; j < NUM_ROWS; j++) {
 			column.push_back(dis(gen));
 		}
 		X.push_back(column);
@@ -49,12 +51,12 @@ int main() {
 	const float lr 					= 0.10f;
 	const float min_child_weight 	= 1.00f;
 	const int   min_data_in_leaf 	= 20;
-	const int   num_boosting_rounds = 1000;
+	const int   num_boosting_rounds = 50;
 	const int   max_bin 			= 255;
 	const int   max_leaves 			= 31;
-	const float col_subsample_rate  = 0.20f;
+	const float col_subsample_rate  = 0.50f;
 	const bool  enable_dart 		= false;
-	const int   verbosity 			= 50;
+	const int   verbosity 			= 1;
 
 	GBM model(
 			max_depth,

@@ -10,17 +10,17 @@
 #include "feature_histograms.hpp"
 
 struct Node {
-	float 	gamma;
-	int     split_col;
-	int		split_bin;
-	float 	split_val;
 	bool  	is_leaf;
 
 	Node* 	left_child;
 	Node* 	right_child;
 
-	// Default Constructor
-	Node();
+	float 	gamma;
+	int     split_col;
+	int		split_bin;
+	float 	split_val;
+
+
 	~Node() {};
 
 	// Greedy Constructor

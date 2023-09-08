@@ -8,9 +8,10 @@ if __name__ == '__main__':
     SUBSAMPLE_RATE = 0.5
     MAX_LEAVES = 31
     DEPTH = 100
+    NUM_BOOSTING_ROUNDS = 500
 
     model = GBDT(
-            num_boosting_rounds=1_000,
+            num_boosting_rounds=NUM_BOOSTING_ROUNDS,
             max_leaves=MAX_LEAVES,
             max_depth=DEPTH,
             min_data_in_leaf=20,
@@ -34,8 +35,8 @@ if __name__ == '__main__':
 
     X, y = df.iloc[:, :-1], df.iloc[:, -1]
 
-    X = np.random.rand(1_000_000, 50).astype(np.float32)
-    y = np.random.rand(1_000_000).astype(np.float32)
+    X = np.random.rand(100_000, 100).astype(np.float32)
+    y = np.random.rand(100_000).astype(np.float32)
     df = pd.DataFrame(X)
     df['target'] = y
 
@@ -59,7 +60,7 @@ if __name__ == '__main__':
                 'learning_rate': 0.1,
                 'verbosity': -1,
                 'early_stopping_rounds': 5_000,
-                'num_boost_round': 1_000,
+                'num_boost_round': NUM_BOOSTING_ROUNDS,
                 'boosting': 'gbdt'
                 },
             train_set=lgb.Dataset(X, y),
@@ -70,7 +71,7 @@ if __name__ == '__main__':
 
     init = perf_counter()
     model = HistGradientBoostingRegressor(
-            max_iter=1_000,
+            max_iter=NUM_BOOSTING_ROUNDS,
             max_leaf_nodes=MAX_LEAVES,
             max_depth=DEPTH,
             min_samples_leaf=20,
