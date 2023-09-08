@@ -13,7 +13,6 @@
 
 // GBM -> GradientBoostingMachine
 
-
 struct GBM {
 	int   max_depth;
 	float l2_reg;

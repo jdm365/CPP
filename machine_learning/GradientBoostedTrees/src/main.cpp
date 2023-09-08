@@ -30,7 +30,7 @@ int main() {
 
 	for (int i = 0; i <= NUM_COLS; i++) {
 		std::vector<float> column;
-		for (int j = 0; j < NUM_ROWS; j++) {
+		for (int j = 0; j < (int)NUM_ROWS * 1.25; j++) {
 			column.push_back(dis(gen));
 		}
 		X.push_back(column);
@@ -46,17 +46,17 @@ int main() {
 	std::vector<float>& y_train = splits.first.second;
 	std::vector<float>& y_test  = splits.second.second;
 
-	const int   max_depth 			= -1;
+	const int   max_depth 			= 5;
 	const float l2_reg 				= 0.00f;
 	const float lr 					= 0.10f;
 	const float min_child_weight 	= 1.00f;
 	const int   min_data_in_leaf 	= 20;
-	const int   num_boosting_rounds = 50;
+	const int   num_boosting_rounds = 5000;
 	const int   max_bin 			= 255;
 	const int   max_leaves 			= 31;
-	const float col_subsample_rate  = 0.50f;
+	const float col_subsample_rate  = 0.20f;
 	const bool  enable_dart 		= false;
-	const int   verbosity 			= 1;
+	const int   verbosity 			= 50;
 
 	GBM model(
 			max_depth,

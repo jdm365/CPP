@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <array>
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -11,6 +10,7 @@
 
 #include "../include/node.hpp"
 #include "../include/utils.hpp"
+#include "../include/feature_histograms.hpp"
 
 
 /*
@@ -363,7 +363,7 @@ void Node::get_hist_split(
 		col_splits[col] = {0, 0.00f};
 	}
 
-	const int num_threads = std::min(omp_get_max_threads(), n_cols);
+	const int num_threads = std::min(MAX_THREADS, (int)subsample_cols.size());
 	#pragma omp parallel num_threads(num_threads)
 	{
 		#pragma omp for schedule(static)

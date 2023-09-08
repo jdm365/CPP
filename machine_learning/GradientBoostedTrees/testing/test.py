@@ -1,13 +1,13 @@
 from GBDT import GBDT
 import pandas as pd
-import numpy as np
 import os
 from time import perf_counter
 
 if __name__ == '__main__':
-    SUBSAMPLE_RATE = 0.5
+    ## SUBSAMPLE_RATE = 0.2
+    SUBSAMPLE_RATE = 1.0
     MAX_LEAVES = 31
-    DEPTH = 100
+    DEPTH = 5
     NUM_BOOSTING_ROUNDS = 500
 
     model = GBDT(
@@ -19,24 +19,23 @@ if __name__ == '__main__':
             max_bin=255,
             lr=0.1,
             dart=False,
-            verbosity=50,
+            verbosity=25,
             early_stopping_steps=5_000,
             gpu=False
             )
 
     #FILEPATH = '../data/iris_dataset.csv'
-    FILEPATH = '../data/housing_price_prediction_dataset.csv'
-    #FILEPATH = '../data/hpx10.csv'
-    #FILEPATH = '../data/hpx100.csv'
-    #FILEPATH = '../data/preprocessed_train.feather'
+    #FILEPATH = '../data/housing_price_prediction_dataset.csv'
+    FILEPATH = '../data/HIGGS.feather'
 
     FILEPATH = os.path.join(os.path.dirname(__file__), FILEPATH)
-    df = pd.read_csv(FILEPATH)
+    ## df = pd.read_csv(FILEPATH)
+    df = pd.read_feather(FILEPATH)
 
-    X, y = df.iloc[:, :-1], df.iloc[:, -1]
+    ## X, y = df.iloc[:, :-1], df.iloc[:, -1]
+    y = df['target'].values
+    X = df.drop('target', axis=1).values
 
-    X = np.random.rand(100_000, 100).astype(np.float32)
-    y = np.random.rand(100_000).astype(np.float32)
     df = pd.DataFrame(X)
     df['target'] = y
 
@@ -48,24 +47,27 @@ if __name__ == '__main__':
     from sklearn.ensemble import HistGradientBoostingRegressor
 
     init = perf_counter()
-    lgb.train(
-            params={
-                'objective': 'regression',
-                'num_leaves': MAX_LEAVES,
-                'max_depth': DEPTH,
-                'min_data_in_leaf': 20,
-                'feature_fraction': SUBSAMPLE_RATE,
-                'sample_for_bin': 1_000_000,
-                'max_bin': 255,
-                'learning_rate': 0.1,
-                'verbosity': -1,
-                'early_stopping_rounds': 5_000,
-                'num_boost_round': NUM_BOOSTING_ROUNDS,
-                'boosting': 'gbdt'
-                },
-            train_set=lgb.Dataset(X, y),
-            valid_sets=[lgb.Dataset(X, y)]
-            )
+    params = {
+        'objective': 'regression',
+        'num_leaves': MAX_LEAVES,
+        'max_depth': DEPTH,
+        'min_data_in_leaf': 20,
+        'feature_fraction': SUBSAMPLE_RATE,
+        'sample_for_bin': 1_000_000,
+        'max_bin': 255,
+        'learning_rate': 0.1,
+        'verbosity': -1,
+        'min_gain_to_split': 0.0,
+        'lambda_l1': 0.0,
+        'lambda_l2': 0.0,
+        'min_sum_hessian_in_leaf': 0.0,
+        'early_stopping_rounds': 5_000,
+        'num_boost_round': NUM_BOOSTING_ROUNDS,
+        'boosting': 'gbdt',
+        'verbose_eval': 50
+    }
+    dataset = lgb.Dataset(X, y)
+    lgb.train(params, dataset, valid_sets=[dataset], verbose_eval=50)
     lgb_time = perf_counter() - init
 
 
@@ -76,7 +78,7 @@ if __name__ == '__main__':
             max_depth=DEPTH,
             min_samples_leaf=20,
             learning_rate=0.1,
-            verbose=50,
+            verbose=25,
             validation_fraction=0.0001,
             n_iter_no_change=5_000
             )

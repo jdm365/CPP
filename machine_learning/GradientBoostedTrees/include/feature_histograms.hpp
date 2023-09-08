@@ -5,6 +5,7 @@
 
 #include "utils.hpp"
 
+#define MAX_THREADS omp_get_max_threads()
 
 struct __attribute__ ((packed)) Bin {
 	float grad_sum;

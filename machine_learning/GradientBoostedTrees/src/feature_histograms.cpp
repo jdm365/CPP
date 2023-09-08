@@ -5,7 +5,6 @@
 #include "../include/feature_histograms.hpp"
 #include "../include/utils.hpp"
 
-
 /*
 ***************************************************
 ***************** CPU HISTOGRAMS ******************
@@ -17,7 +16,7 @@ FeatureHistograms::FeatureHistograms(int n_cols, int max_bin) {
 }
 
 void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
-	const int num_threads = std::min(omp_get_max_threads(), (int)bins.size());
+	const int num_threads = std::min(MAX_THREADS, (int)bins.size());
 	#pragma omp parallel num_threads(num_threads)
 	{
 		#pragma omp for schedule(static)
@@ -31,38 +30,6 @@ void FeatureHistograms::calc_diff_hist(FeatureHistograms& other_hist) {
 	}
 }
 
-void FeatureHistograms::calc_hists_dataparallel(
-		const std::vector<std::vector<uint8_t>>& X_hist,
-		const std::vector<int>& subsample_cols,
-		const std::vector<float>& gradient,
-		const std::vector<float>& hessian,
-		const std::vector<int>& row_idxs,
-		bool root,
-		bool const_hessian
-		) {
-	const int num_rows = (int)row_idxs.size();
-	const int num_cols = (int)subsample_cols.size();
-
-	int num_threads = std::min(omp_get_max_threads(), num_cols);
-
-	if (!root) {
-		// Create new gradient and hessian vectors contiguous in memory
-		std::vector<float> ordered_gradients;
-		std::vector<float> ordered_hessians;
-		ordered_gradients.reserve(num_rows);
-		ordered_hessians.reserve(num_rows);
-
-		for (const int& row: row_idxs) {
-			ordered_gradients.push_back(gradient[row]);
-			ordered_hessians.push_back(hessian[row]);
-		}
-
-		// Calculate histograms data parallel
-		// Use map reduce style
-	}
-	else {
-	}
-}
 
 void FeatureHistograms::calc_hists(
 		const std::vector<std::vector<uint8_t>>& X_hist,
@@ -76,7 +43,7 @@ void FeatureHistograms::calc_hists(
 	const int num_rows = (int)row_idxs.size();
 	const int num_cols = (int)subsample_cols.size();
 
-	int num_threads = std::min(omp_get_max_threads(), num_cols);
+	int num_threads = std::min(MAX_THREADS, num_cols);
 
 	if (!const_hessian) {
 		if (!root) {
@@ -176,7 +143,6 @@ void FeatureHistograms::calc_hists_single_feature(
 	// uint8_t bin_3;
 
 	const int num_rows = (int)row_idxs.size();
-
 	// int final_step = ((int)num_rows / 4) * 4;
 
 	std::vector<Bin>& bin_col = bins[bin_idx];
@@ -206,6 +172,7 @@ void FeatureHistograms::calc_hists_single_feature(
 	*/
 
 	// for (int idx = final_step; idx < num_rows; ++idx) {
+	// Get all bins first.
 	for (int idx = 0; idx < num_rows; ++idx) {
 		bin_0 = X_hist_col[row_idxs[idx]];
 
@@ -265,6 +232,7 @@ void FeatureHistograms::calc_hists_grad_single_feature(
 
 std::pair<float, float> FeatureHistograms::get_col_sums(int max_bin) {
 	std::pair<float, float> sums;
+	#pragma omp simd
 	for (int bin = 0; bin < max_bin; ++bin) {
 		sums.first  += bins[0][bin].grad_sum;
 		sums.second += bins[0][bin].hess_sum;
