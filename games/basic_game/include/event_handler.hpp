@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "../include/entity.hpp"
+#include "../include/entity_manager.hpp"
 #include "../include/render_window.hpp"
 #include "../include/constants.h"
 
@@ -15,5 +16,9 @@ void _detect_collision(
 		Entity& dst_entity
 		);
 void update(Entity& entity);
-void handle_keyboard(SDL_Event& event, Entity& player_entity);
-void respawn(Entity& player_entity);
+void handle_keyboard(
+		SDL_Event& event, 
+		Entities& entity_manager,
+		SDL_Texture* texture
+		);
+void respawn(std::vector<Entity*> entities);

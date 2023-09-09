@@ -1,4 +1,5 @@
 #include <SDL2/SDL_keycode.h>
+#include <cwchar>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -17,12 +18,15 @@
 void detect_collisions(std::vector<Entity*> entities) {
 	#pragma omp parallel for schedule(static)
 	for (int idx = 0; idx < (int)entities.size(); ++idx) {
-		if (entities[idx]->static_entity) {
+		if (entities[idx]->static_entity || !entities[idx]->alive) {
 			continue;
 		}
 		entities[idx]->overhang = true;
 		memset(entities[idx]->collisions, false, sizeof(entities[idx]->collisions));
 		for (int jdx = idx + 1; jdx < (int)entities.size(); ++jdx) {
+			if (!entities[jdx]->alive) {
+				continue;
+			}
 			_detect_collision(
 					*entities[idx],
 					*entities[jdx]
@@ -48,7 +52,7 @@ void _detect_collision(
 	Vector2f dst_next_pos = vector_add(dst_entity.pos, dst_entity.vel);
 
 	float src_bottom = src_next_pos.y + src_entity.height;
-	float src_right  = src_next_pos.x + src_entity.width;
+	float src_right  = src_next_pos.x + src_entity.width - 20 * (src_entity.type == PLAYER);
 
 	float dst_bottom = dst_next_pos.y + dst_entity.height;
 	float dst_right  = dst_next_pos.x + dst_entity.width;
@@ -99,13 +103,6 @@ void _detect_collision(
 	if (src_entity.type == PLAYER) {
 		if (!local_collisions[0] && !local_collisions[1] && !local_collisions[2] && !local_collisions[3]) {
 			src_entity.health -= 2 * ENEMY_DPF;
-			std::cout << "No collision detected" << std::endl;
-			return;
-			std::cout << (src_entity.vel.y - dst_entity.vel.y) - (src_bottom - dst_next_pos.y) << std::endl;
-			std::cout << src_entity.vel.y << " " << dst_entity.vel.y << std::endl;
-			std::cout << src_entity.bottom_collision << std::endl;
-			std::exit(1);
-			return;
 		}
 	}
 
@@ -143,7 +140,7 @@ void _detect_collision(
 				src_entity.vel.x = dst_entity.vel.x;
 			}
 			else if (local_collisions[2]) {
-				src_entity.pos.x = dst_entity.pos.x - src_entity.width - 1;
+				src_entity.pos.x = dst_entity.pos.x - src_entity.width - 1 + 20;
 				src_entity.vel.y -= GRAVITY;
 				src_entity.vel.x = dst_entity.vel.x;
 			}
@@ -183,11 +180,32 @@ void _detect_collision(
 				}
 			}
 			else {
-				Vector2f src_vel = src_entity.vel;
-				src_entity.vel = dst_entity.vel;
-				dst_entity.vel = src_vel;
+				if (dst_entity.type == PROJECTILE) {
+					src_entity.health -= 5;
+
+					src_entity.vel.y -= GRAVITY;
+
+					dst_entity.alive = false;
+				}
+				else {
+					Vector2f src_vel = src_entity.vel;
+					src_entity.vel = dst_entity.vel;
+					dst_entity.vel = src_vel;
+				}
 			}
 			break;
+
+		case PROJECTILE:
+			if (dst_entity.type == ENEMY) {
+				dst_entity.health -= 5;
+				dst_entity.vel.x -= dst_entity.vel.x;
+
+				// Stop rendering projectile by making it not alive.
+				src_entity.alive = false;
+			}
+			else if (dst_entity.type == GROUND) {
+				src_entity.alive = false;
+			}
 		}
 
 	src_entity.collisions[0] = local_collisions[0];
@@ -199,7 +217,8 @@ void _detect_collision(
 // void handle_keyboard(SDL_Event& event, Entity& player_entity) {
 void handle_keyboard(
 		SDL_Event& event, 
-		Entity& player_entity
+		Entities& entity_manager,
+		SDL_Texture* texture
 		) {
 	// Collisions -> horizontal: 0, vertical: 1
 	// Update player velocity.
@@ -210,32 +229,46 @@ void handle_keyboard(
 				break;
 
 			case SDLK_a:
-				player_entity.vel = Vector2f {
-						-PLAYER_SPEED * player_entity.speed_multiplier, 
-						player_entity.vel.y
+				entity_manager.player_entity.vel = Vector2f {
+						-PLAYER_SPEED, 
+						entity_manager.player_entity.vel.y
 				};
-				player_entity.facing_right = false;
+				entity_manager.player_entity.facing_right = false;
 				break;
 			case SDLK_d:
-				player_entity.vel = Vector2f {
-						PLAYER_SPEED * player_entity.speed_multiplier, 
-						player_entity.vel.y
+				entity_manager.player_entity.vel = Vector2f {
+						PLAYER_SPEED, 
+						entity_manager.player_entity.vel.y
 				};
-				player_entity.facing_right = true;
+				entity_manager.player_entity.facing_right = true;
 				break;
 			case SDLK_w:
-				if (player_entity.bottom_collision) {
-					player_entity.vel.y -= JUMP_SPEED;
+				if (entity_manager.player_entity.bottom_collision) {
+					entity_manager.player_entity.vel.y -= JUMP_SPEED;
 				}
 				break;
 			case SDLK_k:
 				break;
 			case SDLK_SPACE:
-				if (player_entity.speed_multiplier == 2.0f) {
-					break;
-				}
-				player_entity.speed_multiplier = 2.0f;
-				player_entity.vel.x *= player_entity.speed_multiplier;
+				// Fire bullet.
+				std::cout << "Firing bullet." << std::endl;
+				Entity bullet(
+						Vector2f {
+							entity_manager.player_entity.pos.x + entity_manager.player_entity.width - 76,
+							entity_manager.player_entity.pos.y + 76
+						},
+						Vector2f {
+							64.0f * (entity_manager.player_entity.facing_right ? 1 : -1),
+							0.0f
+						},
+						16,
+						8,
+						PROJECTILE,
+						texture,
+						true,
+						false
+				);
+				entity_manager.enemy_entities.push_back(bullet);
 				break;
  		}
 	}
@@ -243,23 +276,16 @@ void handle_keyboard(
 	else if (event.type == SDL_KEYUP) {
 		switch(event.key.keysym.sym) {
 			case SDLK_a:
-				player_entity.vel = Vector2f {
+				entity_manager.player_entity.vel = Vector2f {
 						0.00f,
-						player_entity.vel.y
+						entity_manager.player_entity.vel.y
 				};
 				break;
 			case SDLK_d:
-				player_entity.vel = Vector2f{
+				entity_manager.player_entity.vel = Vector2f{
 						0.00f,
-						player_entity.vel.y
+						entity_manager.player_entity.vel.y
 				};
-				break;
-			case SDLK_SPACE:
-				if (player_entity.speed_multiplier == 1.0f) {
-					break;
-				}
-				player_entity.speed_multiplier = 1.0f;
-				player_entity.vel.x *= 0.5f;
 				break;
 		}
 	}
@@ -268,6 +294,7 @@ void handle_keyboard(
 
 void update(Entity& entity) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
+	if (!entity.alive) return;
 	
 	switch(entity.type) {
 		case ENEMY:
@@ -294,8 +321,6 @@ void update(Entity& entity) {
 
 			if (entity.health <= 0) {
 				entity.alive = false;
-				entity.vel = Vector2f {0.00f, 0.00f};
-				entity.pos = Vector2f {-1000.00f, -1000.00f};
 			}
 
 			// If below screen set at rest and y at WINDOW_HEIGHT.
@@ -320,17 +345,22 @@ void update(Entity& entity) {
 
 			// Respawn if player falls off map.
 			if (entity.pos.y > WINDOW_HEIGHT || !entity.alive) {
-				respawn(entity);
+				entity.alive = false;
 			}
+			break;
+		case PROJECTILE:
+			entity.pos.x += entity.vel.x;
 			break;
 	}
 }
 
-void respawn(Entity& player_entity) {
-	player_entity.alive  = true;
-	player_entity.health = 100;
+void respawn(std::vector<Entity*> entities) {
+	for (Entity* entity: entities) {
+		entity->alive  = true;
+		entity->health = 100;
 
-	player_entity.pos = player_entity.respawn_pos;
-	player_entity.vel.x = 0.00f;
-	player_entity.vel.y = 0.00f;
+		entity->pos = entity->respawn_pos;
+		entity->vel = entity->respawn_vel;
+		memset(entity->collisions, 0, sizeof(entity->collisions));
+	}
 }

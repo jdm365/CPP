@@ -18,6 +18,7 @@ struct Textures {
 	SDL_Texture* player_texture;
 	SDL_Texture* kristin_jump_texture;
 	SDL_Texture* kristin_moustache_texture;
+	SDL_Texture* energy_projectile_texture;
 };
 
 

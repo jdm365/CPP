@@ -24,12 +24,20 @@ int main(int argc, char* args[]) {
 				window.quit();
 				done = true;
 			}
-			handle_keyboard(event, entities.player_entity);
+			handle_keyboard(
+					event, 
+					entities,
+					textures.energy_projectile_texture
+					);
 		}
 
 		detect_collisions(entities.get_all_entities());
 
 		window.clear();
+
+		if (!entities.player_entity.alive) {
+			respawn(entities.get_all_entities());
+		}
 
 		// Render all.
 		window.render_entity(entities.background_entity);

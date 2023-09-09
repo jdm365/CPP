@@ -4,14 +4,13 @@
 // Textures
 #define GRASS_FILEPATH   			"assets/grass_texture.png"
 #define DIRT_FILEPATH   			"assets/dirt_texture.jpg"
-#define SKY_FILEPATH  				"assets/sky_texture.jpg"
 #define NAMEK_FILEPATH  			"assets/namek_texture.png"
-#define ROCKET_FILEPATH 			"assets/rocket_texture.jpg"
 // #define PLAYER_FILEPATH		  		"assets/knight_texture.png"
 #define PLAYER_FILEPATH		  		"assets/pixil-frame-0.png"
 #define LEVEL_DESIGN_FILEPATH  		"assets/level_design.csv"
 #define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.jpg"
 #define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.jpg"
+#define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
 
 // Frame sizing
 #define PLAYER_WIDTH_SRC		42

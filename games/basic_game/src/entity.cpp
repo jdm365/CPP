@@ -32,6 +32,7 @@ Entity::Entity(
 			static_entity(static_entity) {
 
 	respawn_pos = pos;
+	respawn_vel = vel;
 	texture = default_texture;
 }
 

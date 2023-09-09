@@ -19,6 +19,7 @@ Textures::Textures(RenderWindow* window) {
 	player_texture		  	  = (*window).load_texture(PLAYER_FILEPATH);
 	kristin_jump_texture  	  = (*window).load_texture(KRISTIN_JUMP_FILEPATH);
 	kristin_moustache_texture = (*window).load_texture(KRISTIN_MOUSTACHE_FILEPATH);
+	energy_projectile_texture = (*window).load_texture(ENERGY_PROJECTILE_FILEPATH);
 }
 
 Entities::Entities(Textures* textures) {
@@ -158,7 +159,7 @@ Entities::Entities(Textures* textures) {
 	
 	// Define player entity 
 	float scale_height = PLAYER_HEIGHT_SRC / (float)PLAYER_WIDTH_SRC;
-	int player_width = 110;
+	int player_width = 120;
 	int player_height = scale_height * player_width;
 
 	Vector2f respawn_pos;

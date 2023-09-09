@@ -93,6 +93,8 @@ int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
 
 
 void RenderWindow::render_entity(Entity& entity) {
+	if (!entity.alive) return;
+
 	SDL_Point size;
 	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
 
@@ -146,12 +148,12 @@ void RenderWindow::render_entity(Entity& entity) {
 
 		if (!entity.facing_right) {
 			SDL_RenderCopyEx(
-					renderer, 
+					renderer,
 					entity.get_texture(),
-					&src, 
-					&dst, 
-					0.0, 
-					NULL, 
+					&src,
+					&dst,
+					0.0,
+					NULL,
 					SDL_FLIP_HORIZONTAL
 					);
 		}
@@ -194,6 +196,19 @@ void RenderWindow::render_entity(Entity& entity) {
 
 		dst.x = entity.pos.x;
 		dst.y = entity.pos.y;
+		dst.w = entity.width;
+		dst.h = entity.height;
+
+		entity_texture = entity.get_texture();
+	}
+	else if (entity.type == PROJECTILE) {
+		src.x = 0;
+		src.y = 0;
+		src.w = size.x;
+		src.h = size.y;
+
+		dst.x = entity.pos.x - scroll_factor_x;
+		dst.y = entity.pos.y + scroll_factor_y;
 		dst.w = entity.width;
 		dst.h = entity.height;
 
