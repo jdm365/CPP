@@ -10,15 +10,19 @@
 #include "../include/constants.h"
 
 
-void detect_collisions(std::vector<Entity*> entities);
+void detect_collisions(
+		Entities& entities,
+		int scroll_factor_x,
+		int scroll_factor_y
+		);
 void _detect_collision(
 		Entity& src_entity, 
 		Entity& dst_entity
 		);
-void update(Entity& entity);
+void update(Entity& entity, int scroll_factor_x, int scroll_factor_y);
 void handle_keyboard(
 		SDL_Event& event, 
 		Entities& entity_manager,
 		SDL_Texture* texture
 		);
-void respawn(std::vector<Entity*> entities);
+void respawn(Entities& entities, RenderWindow& window, uint32_t level);

@@ -1,11 +1,15 @@
 #pragma once
 
+#include <string>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
 #include "../include/entity.hpp"
 #include "../include/constants.h"
+#include "../include/entity_manager.hpp"
 
+struct Entities;
 
 class RenderWindow {
 	public:
@@ -22,18 +26,20 @@ class RenderWindow {
 				SDL_Color fg_color = {255, 0, 0, 255},
 				SDL_Color bg_color = {0, 0, 0, 255}
 				);
+		void render_all(Entities& entities);
 		void render_score(int score);
+		void center_message(std::string text);
 		int  get_sprite_index(Vector2f& player_pos, Vector2f& player_vel);
 		void display();
 		void quit();
 		void tick();
 		int level_width = 0;
+		int scroll_factor_x = 0;
+		int scroll_factor_y = 0;
 	private:
 		SDL_Window* window;
 		SDL_Renderer* renderer;
 		int step_idx = 0;
-		int scroll_factor_x = 0;
-		int scroll_factor_y = 0;
 		int time_elapsed = 0;
 		int delay_time = 0;
 		int start_time = 0;
@@ -41,23 +47,14 @@ class RenderWindow {
 
 
 const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
-	Vector2f {22, 11},
+	Vector2f {19, 11},
 	Vector2f {83, 11},
-	Vector2f {142, 11},
-	Vector2f {206, 11},
-	Vector2f {272, 11},
-	Vector2f {22, 74},
-	Vector2f {82, 74},
-	Vector2f {140, 74},
-	Vector2f {204, 74},
-	Vector2f {270, 74}
+	Vector2f {147, 11},
+	Vector2f {212, 11},
+	Vector2f {276, 11},
+	Vector2f {19, 75},
+	Vector2f {83, 75},
+	Vector2f {146, 75},
+	Vector2f {210, 75},
+	Vector2f {273, 75}
 };
-
-// 1920x1080 - 320x128
-// ratio = 6:1 - 8.44:1
-//
-//
-// Left boundaries - 105, 490, 870, 1250, 1640 -> 18, 82, 145, 208, 273
-// Top boundaries - 15, 520 -> 2, 61
-// Width - 200 - 33
-// Height - 380 - 45

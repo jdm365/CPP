@@ -9,9 +9,9 @@
 #include "../include/entity.hpp"
 #include "../include/constants.h"
 
+class RenderWindow;
 
 struct Textures {
-	Textures(RenderWindow* window);
 	SDL_Texture* background_texture;
 	SDL_Texture* grass_texture;
 	SDL_Texture* dirt_texture;
@@ -19,27 +19,44 @@ struct Textures {
 	SDL_Texture* kristin_jump_texture;
 	SDL_Texture* kristin_moustache_texture;
 	SDL_Texture* energy_projectile_texture;
+
+	Textures(RenderWindow* window);
 };
 
-
 struct Entities {
-	Entities(Textures* textures);
-	Entity background_entity;
 	Entity player_entity;
-	std::vector<Entity> enemy_entities;
+
+	std::vector<Entity> walking_enemy_entities;
+	std::vector<Entity> flying_enemy_entities;
+	std::vector<Entity> projectile_entities;
+
 	std::vector<Entity> ground_entities;
+
+	Entity background_entity;
 	
 	int level_width;
 
-	// Get all entities
-	std::vector<Entity*> get_all_entities() {
+	Entities(Textures* textures, const std::string level_design_filepath);
+
+	std::vector<Entity*> get_non_player_entities() {
 		std::vector<Entity*> all_entities;
-		all_entities.push_back(&player_entity);
-		for (int idx = 0; idx < (int)enemy_entities.size(); ++idx) {
-			all_entities.push_back(&enemy_entities[idx]);
+		all_entities.reserve(
+				walking_enemy_entities.size() + 
+				flying_enemy_entities.size() + 
+				ground_entities.size() + 
+				projectile_entities.size()
+				);
+		for (Entity& entity: walking_enemy_entities) {
+			all_entities.push_back(&entity);
 		}
-		for (int idx = 0; idx < (int)ground_entities.size(); ++idx) {
-			all_entities.push_back(&ground_entities[idx]);
+		for (Entity& entity: flying_enemy_entities) {
+			all_entities.push_back(&entity);
+		}
+		for (Entity& entity: ground_entities) {
+			all_entities.push_back(&entity);
+		}
+		for (Entity& entity: projectile_entities) {
+			all_entities.push_back(&entity);
 		}
 		return all_entities;
 	}

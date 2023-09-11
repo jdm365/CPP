@@ -6,15 +6,16 @@
 #define DIRT_FILEPATH   			"assets/dirt_texture.jpg"
 #define NAMEK_FILEPATH  			"assets/namek_texture.png"
 // #define PLAYER_FILEPATH		  		"assets/knight_texture.png"
-#define PLAYER_FILEPATH		  		"assets/pixil-frame-0.png"
-#define LEVEL_DESIGN_FILEPATH  		"assets/level_design.csv"
+#define PLAYER_FILEPATH		  		"assets/terminator_guy.png"
 #define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.jpg"
 #define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.jpg"
 #define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
 
+#define LEVEL_DESIGN_FILEPATH  		"assets/levels/level_2.csv"
+
 // Frame sizing
-#define PLAYER_WIDTH_SRC		42
-#define PLAYER_HEIGHT_SRC		42
+#define PLAYER_WIDTH_SRC		31
+#define PLAYER_HEIGHT_SRC		39
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
@@ -27,6 +28,6 @@
 #define GRAVITY					(float)0.60f
 
 // Enemy behavior
-#define ENEMY_DPF				2		// Damage per frame
+#define ENEMY_DPF				10
 
 #endif

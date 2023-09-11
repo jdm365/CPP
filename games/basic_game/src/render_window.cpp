@@ -4,9 +4,10 @@
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
 
-#include "../include/render_window.hpp"
+#include "../include/entity_manager.hpp"
 #include "../include/entity.hpp"
 #include "../include/constants.h"
+#include "../include/render_window.hpp"
 
 RenderWindow::RenderWindow(const char* title, int width, int height) {
 	if (SDL_Init(SDL_INIT_VIDEO) > 0) {
@@ -21,11 +22,11 @@ RenderWindow::RenderWindow(const char* title, int width, int height) {
 	renderer = NULL;
 
 	window = SDL_CreateWindow(
-			title, 
-			SDL_WINDOWPOS_UNDEFINED,  
+			title,
 			SDL_WINDOWPOS_UNDEFINED, 
-			width, 
-			height, 
+			SDL_WINDOWPOS_UNDEFINED,
+			width,
+			height,
 			SDL_WINDOW_SHOWN
 			);
 	if (window == NULL) {
@@ -64,7 +65,7 @@ void RenderWindow::clear() {
 
 int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
 	scroll_factor_x = player_pos.x - (int)(WINDOW_WIDTH / 2);
-	scroll_factor_y = -(player_pos.y - (int)(WINDOW_HEIGHT / 5));
+	scroll_factor_y = -(player_pos.y - (int)(2 * WINDOW_HEIGHT / 5));
 
 	scroll_factor_x = std::min(
 			scroll_factor_x, 
@@ -72,7 +73,7 @@ int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
 			);
 
 	scroll_factor_x = std::max(scroll_factor_x, 0);
-	scroll_factor_y = std::max(scroll_factor_y, 0);
+	scroll_factor_y = std::max(scroll_factor_y, -99 * GROUND_SIZE + WINDOW_HEIGHT);
 
 	// 60 FPS
 	// Complete 7 phase walking animation in 1 second.
@@ -103,25 +104,33 @@ void RenderWindow::render_entity(Entity& entity) {
 
 	SDL_Texture* entity_texture = nullptr;
 
-	if (entity.type != BACKGROUND && entity.type != PLAYER) {
+	if (entity.entity_type != BACKGROUND && entity.entity_type != PLAYER) {
 		if (entity.pos.x > scroll_factor_x + WINDOW_WIDTH) return;
 		if (entity.pos.x + entity.width < scroll_factor_x) return;
 	}
 
-	if (entity.type == GROUND) {
+	if (
+			entity.entity_type == GROUND 
+				|| 
+			entity.entity_type == ENEMY_FLYING
+				|| 
+			entity.entity_type == BACKGROUND
+				|| 
+			entity.entity_type == PROJECTILE
+			) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
 		src.h = size.y;
 
-		dst.x = entity.pos.x - scroll_factor_x;
-		dst.y = entity.pos.y + scroll_factor_y;
+		dst.x = entity.pos.x - scroll_factor_x * (entity.entity_type != BACKGROUND);
+		dst.y = entity.pos.y + scroll_factor_y * (entity.entity_type != BACKGROUND);
 		dst.w = entity.width;
 		dst.h = entity.height;
 
 		entity_texture = entity.get_texture();
 	}
-	else if (entity.type == PLAYER) {
+	else if (entity.entity_type == PLAYER) {
 		int step_index = get_sprite_index(entity.pos, entity.vel);
 
 		// Left sprite sheet is reflected about the y-axis.
@@ -161,7 +170,7 @@ void RenderWindow::render_entity(Entity& entity) {
 			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
 		}
 	}
-	else if (entity.type == ENEMY) {
+	else if (entity.entity_type == ENEMY_WALKING) {
 		src.x = 0;
 		src.y = 0;
 		src.w = size.x;
@@ -188,34 +197,28 @@ void RenderWindow::render_entity(Entity& entity) {
 			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
 		}
 	}
-	else if (entity.type == BACKGROUND) {
-		src.x = 0;
-		src.y = 0;
-		src.w = size.x;
-		src.h = size.y;
-
-		dst.x = entity.pos.x;
-		dst.y = entity.pos.y;
-		dst.w = entity.width;
-		dst.h = entity.height;
-
-		entity_texture = entity.get_texture();
-	}
-	else if (entity.type == PROJECTILE) {
-		src.x = 0;
-		src.y = 0;
-		src.w = size.x;
-		src.h = size.y;
-
-		dst.x = entity.pos.x - scroll_factor_x;
-		dst.y = entity.pos.y + scroll_factor_y;
-		dst.w = entity.width;
-		dst.h = entity.height;
-
-		entity_texture = entity.get_texture();
-	}
-
 	SDL_RenderCopy(renderer, entity_texture, &src, &dst);
+}
+
+void RenderWindow::render_all(Entities& entities) {
+	render_entity(entities.background_entity);
+	for (Entity& entity: entities.walking_enemy_entities) {
+		render_entity(entity);
+	}
+
+	for (Entity& entity: entities.flying_enemy_entities) {
+		render_entity(entity);
+	}
+
+	for (Entity& entity: entities.ground_entities) {
+		render_entity(entity);
+	}
+
+	for (Entity& entity: entities.projectile_entities) {
+		render_entity(entity);
+	}
+
+	render_entity(entities.player_entity);
 }
 
 void RenderWindow::display() {
@@ -328,6 +331,44 @@ void RenderWindow::render_score(int score) {
 	   30, 
 	   8 * num_chars, 
 	   16
+   };
+   SDL_RenderCopy(renderer, message, NULL, &message_rect);
+
+   SDL_FreeSurface(surface_message);
+   SDL_DestroyTexture(message);
+   TTF_CloseFont(font);
+}
+
+
+void RenderWindow::center_message(std::string text) {
+
+   SDL_Color color = { 255, 255, 255 };
+
+   // Display Score
+   int num_chars = text.length();
+
+   TTF_Font* font = TTF_OpenFont(
+		   "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 
+		   64
+		   );
+   if (font == NULL) {
+	  std::cout << "Failed to load font." << std::endl;
+	  // std::exit(1);
+   }
+
+   SDL_Surface* surface_message = TTF_RenderText_Solid(font, text.c_str(), color);
+   SDL_Texture* message 		= SDL_CreateTextureFromSurface(renderer, surface_message);
+
+   // Display In Center
+   const int message_width 	= 16 * num_chars;
+   const int message_height = 64;
+   const int message_x 		= (WINDOW_WIDTH / 2) - (message_width / 2);
+   const int message_y 		= (WINDOW_HEIGHT / 2) - (message_height / 2);
+   SDL_Rect  message_rect 	= { 
+	   message_x, 
+	   message_y, 
+	   message_width, 
+	   message_height
    };
    SDL_RenderCopy(renderer, message, NULL, &message_rect);
 
