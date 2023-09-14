@@ -18,7 +18,9 @@ struct Textures {
 	SDL_Texture* player_texture;
 	SDL_Texture* kristin_jump_texture;
 	SDL_Texture* kristin_moustache_texture;
+
 	SDL_Texture* energy_projectile_texture;
+	SDL_Texture* raygun_texture;
 
 	Textures(RenderWindow* window);
 };
@@ -29,6 +31,7 @@ struct Entities {
 	std::vector<Entity> walking_enemy_entities;
 	std::vector<Entity> flying_enemy_entities;
 	std::vector<Entity> projectile_entities;
+	std::vector<Entity> weapon_entities;
 
 	std::vector<Entity> ground_entities;
 

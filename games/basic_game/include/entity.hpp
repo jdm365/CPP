@@ -11,6 +11,7 @@ enum EntityType {
 	ENEMY_WALKING,
 	ENEMY_FLYING,
 	GROUND,
+	WEAPON,
 	PROJECTILE
 };
 
@@ -31,7 +32,8 @@ class Entity {
 				int height, 
 				uint8_t entity_type,
 				uint8_t collision_type,
-				SDL_Texture* texture
+				SDL_Texture* texture,
+				float angle_rad = 0.0f
 				);
 		Vector2f pos;
 		Vector2f vel;
@@ -50,6 +52,7 @@ class Entity {
 		int  score = 0;			// TODO: Move somewhere else.
 		bool collisions[4] = {false, false, false, false};
 		Vector2f distance_from_player = Vector2f {0.0f, 0.0f};
+		float angle_rad = 0.0f;
 		SDL_Texture* texture;
 
 		SDL_Texture* get_texture() {

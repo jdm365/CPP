@@ -60,6 +60,7 @@ SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 
 
 void RenderWindow::clear() {
+	// Clear the window to black.
 	SDL_RenderClear(renderer);
 }
 
@@ -154,21 +155,6 @@ void RenderWindow::render_entity(Entity& entity) {
 		dst.y = entity.pos.y + scroll_factor_y;
 		dst.w = entity.width;
 		dst.h = entity.height;
-
-		if (!entity.facing_right) {
-			SDL_RenderCopyEx(
-					renderer,
-					entity.get_texture(),
-					&src,
-					&dst,
-					0.0,
-					NULL,
-					SDL_FLIP_HORIZONTAL
-					);
-		}
-		else {
-			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
-		}
 	}
 	else if (entity.entity_type == ENEMY_WALKING) {
 		src.x = 0;
@@ -182,22 +168,16 @@ void RenderWindow::render_entity(Entity& entity) {
 		dst.h = entity.height;
 
 		entity.facing_right = entity.vel.x > 0.0f;
-		if (entity.facing_right) {
-			SDL_RenderCopyEx(
-					renderer, 
-					entity.get_texture(),
-					&src, 
-					&dst, 
-					0.0, 
-					NULL, 
-					SDL_FLIP_HORIZONTAL
-					);
-		}
-		else {
-			SDL_RenderCopy(renderer, entity.get_texture(), &src, &dst);
-		}
 	}
-	SDL_RenderCopy(renderer, entity_texture, &src, &dst);
+	SDL_RenderCopyEx(
+			renderer, 
+			entity.get_texture(),
+			&src, 
+			&dst, 
+			entity.angle_rad * 180 / M_PI,
+			NULL, 
+			entity.facing_right ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL
+			);
 }
 
 void RenderWindow::render_all(Entities& entities) {
@@ -219,6 +199,10 @@ void RenderWindow::render_all(Entities& entities) {
 	}
 
 	render_entity(entities.player_entity);
+
+	for (Entity& entity: entities.weapon_entities) {
+		render_entity(entity);
+	}
 }
 
 void RenderWindow::display() {

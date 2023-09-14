@@ -155,4 +155,15 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 			DYNAMIC,																	// collision type
 			textures->player_texture													// texture
 			);
+
+	// Define weapon entities
+	weapon_entities.emplace_back(
+			respawn_pos,																// position
+			Vector2f {0, 0},															// velocity 
+			player_width / 2.0f,																// width
+			player_height / 2.0f,																// height 
+			WEAPON,																		// entity type
+			TRANSPARENT,																	// collision type
+			textures->raygun_texture													// texture
+			);
 }

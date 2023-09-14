@@ -20,27 +20,27 @@ int main(int argc, char* args[]) {
 
 	window.level_width = entities.level_width;
 
-	SDL_Event event;
 	bool done = false;
 
-	// uint32_t level_number = 0;
-	uint32_t level_number = 1;
+	uint32_t level_number = 0;
 
 	respawn(entities, window, level_number + 1);
 
+	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
+	
+
 	// Game Loop
 	while (!done) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				window.quit();
-				done = true;
-			}
-			handle_keyboard(
-					event, 
-					entities,
-					textures.energy_projectile_texture
-					);
-		}
+		// Get keyboard state
+		SDL_PumpEvents();
+		handle_keyboard(
+				keyboard_state,
+				entities,
+				window.scroll_factor_x,
+				window.scroll_factor_y,
+				textures.energy_projectile_texture
+				);
+
 
 		detect_collisions(
 				entities,
@@ -57,6 +57,7 @@ int main(int argc, char* args[]) {
 		if (!entities.player_entity.alive) {
 			window.center_message("YOU DIED");
 			window.display();
+			SDL_PumpEvents();
 			SDL_Delay(2000);
 			respawn(entities, window, level_number + 1);
 			continue;
