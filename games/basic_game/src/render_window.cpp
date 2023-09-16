@@ -60,8 +60,8 @@ SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 
 
 void RenderWindow::clear() {
-	// Clear the window to black.
 	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 
 int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
@@ -98,12 +98,10 @@ void RenderWindow::render_entity(Entity& entity) {
 	if (!entity.alive) return;
 
 	SDL_Point size;
-	SDL_QueryTexture(entity.get_texture(), NULL, NULL, &size.x, &size.y);
+	SDL_QueryTexture(entity.texture, NULL, NULL, &size.x, &size.y);
 
 	// Size and location of the sprite on the sprite sheet and dst.
 	SDL_Rect src, dst;
-
-	SDL_Texture* entity_texture = nullptr;
 
 	if (entity.entity_type != BACKGROUND && entity.entity_type != PLAYER) {
 		if (entity.pos.x > scroll_factor_x + WINDOW_WIDTH) return;
@@ -118,6 +116,8 @@ void RenderWindow::render_entity(Entity& entity) {
 			entity.entity_type == BACKGROUND
 				|| 
 			entity.entity_type == PROJECTILE
+				||
+			entity.entity_type == WEAPON 
 			) {
 		src.x = 0;
 		src.y = 0;
@@ -128,8 +128,6 @@ void RenderWindow::render_entity(Entity& entity) {
 		dst.y = entity.pos.y + scroll_factor_y * (entity.entity_type != BACKGROUND);
 		dst.w = entity.width;
 		dst.h = entity.height;
-
-		entity_texture = entity.get_texture();
 	}
 	else if (entity.entity_type == PLAYER) {
 		int step_index = get_sprite_index(entity.pos, entity.vel);
@@ -171,7 +169,7 @@ void RenderWindow::render_entity(Entity& entity) {
 	}
 	SDL_RenderCopyEx(
 			renderer, 
-			entity.get_texture(),
+			entity.texture,
 			&src, 
 			&dst, 
 			entity.angle_rad * 180 / M_PI,
@@ -216,12 +214,12 @@ void RenderWindow::quit() {
 
 void RenderWindow::tick() {
 	time_elapsed = (int)SDL_GetTicks() - start_time;
-	delay_time   = (int)1000 * TIME_STEP - time_elapsed;
+	delay_time   = (int)1000 / FPS - time_elapsed;
 
 	// If delay time is less than zero then code is updating too slowly 
 	// (and is surely terrible).
 	if (delay_time < 0) {
-		std::cout << "Delay Time: " << delay_time << std::endl;
+		std::cout << "FPS: " << 1000 / time_elapsed << std::endl;
 		std::cout << "Delay time is negative. Code is updating too slowly." << std::endl;
 	}
 

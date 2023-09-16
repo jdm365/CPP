@@ -11,16 +11,32 @@
 
 class RenderWindow;
 
-struct Textures {
-	SDL_Texture* background_texture;
-	SDL_Texture* grass_texture;
-	SDL_Texture* dirt_texture;
-	SDL_Texture* player_texture;
-	SDL_Texture* kristin_jump_texture;
-	SDL_Texture* kristin_moustache_texture;
+enum WeaponType {
+	CHAINGUN
+};
 
-	SDL_Texture* energy_projectile_texture;
-	SDL_Texture* raygun_texture;
+enum ProjectileType {
+	BULLET
+};
+
+enum EnemyType {
+	WALKING,
+	FLYING
+};
+
+enum TerrainType {
+	GRASS,
+	DIRT
+};
+
+struct Textures {
+	SDL_Texture* background_texture; 
+	SDL_Texture* player_texture;
+
+	SDL_Texture* terrain_textures[2];
+	SDL_Texture* enemy_textures[2];
+	SDL_Texture* weapon_textures[1];
+	SDL_Texture* projectile_textures[1];
 
 	Textures(RenderWindow* window);
 };

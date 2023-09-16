@@ -59,7 +59,7 @@ void detect_collisions(
 				sizeof(non_player_entities[idx]->collisions)
 				);
 
-		for (int jdx = idx + 1; jdx < (int)non_player_entities.size(); ++jdx) {
+		for (int jdx = 0; jdx < (int)non_player_entities.size(); ++jdx) {
 			if (!non_player_entities[jdx]->alive) {
 				continue;
 			}
@@ -68,7 +68,12 @@ void detect_collisions(
 					*non_player_entities[jdx]
 					);
 		}
-		update(entities, *non_player_entities[idx], scroll_factor_x, scroll_factor_y);
+		update(
+				entities, 
+				*non_player_entities[idx], 
+				scroll_factor_x, 
+				scroll_factor_y
+				);
 	}
 }
 
@@ -94,8 +99,8 @@ void _detect_collision(
 	float dst_right  = dst_next_pos.x + dst_entity.width;
 
 	// Only detect collisions for objects near src.
-	if (!(src_next_pos.x <= dst_right + EPS && src_right >= dst_next_pos.x - EPS
-		&& src_next_pos.y <= dst_bottom + EPS && src_bottom >= dst_next_pos.y - EPS)) {
+	if (!(src_next_pos.x < dst_right + EPS && src_right > dst_next_pos.x - EPS
+		&& src_next_pos.y < dst_bottom + EPS && src_bottom > dst_next_pos.y - EPS)) {
 		return;
 	}
 
@@ -226,7 +231,7 @@ void _detect_collision(
 			}
 			else {
 				if (dst_entity.entity_type == PROJECTILE) {
-					src_entity.health -= 25;
+					src_entity.health -= 10;
 
 					src_entity.vel.y -= GRAVITY;
 
@@ -242,7 +247,7 @@ void _detect_collision(
 
 		case ENEMY_FLYING:
 			if (dst_entity.entity_type == PROJECTILE) {
-				src_entity.health -= 25;
+				src_entity.health -= 10;
 
 				src_entity.vel.y -= GRAVITY;
 
@@ -261,7 +266,7 @@ void _detect_collision(
 						|| 
 					dst_entity.entity_type == ENEMY_FLYING
 				) {
-				dst_entity.health -= 25;
+				dst_entity.health -= 10;
 				dst_entity.vel.x -= dst_entity.vel.x;
 
 				// Stop rendering projectile by making it not alive.
@@ -279,12 +284,12 @@ void _detect_collision(
 }
 
 void handle_keyboard(
-		// SDL_Event& event, 
 		const uint8_t* keyboard_state,
 		Entities& entity_manager,
 		int& scroll_factor_x,
 		int& scroll_factor_y,
-		SDL_Texture* texture
+		Textures& textures,
+		Weapon& weapon
 		) {
 	
 	if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
@@ -336,32 +341,14 @@ void handle_keyboard(
 		mouse_x += scroll_factor_x;
 		mouse_y -= scroll_factor_y;
 
-		Vector2f barrel_pos = {
-			entity_manager.player_entity.pos.x + entity_manager.player_entity.width - 76,
-			entity_manager.player_entity.pos.y + entity_manager.player_entity.height / 1.69f
-		};
-
-		float mouse_distance_x = mouse_x - barrel_pos.x;
-		float mouse_distance_y = mouse_y - barrel_pos.y;
-		float mouse_angle = std::atan2(mouse_distance_y, mouse_distance_x);
-
-		Vector2f vel = {
-			64.0f * std::cos(mouse_angle),
-			64.0f * std::sin(mouse_angle)
-		};
-
-		entity_manager.projectile_entities.emplace_back(
-				barrel_pos,
-				vel,
-				12,
-				12,
-				PROJECTILE,
-				DYNAMIC,
-				texture,
-				mouse_angle
-		);
+		weapon.fire(
+				entity_manager.weapon_entities[0],
+				entity_manager.projectile_entities,
+				mouse_x, 
+				mouse_y, 
+				textures
+				);
 	}
-
 }
 
 
@@ -417,16 +404,13 @@ void update(
 		case PLAYER:
 			entity.alive = entity.health > 0;
 
-			std::cout << "Right: " << entity.collisions[2] << std::endl;
-			std::cout << "Bottom: " << entity.collisions[3] << std::endl << std::endl;
-
-			if (!entity.collisions[3]) {
-				entity.vel.y += GRAVITY;
-				entity.on_ground = false;
-			}
-			else {
+			if (entity.collisions[3]) {
 				entity.vel.y = 0.0f;
 				entity.on_ground = true;
+			}
+			else {
+				entity.vel.y += GRAVITY;
+				entity.on_ground = false;
 			}
 
 			entity.pos.x += entity.vel.x;
@@ -446,21 +430,21 @@ void update(
 			}
 
 			{
-			int mouse_x, mouse_y;
-			uint32_t mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+				int mouse_x, mouse_y;
+				SDL_GetMouseState(&mouse_x, &mouse_y);
 
-			Vector2f barrel_pos = {
-				entity_manager.player_entity.pos.x + entity_manager.player_entity.width - 76,
-				entity_manager.player_entity.pos.y + entity_manager.player_entity.height / 1.69f
-			};
+				Vector2f barrel_pos = {
+					entity_manager.player_entity.pos.x + entity_manager.player_entity.width - 72,
+					entity_manager.player_entity.pos.y + (entity_manager.player_entity.height / 1.5f)
+				};
 
-			float mouse_distance_x = mouse_x - barrel_pos.x;
-			float mouse_distance_y = mouse_y - barrel_pos.y;
-			float mouse_angle = std::atan2(mouse_distance_y, mouse_distance_x);
+				float mouse_distance_x = mouse_x - barrel_pos.x + scroll_factor_x;
+				float mouse_distance_y = mouse_y - barrel_pos.y - scroll_factor_y;
+				float mouse_angle = std::atan2(mouse_distance_y, mouse_distance_x);
 
-			entity_manager.weapon_entities[0].pos.x = barrel_pos.x - entity_manager.weapon_entities[0].width / 3.0f;
-			entity_manager.weapon_entities[0].pos.y = barrel_pos.y;
-			entity_manager.weapon_entities[0].angle_rad = mouse_angle;
+				entity_manager.weapon_entities[0].pos.x = barrel_pos.x - entity_manager.weapon_entities[0].width / 3.0f;
+				entity_manager.weapon_entities[0].pos.y = barrel_pos.y - entity_manager.weapon_entities[0].height / 2.0f;
+				entity_manager.weapon_entities[0].angle_rad = mouse_angle;
 			}
 			break;
 
@@ -475,8 +459,8 @@ void respawn(Entities& entities, RenderWindow& window, uint32_t level) {
 	window.clear();
 	window.center_message("LEVEL " + std::to_string(level));
 	window.display();
-	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 	SDL_Delay(2000);
+
 	window.scroll_factor_x = 0;
 	window.scroll_factor_y = 0;
 

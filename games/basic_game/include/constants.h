@@ -11,7 +11,9 @@
 #define ENERGY_BLASTER_FILEPATH		"assets/energy_blaster.png"
 #define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.jpg"
 #define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.jpg"
-#define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
+// #define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
+#define BULLET_FILEPATH				"assets/bullet.png"
+#define CHAINGUN_FILEPATH				"assets/chain_gun.png"
 
 #define LEVEL_DESIGN_FILEPATH  		"assets/levels/level_2.csv"
 
@@ -21,15 +23,14 @@
 #define GROUND_SIZE  			32
 #define WINDOW_WIDTH  			1280
 #define WINDOW_HEIGHT  			720
-#define PADDING  				(int)WINDOW_WIDTH * 0.1
 
 // Animation factors
-#define TIME_STEP  				1.0f / 60.0f
+#define FPS						60
 #define PLAYER_SPEED			8
 #define JUMP_SPEED				16
 #define GRAVITY					(float)0.60f
 
 // Enemy behavior
-#define ENEMY_DPF				1
+#define ENEMY_DPF				4
 
 #endif

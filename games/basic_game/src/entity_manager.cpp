@@ -13,13 +13,14 @@
 
 
 Textures::Textures(RenderWindow* window) {
-	background_texture	  	  = (*window).load_texture(NAMEK_FILEPATH);
-	grass_texture         	  = (*window).load_texture(GRASS_FILEPATH);
-	dirt_texture          	  = (*window).load_texture(DIRT_FILEPATH);
-	player_texture		  	  = (*window).load_texture(PLAYER_FILEPATH);
-	kristin_jump_texture  	  = (*window).load_texture(KRISTIN_JUMP_FILEPATH);
-	kristin_moustache_texture = (*window).load_texture(KRISTIN_MOUSTACHE_FILEPATH);
-	energy_projectile_texture = (*window).load_texture(ENERGY_PROJECTILE_FILEPATH);
+	background_texture	  	  	= window->load_texture(NAMEK_FILEPATH);
+	player_texture		  	  	= window->load_texture(PLAYER_FILEPATH);
+	terrain_textures[GRASS]   	= window->load_texture(GRASS_FILEPATH);
+	terrain_textures[DIRT]    	= window->load_texture(DIRT_FILEPATH);
+	enemy_textures[WALKING]   	= window->load_texture(KRISTIN_MOUSTACHE_FILEPATH);
+	enemy_textures[FLYING]    	= window->load_texture(KRISTIN_JUMP_FILEPATH);
+	weapon_textures[CHAINGUN]   = window->load_texture(CHAINGUN_FILEPATH);
+	projectile_textures[BULLET] = window->load_texture(BULLET_FILEPATH);
 }
 
 Entities::Entities(Textures* textures, const std::string level_design_filepath) {
@@ -50,7 +51,7 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 
 			SDL_Point size;
 			SDL_QueryTexture(
-					(*textures).kristin_jump_texture,
+					textures->enemy_textures[FLYING],
 					NULL, 
 					NULL, 
 					&size.x, 
@@ -70,14 +71,14 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 					texture_height,													// height
 					ENEMY_FLYING,													// entity type
 					DYNAMIC,														// collision type
-					textures->kristin_jump_texture								// texture
+					textures->enemy_textures[FLYING]								// texture	
 					);
 			continue;
 		}
 		else if (level_design[idx] == -25) {
 			SDL_Point size;
 			SDL_QueryTexture(
-					(*textures).kristin_moustache_texture,
+					textures->enemy_textures[WALKING],
 					NULL, 
 					NULL, 
 					&size.x, 
@@ -97,7 +98,7 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 					texture_height,													// height
 					ENEMY_WALKING,													// type
 					DYNAMIC,														// collision type
-					textures->kristin_moustache_texture							// texture
+					textures->enemy_textures[WALKING]								// texture	
 					);
 		}
 		width_counter = 0;
@@ -118,7 +119,7 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 					GROUND_SIZE, 							// height
 					GROUND,									// entity type
 					STATIC,									// collision type
-					textures->grass_texture 				// texture
+					textures->terrain_textures[GRASS]		// texture
 				);
 
 		for (int jdx = 1; jdx < n_dirt_layers + 1; ++jdx) {
@@ -132,7 +133,7 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 						GROUND_SIZE, 												// height
 						GROUND,														// entity type
 						STATIC,														// collision type
-						textures->dirt_texture										// texture
+						textures->terrain_textures[DIRT]								// texture
 					);
 			}
 		}
@@ -156,14 +157,25 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 			textures->player_texture													// texture
 			);
 
+	SDL_Point size;
+	SDL_QueryTexture(
+			textures->weapon_textures[CHAINGUN],
+			NULL, 
+			NULL, 
+			&size.x, 
+			&size.y
+			);
+
 	// Define weapon entities
+	int weapon_width = 150;
+	int weapon_height = size.y / (float)size.x * weapon_width;
 	weapon_entities.emplace_back(
 			respawn_pos,																// position
 			Vector2f {0, 0},															// velocity 
-			player_width / 2.0f,																// width
-			player_height / 2.0f,																// height 
+			weapon_width,																// width
+			weapon_height,																// height 
 			WEAPON,																		// entity type
-			TRANSPARENT,																	// collision type
-			textures->raygun_texture													// texture
+			TRANSPARENT,																// collision type
+			textures->weapon_textures[CHAINGUN]													// texture
 			);
 }

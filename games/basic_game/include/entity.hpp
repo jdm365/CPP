@@ -55,9 +55,6 @@ class Entity {
 		float angle_rad = 0.0f;
 		SDL_Texture* texture;
 
-		SDL_Texture* get_texture() {
-			return texture;
-		}
 		bool is_collidable() {
 			return this->collision_type != TRANSPARENT;
 		}

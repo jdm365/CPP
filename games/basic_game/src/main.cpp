@@ -6,6 +6,7 @@
 #include "../include/render_window.hpp"
 #include "../include/entity_manager.hpp"
 #include "../include/event_handler.hpp"
+#include "../include/weapon.hpp"
 
 
 int main(int argc, char* args[]) {
@@ -27,7 +28,15 @@ int main(int argc, char* args[]) {
 	respawn(entities, window, level_number + 1);
 
 	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
-	
+
+	// Define weapons
+	Weapon chaingun(
+			CHAINGUN,
+			100000,
+			20,
+			10,
+			textures.weapon_textures[CHAINGUN]
+			);
 
 	// Game Loop
 	while (!done) {
@@ -38,7 +47,8 @@ int main(int argc, char* args[]) {
 				entities,
 				window.scroll_factor_x,
 				window.scroll_factor_y,
-				textures.energy_projectile_texture
+				textures,
+				chaingun
 				);
 
 
