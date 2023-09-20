@@ -4,12 +4,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "../include/entity_manager.hpp"
 #include "../include/entity.hpp"
 #include "../include/math.hpp"
 #include "../include/render_window.hpp"
 #include "../include/read_level.hpp"
 #include "../include/constants.h"
+#include "../include/entity_manager.hpp"
 
 
 Textures::Textures(RenderWindow* window) {
@@ -133,7 +133,7 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 						GROUND_SIZE, 												// height
 						GROUND,														// entity type
 						STATIC,														// collision type
-						textures->terrain_textures[DIRT]								// texture
+						textures->terrain_textures[DIRT]							// texture
 					);
 			}
 		}
@@ -176,6 +176,6 @@ Entities::Entities(Textures* textures, const std::string level_design_filepath) 
 			weapon_height,																// height 
 			WEAPON,																		// entity type
 			TRANSPARENT,																// collision type
-			textures->weapon_textures[CHAINGUN]													// texture
+			textures->weapon_textures[CHAINGUN]											// texture
 			);
 }

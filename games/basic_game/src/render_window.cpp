@@ -8,6 +8,7 @@
 #include "../include/entity.hpp"
 #include "../include/constants.h"
 #include "../include/render_window.hpp"
+#include "../include/weapon.hpp"
 
 RenderWindow::RenderWindow(const char* title, int width, int height) {
 	if (SDL_Init(SDL_INIT_VIDEO) > 0) {
@@ -356,5 +357,59 @@ void RenderWindow::center_message(std::string text) {
 
    SDL_FreeSurface(surface_message);
    SDL_DestroyTexture(message);
+   TTF_CloseFont(font);
+}
+
+void RenderWindow::weapon_message(std::string& weapon_name, int ammo) {
+
+   SDL_Color color = { 255, 255, 255 };
+
+   // Display Score
+   std::string weapon_name_text = "Weapon: " + weapon_name;
+   std::string ammo_text 		= "Ammo: " + std::to_string(ammo);
+   int num_chars_0 = weapon_name_text.length();
+   int num_chars_1 = ammo_text.length();
+
+   TTF_Font* font = TTF_OpenFont(
+		   "/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 
+		   24
+		   );
+   if (font == NULL) {
+	  std::cout << "Failed to load font." << std::endl;
+	  // std::exit(1);
+   }
+
+   SDL_Surface* surface_message_0 = TTF_RenderText_Solid(font, weapon_name_text.c_str(), color);
+   SDL_Surface* surface_message_1 = TTF_RenderText_Solid(font, ammo_text.c_str(), color);
+   SDL_Texture* message_0 		= SDL_CreateTextureFromSurface(renderer, surface_message_0);
+   SDL_Texture* message_1 		= SDL_CreateTextureFromSurface(renderer, surface_message_1);
+
+   // Display In Top Left 
+   const int message_width_0	= 16 * num_chars_0;
+   const int message_width_1	= 16 * num_chars_1;
+   const int message_height 	= 24;
+   const int message_x 			= 10;
+   const int message_y_0 		= 10;
+   const int message_y_1 		= 10 + message_height;
+
+   SDL_Rect  message_rect_0	= { 
+	   message_x, 
+	   message_y_0, 
+	   message_width_0, 
+	   message_height
+   };
+   SDL_Rect  message_rect_1	= { 
+	   message_x, 
+	   message_y_1, 
+	   message_width_1, 
+	   message_height
+   };
+   SDL_RenderCopy(renderer, message_0, NULL, &message_rect_0);
+   SDL_RenderCopy(renderer, message_1, NULL, &message_rect_1);
+
+   SDL_FreeSurface(surface_message_0);
+   SDL_FreeSurface(surface_message_1);
+   SDL_DestroyTexture(message_0);
+   SDL_DestroyTexture(message_1);
    TTF_CloseFont(font);
 }

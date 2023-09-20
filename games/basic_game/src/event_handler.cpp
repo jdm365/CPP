@@ -7,8 +7,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "../include/entity.hpp"
 #include "../include/event_handler.hpp"
+#include "../include/entity.hpp"
 #include "../include/constants.h"
 #include "../include/math.hpp"
 
@@ -359,6 +359,27 @@ void update(
 		int scroll_factor_y
 		) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
+	for (int idx = 0; idx < (int)entity_manager.projectile_entities.size(); ++idx) {
+		if (
+				!entity_manager.projectile_entities[idx].alive
+					||
+				entity_manager.projectile_entities[idx].pos.x - scroll_factor_x < 0
+					||
+				entity_manager.projectile_entities[idx].pos.x - scroll_factor_x > WINDOW_WIDTH
+					||
+				entity_manager.projectile_entities[idx].pos.y + scroll_factor_y < 0
+					||
+				entity_manager.projectile_entities[idx].pos.y + scroll_factor_y > WINDOW_HEIGHT
+			) {
+			// Remove projectile from vector.
+			if ((int)entity_manager.projectile_entities.size() > 0) {
+				entity_manager.projectile_entities.erase(
+						entity_manager.projectile_entities.begin() + idx
+				);
+			}
+			continue;
+		}
+	}
 	if (!entity.alive) return;
 	
 	switch(entity.entity_type) {
@@ -455,7 +476,12 @@ void update(
 	}
 }
 
-void respawn(Entities& entities, RenderWindow& window, uint32_t level) {
+void respawn(
+		Entities& entities, 
+		RenderWindow& window, 
+		Weapon& weapon,
+		uint32_t level
+		) {
 	window.clear();
 	window.center_message("LEVEL " + std::to_string(level));
 	window.display();
@@ -475,6 +501,7 @@ void respawn(Entities& entities, RenderWindow& window, uint32_t level) {
 			sizeof(entities.player_entity.collisions)
 			);
 	
+	weapon.ammo = weapon.max_ammo;
 	for (Entity* entity: entities.get_non_player_entities()) {
 		entity->alive  = true;
 		entity->health = 100;

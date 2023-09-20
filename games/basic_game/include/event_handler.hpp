@@ -35,4 +35,9 @@ void handle_keyboard(
 		Textures& textures,
 		Weapon& weapon
 		);
-void respawn(Entities& entities, RenderWindow& window, uint32_t level);
+void respawn(
+		Entities& entities, 
+		RenderWindow& window, 
+		Weapon& weapon,
+		uint32_t level
+		);

@@ -13,6 +13,10 @@ struct Entities;
 
 class RenderWindow {
 	public:
+		int level_width = 0;
+		int scroll_factor_x = 0;
+		int scroll_factor_y = 0;
+
 		RenderWindow(const char* player_title, int player_width, int player_height);
 		SDL_Texture* load_texture(const char* player_filepath);
 		void clear();
@@ -29,13 +33,11 @@ class RenderWindow {
 		void render_all(Entities& entities);
 		void render_score(int score);
 		void center_message(std::string text);
+		void weapon_message(std::string& weapon_name, int ammo);
 		int  get_sprite_index(Vector2f& player_pos, Vector2f& player_vel);
 		void display();
 		void quit();
 		void tick();
-		int level_width = 0;
-		int scroll_factor_x = 0;
-		int scroll_factor_y = 0;
 	private:
 		SDL_Window* window;
 		SDL_Renderer* renderer;
@@ -46,7 +48,7 @@ class RenderWindow {
 };
 
 
-const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
+static const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
 	Vector2f {19, 11},
 	Vector2f {83, 11},
 	Vector2f {147, 11},

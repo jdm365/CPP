@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "../include/entity_manager.hpp"
 #include "../include/entity.hpp"
 #include "../include/weapon.hpp"
 
@@ -33,11 +34,17 @@ void Weapon::fire(
 			32.0f * std::sin(mouse_angle)
 		};
 
+		int projectile_width, projectile_height;
+	
+		SDL_QueryTexture(textures.projectile_textures[projectile_type], NULL, NULL, &projectile_width, &projectile_height);
+
+		float ratio = (float)projectile_height / (float)projectile_width;
+
 		projectile_entities.emplace_back(
 				barrel_pos,
 				vel,
-				12,
-				12,
+				10,
+				(int)(10 * ratio),
 				PROJECTILE,
 				DYNAMIC,
 				textures.projectile_textures[projectile_type],

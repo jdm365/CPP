@@ -3,8 +3,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "../include/render_window.hpp"
 #include "../include/entity_manager.hpp"
+#include "../include/render_window.hpp"
 #include "../include/event_handler.hpp"
 #include "../include/weapon.hpp"
 
@@ -25,18 +25,19 @@ int main(int argc, char* args[]) {
 
 	uint32_t level_number = 0;
 
-	respawn(entities, window, level_number + 1);
-
 	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
 
 	// Define weapons
 	Weapon chaingun(
 			CHAINGUN,
-			100000,
-			20,
+			BULLET,
+			"CHAINGUN",
+			100,
+			45,
 			10,
 			textures.weapon_textures[CHAINGUN]
 			);
+	respawn(entities, window, chaingun, level_number + 1);
 
 	// Game Loop
 	while (!done) {
@@ -63,13 +64,14 @@ int main(int argc, char* args[]) {
 		window.render_all(entities);
 		window.render_health_bar(entities.player_entity.health * 0.01f);
 		window.render_score(entities.player_entity.score);
+		window.weapon_message(chaingun.name, chaingun.ammo);
 
 		if (!entities.player_entity.alive) {
 			window.center_message("YOU DIED");
 			window.display();
 			SDL_PumpEvents();
 			SDL_Delay(2000);
-			respawn(entities, window, level_number + 1);
+			respawn(entities, window, chaingun, level_number + 1);
 			continue;
 		}
 
@@ -84,7 +86,7 @@ int main(int argc, char* args[]) {
 			window.level_width = entities.level_width;
 			window.scroll_factor_x = 0;
 			window.scroll_factor_y = 0;
-			respawn(entities, window, level_number + 1);
+			respawn(entities, window, chaingun, level_number + 1);
 			continue;
 		}
 
