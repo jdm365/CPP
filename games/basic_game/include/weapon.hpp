@@ -42,7 +42,6 @@ struct Weapon {
 			Entity& weapon_entity, 
 			std::vector<Entity>& projectile_entities,
 			int adjusted_mouse_x, 
-			int adjusted_mouse_y,
-			Textures& textures
+			int adjusted_mouse_y
 			);
 };

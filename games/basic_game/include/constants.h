@@ -3,17 +3,18 @@
 
 // Textures
 #define GRASS_FILEPATH   			"assets/grass_texture.png"
-#define DIRT_FILEPATH   			"assets/dirt_texture.jpg"
+#define DIRT_FILEPATH   			"assets/dirt_texture.png"
 #define NAMEK_FILEPATH  			"assets/namek_texture.png"
 // #define PLAYER_FILEPATH		  		"assets/knight_texture.png"
 // #define PLAYER_FILEPATH		  		"assets/terminator_guy.png"
 #define PLAYER_FILEPATH		  		"assets/terminator_guy_base.png"
 #define ENERGY_BLASTER_FILEPATH		"assets/energy_blaster.png"
-#define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.jpg"
-#define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.jpg"
+#define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.png"
+#define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.png"
 // #define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
 #define BULLET_FILEPATH				"assets/bullet.png"
 #define CHAINGUN_FILEPATH				"assets/chain_gun.png"
+#define AMMO_FILEPATH				"assets/ammo_texture.png"
 
 #define LEVEL_DESIGN_FILEPATH  		"assets/levels/level_2.csv"
 

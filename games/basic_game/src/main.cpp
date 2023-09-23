@@ -3,27 +3,31 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "../include/entity_manager.hpp"
-#include "../include/render_window.hpp"
-#include "../include/event_handler.hpp"
-#include "../include/weapon.hpp"
+#include "render_window.hpp"
+#include "entity_manager.hpp"
+#include "event_handler.hpp"
+#include "weapon.hpp"
 
 
 int main(int argc, char* args[]) {
-	RenderWindow window("KRISTIN DESTROY", WINDOW_WIDTH, WINDOW_HEIGHT);
+	SDL_Window*   window   = NULL;
+	SDL_Renderer* renderer = NULL;
+	init_window("KRISTIN DESTROY", &window, &renderer);
+	load_textures(renderer);
 
 	const std::string level_1 = "assets/levels/level_1.csv";
 	const std::string level_2 = "assets/levels/level_2.csv";
 	const std::string levels[2] = {level_1, level_2};
 
-	Textures textures(&window);
-	Entities entities(&textures, level_1);
+	Vector2i scroll_factors = {0, 0};
 
-	window.level_width = entities.level_width;
+	Entities entities(level_1);
 
-	bool done = false;
+	int level_width = entities.level_width;
 
 	uint32_t level_number = 0;
+	int 	 frame_idx 	  = 0;
+	int 	 time_elapsed = 0;
 
 	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
 
@@ -35,63 +39,78 @@ int main(int argc, char* args[]) {
 			100,
 			45,
 			10,
-			textures.weapon_textures[CHAINGUN]
+			weapon_textures[CHAINGUN]
 			);
-	respawn(entities, window, chaingun, level_number + 1);
+	respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
 
 	// Game Loop
-	while (!done) {
+	while (true) {
 		// Get keyboard state
 		SDL_PumpEvents();
 		handle_keyboard(
 				keyboard_state,
 				entities,
-				window.scroll_factor_x,
-				window.scroll_factor_y,
-				textures,
+				scroll_factors,
 				chaingun
 				);
 
 
 		detect_collisions(
 				entities,
-				window.scroll_factor_x,
-				window.scroll_factor_y
+				scroll_factors
+				);
+		if (entities.player_entity.reload) {
+			entities.player_entity.reload = false;
+			chaingun.ammo = chaingun.max_ammo;
+		}
+
+		clear_window(renderer);
+
+		update_scroll_factors(
+				scroll_factors,
+				entities.player_entity.pos,
+				level_width
 				);
 
-		window.clear();
-
-		window.render_all(entities);
-		window.render_health_bar(entities.player_entity.health * 0.01f);
-		window.render_score(entities.player_entity.score);
-		window.weapon_message(chaingun.name, chaingun.ammo);
+		render_all(renderer, entities, scroll_factors, frame_idx);
+		render_health_bar(
+				renderer,
+				entities.player_entity.health * 0.01f
+				);
+		render_score(
+				renderer,
+				entities.player_entity.score
+				);
+		weapon_message(
+				renderer,
+				chaingun.name, 
+				chaingun.ammo
+				);
 
 		if (!entities.player_entity.alive) {
-			window.center_message("YOU DIED");
-			window.display();
+			center_message(renderer, "YOU DIED");
+			display(renderer);
 			SDL_PumpEvents();
 			SDL_Delay(2000);
-			respawn(entities, window, chaingun, level_number + 1);
+			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
 			continue;
 		}
 
 		// Check if level complete
-		if (entities.player_entity.pos.x - window.scroll_factor_x + entities.player_entity.width > WINDOW_WIDTH) {
+		if (entities.player_entity.pos.x - scroll_factors.x + entities.player_entity.width > WINDOW_WIDTH) {
 			// Wait 3 seconds, then load next level.
 			level_number++;
-			window.center_message("LEVEL COMPLETE");
-			window.display();
+			center_message(renderer, "LEVEL COMPLETE");
+			display(renderer);
 			SDL_Delay(3000);
-			entities = Entities(&textures, levels[level_number]);
-			window.level_width = entities.level_width;
-			window.scroll_factor_x = 0;
-			window.scroll_factor_y = 0;
-			respawn(entities, window, chaingun, level_number + 1);
+			entities = Entities(levels[level_number]);
+			level_width = entities.level_width;
+			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
 			continue;
 		}
 
-		window.display();
-		window.tick();
+		display(renderer);
+		tick(time_elapsed, frame_idx);
 	}
 
 	return 0;

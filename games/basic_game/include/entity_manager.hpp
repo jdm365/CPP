@@ -9,7 +9,6 @@
 #include "../include/entity.hpp"
 #include "../include/constants.h"
 
-class RenderWindow;
 
 enum WeaponType {
 	CHAINGUN
@@ -29,18 +28,6 @@ enum TerrainType {
 	DIRT
 };
 
-struct Textures {
-	SDL_Texture* background_texture; 
-	SDL_Texture* player_texture;
-
-	SDL_Texture* terrain_textures[2];
-	SDL_Texture* enemy_textures[2];
-	SDL_Texture* weapon_textures[1];
-	SDL_Texture* projectile_textures[1];
-
-	Textures(RenderWindow* window);
-};
-
 struct Entities {
 	Entity player_entity;
 
@@ -49,13 +36,14 @@ struct Entities {
 	std::vector<Entity> projectile_entities;
 	std::vector<Entity> weapon_entities;
 
+	std::vector<Entity> ammo_entities;
 	std::vector<Entity> ground_entities;
 
 	Entity background_entity;
 	
 	int level_width;
 
-	Entities(Textures* textures, const std::string level_design_filepath);
+	Entities(const std::string level_design_filepath);
 
 	std::vector<Entity*> get_non_player_entities() {
 		std::vector<Entity*> all_entities;
@@ -75,6 +63,9 @@ struct Entities {
 			all_entities.push_back(&entity);
 		}
 		for (Entity& entity: projectile_entities) {
+			all_entities.push_back(&entity);
+		}
+		for (Entity& entity: ammo_entities) {
 			all_entities.push_back(&entity);
 		}
 		return all_entities;

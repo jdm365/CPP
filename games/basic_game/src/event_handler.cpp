@@ -15,8 +15,7 @@
 
 void detect_collisions(
 		Entities& entities, 
-		int scroll_factor_x,
-		int scroll_factor_y
+		Vector2i& scroll_factors
 		) {
 	// Player -> Enemies_0, Enemies_1, ...
 	// Player -> Platforms_0, Platforms_1, ...
@@ -24,12 +23,6 @@ void detect_collisions(
 	// Enemies_0 -> Platforms_0, Platforms_1, ...
 	
 	// PLAYER
-	memset(
-			entities.player_entity.collisions,
-			false,
-			sizeof(entities.player_entity.collisions)
-			);
-
 	std::vector<Entity*> non_player_entities = entities.get_non_player_entities();
 
 	#pragma omp parallel for schedule(static)
@@ -39,7 +32,7 @@ void detect_collisions(
 		}
 		_detect_collision(entities.player_entity, *entity);
 	}
-	update(entities, entities.player_entity, scroll_factor_x, scroll_factor_y);
+	update(entities, entities.player_entity, scroll_factors);
 
 	// ENEMIES
 	#pragma omp parallel for schedule(static)
@@ -53,12 +46,6 @@ void detect_collisions(
 		}
 
 		non_player_entities[idx]->overhang = true;
-		memset(
-				non_player_entities[idx]->collisions, 
-				false, 
-				sizeof(non_player_entities[idx]->collisions)
-				);
-
 		for (int jdx = 0; jdx < (int)non_player_entities.size(); ++jdx) {
 			if (!non_player_entities[jdx]->alive) {
 				continue;
@@ -68,12 +55,7 @@ void detect_collisions(
 					*non_player_entities[jdx]
 					);
 		}
-		update(
-				entities, 
-				*non_player_entities[idx], 
-				scroll_factor_x, 
-				scroll_factor_y
-				);
+		update(entities, *non_player_entities[idx], scroll_factors);
 	}
 }
 
@@ -87,6 +69,12 @@ void _detect_collision(
 	}
 	bool local_collisions[4] = {false, false, false, false};
 	const float EPS = 1e-3;
+
+	float src_bottom_last = src_entity.pos.y + src_entity.height;
+	float src_right_last  = src_entity.pos.x + src_entity.width;
+
+	float dst_bottom_last = dst_entity.pos.y + dst_entity.height;
+	float dst_right_last  = dst_entity.pos.x + dst_entity.width;
 
 	// Detect if collision will happen on next frame.
 	Vector2f src_next_pos = vector_add(src_entity.pos, src_entity.vel);
@@ -108,11 +96,11 @@ void _detect_collision(
 	// Collision Detection
 	// Two conditions
 	// 1. If src edge is past dst edge in next frame.
-	// 2. If src edge could've traveled past dst edge in next frame.
+	// 2. If src edge is not past dst edge in current frame.
 	
 	// Bottom
 	if (
-			(EPS > (src_bottom - dst_next_pos.y) - (src_entity.vel.y - dst_entity.vel.y))
+			(EPS > src_bottom_last - dst_entity.pos.y)
 				&& 
 			(-EPS < src_bottom - dst_next_pos.y)
 		) [[likely]] {
@@ -121,7 +109,7 @@ void _detect_collision(
 
 	// Top
 	else if (
-			((src_entity.vel.y - dst_entity.vel.y) - (src_next_pos.y - dst_bottom) <= EPS)
+			(src_entity.pos.y - dst_bottom_last > -EPS)
 				&& 
 			(src_next_pos.y - dst_bottom < EPS)
 		) {
@@ -130,28 +118,21 @@ void _detect_collision(
 
 	// Left
 	else if (
-			((src_entity.vel.x - dst_entity.vel.x) - (src_next_pos.x - dst_right) <= EPS)
+			(src_entity.pos.x - dst_right_last > -EPS)
 				&&
-			((src_next_pos.x - dst_right) < EPS)
+			(src_next_pos.x - dst_right < EPS)
 		) {
 		local_collisions[0] = true;
 	}
 
 	// Right
 	else if (
-			((src_entity.vel.x - dst_entity.vel.x) - (src_right - dst_next_pos.x) >= -EPS)
+			(src_right_last - dst_entity.pos.x < EPS)
 				&&
 			(src_right - dst_next_pos.x > -EPS)
 		) {
 		local_collisions[2] = true;
 	}
-
-	if (src_entity.entity_type == PLAYER) {
-		if (!local_collisions[0] && !local_collisions[1] && !local_collisions[2] && !local_collisions[3]) {
-			src_entity.health -= 2 * ENEMY_DPF;
-		}
-	}
-
 
 	switch(src_entity.entity_type) {
 		case PLAYER:
@@ -172,16 +153,17 @@ void _detect_collision(
 					dst_entity.health -= 100;
 					src_entity.vel.y = dst_entity.vel.y - JUMP_SPEED;
 					dst_entity.alive = false;
-					memset(
-							src_entity.collisions, 
-							false, 
-							sizeof(src_entity.collisions)
-							);
 					return;
 				}
 			}
 
-			if (local_collisions[3]) {
+			if (dst_entity.entity_type == AMMO) {
+				src_entity.reload = true;
+				dst_entity.alive = false;
+				return;
+			}
+
+			if (local_collisions[3] && !src_entity.collisions[3]) {
 				src_entity.pos.y = dst_entity.pos.y - src_entity.height;
 			}
 			else if (local_collisions[0]) {
@@ -286,9 +268,7 @@ void _detect_collision(
 void handle_keyboard(
 		const uint8_t* keyboard_state,
 		Entities& entity_manager,
-		int& scroll_factor_x,
-		int& scroll_factor_y,
-		Textures& textures,
+		Vector2i& scroll_factors,
 		Weapon& weapon
 		) {
 	
@@ -338,15 +318,14 @@ void handle_keyboard(
 	
 	if (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
 		// Fire bullet.
-		mouse_x += scroll_factor_x;
-		mouse_y -= scroll_factor_y;
+		mouse_x += scroll_factors.x;
+		mouse_y -= scroll_factors.y;
 
 		weapon.fire(
 				entity_manager.weapon_entities[0],
 				entity_manager.projectile_entities,
 				mouse_x, 
-				mouse_y, 
-				textures
+				mouse_y
 				);
 	}
 }
@@ -355,21 +334,20 @@ void handle_keyboard(
 void update(
 		Entities& entity_manager,
 		Entity& entity, 
-		int scroll_factor_x, 
-		int scroll_factor_y
+		Vector2i& scroll_factors
 		) {
 	// Collisions -> left: 0, top: 1, right: 2, bottom: 3
 	for (int idx = 0; idx < (int)entity_manager.projectile_entities.size(); ++idx) {
 		if (
 				!entity_manager.projectile_entities[idx].alive
 					||
-				entity_manager.projectile_entities[idx].pos.x - scroll_factor_x < 0
+				entity_manager.projectile_entities[idx].pos.x - scroll_factors.x < 0
 					||
-				entity_manager.projectile_entities[idx].pos.x - scroll_factor_x > WINDOW_WIDTH
+				entity_manager.projectile_entities[idx].pos.x - scroll_factors.x > WINDOW_WIDTH
 					||
-				entity_manager.projectile_entities[idx].pos.y + scroll_factor_y < 0
+				entity_manager.projectile_entities[idx].pos.y + scroll_factors.y < 0
 					||
-				entity_manager.projectile_entities[idx].pos.y + scroll_factor_y > WINDOW_HEIGHT
+				entity_manager.projectile_entities[idx].pos.y + scroll_factors.y > WINDOW_HEIGHT
 			) {
 			// Remove projectile from vector.
 			if ((int)entity_manager.projectile_entities.size() > 0) {
@@ -384,7 +362,8 @@ void update(
 	
 	switch(entity.entity_type) {
 		case ENEMY_FLYING:
-			if (entity.distance_from_player.x < GROUND_SIZE * 8 && entity.pos.y == WINDOW_HEIGHT) {
+			// if (entity.distance_from_player.x < GROUND_SIZE * 8 && entity.pos.y == WINDOW_HEIGHT) {
+			if (entity.pos.y == entity.respawn_pos.y) {
 				entity.vel.y -= 1.5f * JUMP_SPEED;
 			}
 
@@ -396,8 +375,8 @@ void update(
 			}
 
 			// If below screen set at rest and y at WINDOW_HEIGHT.
-			if (entity.pos.y > WINDOW_HEIGHT) {
-				entity.pos.y = WINDOW_HEIGHT;
+			if (entity.pos.y > entity.respawn_pos.y) {
+				entity.pos.y = entity.respawn_pos.y;
 				entity.vel.y = 0.00f;
 			}
 			break;
@@ -423,7 +402,7 @@ void update(
 			break;
 
 		case PLAYER:
-			entity.alive = entity.health > 0;
+			entity.alive = (entity.health > 0);
 
 			if (entity.collisions[3]) {
 				entity.vel.y = 0.0f;
@@ -437,17 +416,16 @@ void update(
 			entity.pos.x += entity.vel.x;
 			entity.pos.y += entity.vel.y;
 
-			// Respawn if player falls off map.
-			if (entity.pos.y + scroll_factor_y > WINDOW_HEIGHT || !entity.alive) {
-				entity.alive = false;
+			if (entity.pos.y + scroll_factors.y > WINDOW_HEIGHT) {
+				// entity.alive = false;
 			}
 
 			// Keep player on screen.
 			if (entity.pos.x < 0) {
 				entity.pos.x = 0;
 			}
-			else if (entity.pos.x - scroll_factor_x + entity.width > WINDOW_WIDTH) {
-				entity.pos.x = WINDOW_WIDTH + scroll_factor_x - entity.width + 20;
+			else if (entity.pos.x - scroll_factors.x + entity.width > WINDOW_WIDTH) {
+				entity.pos.x = WINDOW_WIDTH + scroll_factors.x - entity.width + 20;
 			}
 
 			{
@@ -459,8 +437,8 @@ void update(
 					entity_manager.player_entity.pos.y + (entity_manager.player_entity.height / 1.5f)
 				};
 
-				float mouse_distance_x = mouse_x - barrel_pos.x + scroll_factor_x;
-				float mouse_distance_y = mouse_y - barrel_pos.y - scroll_factor_y;
+				float mouse_distance_x = mouse_x - barrel_pos.x + scroll_factors.x;
+				float mouse_distance_y = mouse_y - barrel_pos.y - scroll_factors.y;
 				float mouse_angle = std::atan2(mouse_distance_y, mouse_distance_x);
 
 				entity_manager.weapon_entities[0].pos.x = barrel_pos.x - entity_manager.weapon_entities[0].width / 3.0f;
@@ -474,21 +452,23 @@ void update(
 			entity.pos.y += entity.vel.y;
 			break;
 	}
+
+	memset(entity.collisions, false, sizeof(entity.collisions));
 }
 
 void respawn(
 		Entities& entities, 
-		RenderWindow& window, 
+		SDL_Renderer* renderer,
 		Weapon& weapon,
+		Vector2i& scroll_factors,
 		uint32_t level
 		) {
-	window.clear();
-	window.center_message("LEVEL " + std::to_string(level));
-	window.display();
+	clear_window(renderer);
+	center_message(renderer, "LEVEL " + std::to_string(level));
+	display(renderer);
 	SDL_Delay(2000);
 
-	window.scroll_factor_x = 0;
-	window.scroll_factor_y = 0;
+	scroll_factors = {0, 0};
 
 	entities.player_entity.alive  = true;
 	entities.player_entity.health = 100;

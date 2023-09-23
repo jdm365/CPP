@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "../include/render_window.hpp"
 #include "../include/entity_manager.hpp"
 #include "../include/entity.hpp"
 #include "../include/weapon.hpp"
@@ -13,8 +14,7 @@ void Weapon::fire(
 		Entity& weapon_entity, 
 		std::vector<Entity>& projectile_entities,
 		int adjusted_mouse_x, 
-		int adjusted_mouse_y,
-		Textures& textures
+		int adjusted_mouse_y
 		) {
 	// adjusted_mouse_x = mouse_x + scroll_factor_x;
 	// adjusted_mouse_y = mouse_y - scroll_factor_y;
@@ -36,7 +36,7 @@ void Weapon::fire(
 
 		int projectile_width, projectile_height;
 	
-		SDL_QueryTexture(textures.projectile_textures[projectile_type], NULL, NULL, &projectile_width, &projectile_height);
+		SDL_QueryTexture(projectile_textures[projectile_type], NULL, NULL, &projectile_width, &projectile_height);
 
 		float ratio = (float)projectile_height / (float)projectile_width;
 
@@ -47,7 +47,7 @@ void Weapon::fire(
 				(int)(10 * ratio),
 				PROJECTILE,
 				DYNAMIC,
-				textures.projectile_textures[projectile_type],
+				projectile_textures[projectile_type],
 				mouse_angle
 		);
 		

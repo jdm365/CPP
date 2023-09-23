@@ -9,13 +9,13 @@
 #include "../include/render_window.hpp"
 #include "../include/constants.h"
 #include "../include/weapon.hpp"
+#include "../include/math.hpp"
 
 struct Weapon;
 
 void detect_collisions(
 		Entities& entities,
-		int scroll_factor_x,
-		int scroll_factor_y
+		Vector2i& scroll_factors
 		);
 void _detect_collision(
 		Entity& src_entity, 
@@ -24,20 +24,18 @@ void _detect_collision(
 void update(
 		Entities& entity_manager,
 		Entity& entity, 
-		int scroll_factor_x, 
-		int scroll_factor_y
+		Vector2i& scroll_factors
 		);
 void handle_keyboard(
 		const uint8_t* keyboard_state,
 		Entities& entity_manager,
-		int& scroll_factor_x,
-		int& scroll_factor_y,
-		Textures& textures,
+		Vector2i& scroll_factors,
 		Weapon& weapon
 		);
 void respawn(
 		Entities& entities, 
-		RenderWindow& window, 
+		SDL_Renderer* renderer,
 		Weapon& weapon,
+		Vector2i& scroll_factors,
 		uint32_t level
 		);
