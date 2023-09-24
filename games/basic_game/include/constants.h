@@ -1,20 +1,30 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+
 // Textures
-#define GRASS_FILEPATH   			"assets/grass_texture.png"
-#define DIRT_FILEPATH   			"assets/dirt_texture.png"
-#define NAMEK_FILEPATH  			"assets/namek_texture.png"
-// #define PLAYER_FILEPATH		  		"assets/knight_texture.png"
-// #define PLAYER_FILEPATH		  		"assets/terminator_guy.png"
-#define PLAYER_FILEPATH		  		"assets/terminator_guy_base.png"
-#define ENERGY_BLASTER_FILEPATH		"assets/energy_blaster.png"
-#define KRISTIN_JUMP_FILEPATH		"assets/kristin_goggles.png"
-#define KRISTIN_MOUSTACHE_FILEPATH	"assets/kristin_moustache.png"
-// #define ENERGY_PROJECTILE_FILEPATH	"assets/energy_projectile.png"
-#define BULLET_FILEPATH				"assets/bullet.png"
-#define CHAINGUN_FILEPATH				"assets/chain_gun.png"
-#define AMMO_FILEPATH				"assets/ammo_texture.png"
+#define GRASS_FILEPATH   			"assets/textures/grass_texture.png"
+#define DIRT_FILEPATH   			"assets/textures/dirt_texture.png"
+#define NAMEK_FILEPATH  			"assets/textures/namek_texture.png"
+// #define PLAYER_FILEPATH		  		"assets/textures/knight_texture.png"
+// #define PLAYER_FILEPATH		  		"assets/textures/terminator_guy.png"
+#define PLAYER_FILEPATH		  		"assets/textures/terminator_guy_base.png"
+#define ENERGY_BLASTER_FILEPATH		"assets/textures/energy_blaster.png"
+#define KRISTIN_JUMP_FILEPATH		"assets/textures/kristin_goggles.png"
+#define KRISTIN_MOUSTACHE_FILEPATH	"assets/textures/kristin_moustache.png"
+// #define ENERGY_PROJECTILE_FILEPATH	"assets/textures/energy_projectile.png"
+#define BULLET_FILEPATH				"assets/textures/bullet.png"
+#define CHAINGUN_FILEPATH			"assets/textures/chain_gun.png"
+#define AMMO_FILEPATH				"assets/textures/ammo_texture.png"
+
+// Sounds
+#define GUNSHOT_FILEPATH			"assets/sounds/gunshot.wav"
+#define RELOAD_FILEPATH				"assets/sounds/reload.wav"
+#define BOING_FILEPATH				"assets/sounds/boing.wav"
+#define DYING_FILEPATH				"assets/sounds/dying.wav"
+
+#define DARK_HALLS_FILEPATH			"assets/sounds/dark_halls.mp3"
+#define IMPS_SONG_FILEPATH			"assets/sounds/imps_song.mp3"
 
 #define LEVEL_DESIGN_FILEPATH  		"assets/levels/level_2.csv"
 
@@ -28,7 +38,7 @@
 // Animation factors
 #define FPS						60
 #define PLAYER_SPEED			8
-#define JUMP_SPEED				16
+#define JUMP_SPEED				18
 #define GRAVITY					(float)0.60f
 
 // Enemy behavior

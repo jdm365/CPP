@@ -13,7 +13,9 @@ int main(int argc, char* args[]) {
 	SDL_Window*   window   = NULL;
 	SDL_Renderer* renderer = NULL;
 	init_window("KRISTIN DESTROY", &window, &renderer);
+
 	load_textures(renderer);
+	load_sounds();
 
 	const std::string level_1 = "assets/levels/level_1.csv";
 	const std::string level_2 = "assets/levels/level_2.csv";
@@ -24,6 +26,7 @@ int main(int argc, char* args[]) {
 	Entities entities(level_1);
 
 	int level_width = entities.level_width;
+	int level_height = entities.level_height;
 
 	uint32_t level_number = 0;
 	int 	 frame_idx 	  = 0;
@@ -36,7 +39,7 @@ int main(int argc, char* args[]) {
 			CHAINGUN,
 			BULLET,
 			"CHAINGUN",
-			100,
+			150,
 			45,
 			10,
 			weapon_textures[CHAINGUN]
@@ -45,6 +48,18 @@ int main(int argc, char* args[]) {
 
 	// Game Loop
 	while (true) {
+		// Play music if not done playing
+		if (Mix_PlayingMusic() == 0) {
+			int rand_val = rand() % 2;
+			std::cout << rand_val << std::endl;
+			if (rand_val == 0) {
+				Mix_PlayMusic(imps_song, -1);
+			} 
+			else {
+				Mix_PlayMusic(dark_halls, -1);
+			}
+		}
+
 		// Get keyboard state
 		SDL_PumpEvents();
 		handle_keyboard(
@@ -61,7 +76,10 @@ int main(int argc, char* args[]) {
 				);
 		if (entities.player_entity.reload) {
 			entities.player_entity.reload = false;
-			chaingun.ammo = chaingun.max_ammo;
+			chaingun.ammo = std::min(chaingun.ammo + 50, chaingun.max_ammo);
+
+			// Play reload sound
+			Mix_PlayChannel(-1, reload_sound, 0);
 		}
 
 		clear_window(renderer);
@@ -87,11 +105,18 @@ int main(int argc, char* args[]) {
 				chaingun.ammo
 				);
 
+		if (entities.player_entity.pos.y > level_height) {
+			entities.player_entity.alive = false;
+		}
+
 		if (!entities.player_entity.alive) {
 			center_message(renderer, "YOU DIED");
 			display(renderer);
 			SDL_PumpEvents();
+			// Pause music
+			Mix_PauseMusic();
 			SDL_Delay(2000);
+			Mix_ResumeMusic();
 			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
 			continue;
 		}
@@ -102,7 +127,9 @@ int main(int argc, char* args[]) {
 			level_number++;
 			center_message(renderer, "LEVEL COMPLETE");
 			display(renderer);
+			Mix_PauseMusic();
 			SDL_Delay(3000);
+			Mix_ResumeMusic();
 			entities = Entities(levels[level_number]);
 			level_width = entities.level_width;
 			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);

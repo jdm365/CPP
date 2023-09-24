@@ -153,6 +153,26 @@ void _detect_collision(
 					dst_entity.health -= 100;
 					src_entity.vel.y = dst_entity.vel.y - JUMP_SPEED;
 					dst_entity.alive = false;
+
+					// Play boing sound
+					Mix_PlayChannel(-1, boing_sound, 0);
+
+					Mix_Volume(-1, MIX_MAX_VOLUME / 4);
+
+					if (boing_sound == NULL) {
+						printf("Mix_PlayChannel: %s\n", Mix_GetError());
+					}
+
+					// Play dying sound
+					/*
+					Mix_PlayChannel(-1, dying_sound, 0);
+
+					Mix_Volume(-1, MIX_MAX_VOLUME / 2);
+
+					if (dying_sound == NULL) {
+						printf("Mix_PlayChannel: %s\n", Mix_GetError());
+					}
+					*/
 					return;
 				}
 			}
@@ -165,6 +185,9 @@ void _detect_collision(
 
 			if (local_collisions[3] && !src_entity.collisions[3]) {
 				src_entity.pos.y = dst_entity.pos.y - src_entity.height;
+			}
+			else if (local_collisions[1]) {
+				src_entity.pos.y = dst_entity.pos.y + dst_entity.height;
 			}
 			else if (local_collisions[0]) {
 				src_entity.pos.x = dst_entity.pos.x + dst_entity.width + 1;
@@ -372,6 +395,17 @@ void update(
 
 			if (entity.health <= 0) {
 				entity.alive = false;
+
+				// Play dying sound
+				/*
+				Mix_PlayChannel(-1, dying_sound, 0);
+
+				Mix_Volume(-1, MIX_MAX_VOLUME / 2);
+
+				if (dying_sound == NULL) {
+					printf("Mix_PlayChannel: %s\n", Mix_GetError());
+				}
+				*/
 			}
 
 			// If below screen set at rest and y at WINDOW_HEIGHT.
@@ -398,6 +432,17 @@ void update(
 
 			if (entity.health <= 0) {
 				entity.alive = false;
+
+				// Play dying sound
+				/*
+				Mix_PlayChannel(-1, dying_sound, 0);
+
+				Mix_Volume(-1, MIX_MAX_VOLUME / 4);
+
+				if (dying_sound == NULL) {
+					printf("Mix_PlayChannel: %s\n", Mix_GetError());
+				}
+				*/
 			}
 			break;
 
@@ -408,6 +453,9 @@ void update(
 				entity.vel.y = 0.0f;
 				entity.on_ground = true;
 			}
+			else if (entity.collisions[1]) {
+				entity.vel.y = GRAVITY;
+			}
 			else {
 				entity.vel.y += GRAVITY;
 				entity.on_ground = false;
@@ -415,10 +463,6 @@ void update(
 
 			entity.pos.x += entity.vel.x;
 			entity.pos.y += entity.vel.y;
-
-			if (entity.pos.y + scroll_factors.y > WINDOW_HEIGHT) {
-				// entity.alive = false;
-			}
 
 			// Keep player on screen.
 			if (entity.pos.x < 0) {

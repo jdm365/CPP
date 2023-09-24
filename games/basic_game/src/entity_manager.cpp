@@ -25,15 +25,12 @@ Entities::Entities(const std::string level_design_filepath) {
 			);
 
 	std::vector<std::vector<int8_t>> level_design = read_level_csv(level_design_filepath);
-	level_width = (int)level_design[0].size() * GROUND_SIZE;
-	int level_height = (int)level_design.size() * GROUND_SIZE;
+	level_width  = (int)level_design[0].size() * GROUND_SIZE;
+	level_height = (int)level_design.size() * GROUND_SIZE;
 
 	// Let origin be top left corner
 	int x_offset = 0;
 	int y_offset = 0;
-
-	int idx = 0;
-
 
 	// Query texture dimensions for grass dirt enemies and ammo
 	int grass_width, grass_height;
@@ -52,8 +49,8 @@ Entities::Entities(const std::string level_design_filepath) {
 	// Top left to bottom right
 	for (std::vector<int8_t>& row: level_design) {
 		x_offset = 0;
+		y_offset += GROUND_SIZE;
 		for (const int8_t& tile_id: row) {
-			idx++;
 			x_offset += GROUND_SIZE;
 			switch(tile_id) {
 				case -1:
@@ -86,7 +83,7 @@ Entities::Entities(const std::string level_design_filepath) {
 					// Define enemy_textures[WALKING] entity
 					walking_enemy_entities.emplace_back(
 							Vector2f {(float)x_offset, (float)y_offset - walking_enemy_height},
-							Vector2f {0, 0},
+							Vector2f {0.25f * PLAYER_SPEED, 0},
 							64,
 							96,
 							ENEMY_WALKING,
@@ -120,9 +117,7 @@ Entities::Entities(const std::string level_design_filepath) {
 					break;
 			}
 		}
-		y_offset += GROUND_SIZE;
 	}
-	std::cout << "Number of tiles: " << idx << std::endl;
 
 
 	/*

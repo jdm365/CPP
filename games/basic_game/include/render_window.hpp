@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 struct Entities;
 
@@ -20,6 +21,8 @@ void init_window(
 		SDL_Renderer** renderer
 		);
 SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath);
+Mix_Chunk* load_wav(std::string filepath);
+Mix_Music* load_mp3(std::string filepath);
 void clear_window(SDL_Renderer* renderer);
 int get_sprite_index(bool is_standing_still, const int frame_idx);
 void update_scroll_factors(
@@ -60,7 +63,7 @@ void weapon_message(
 		int ammo
 		);
 
-// Statically load all textures into array
+// Statically load all textures
 // Use load_texture() to load textures
 extern SDL_Texture* background_texture;
 extern SDL_Texture* player_texture;
@@ -72,6 +75,17 @@ extern SDL_Texture* ammo_texture;
 
 void load_textures(SDL_Renderer* renderer);
 
+
+// Statically load all sound effects
+extern Mix_Chunk* gunshot_sound;
+extern Mix_Chunk* boing_sound;
+extern Mix_Chunk* dying_sound;
+extern Mix_Chunk* reload_sound;
+
+extern Mix_Music* dark_halls;
+extern Mix_Music* imps_song;
+
+void load_sounds();
 
 static const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
 	Vector2f {19, 11},

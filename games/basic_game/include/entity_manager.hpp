@@ -42,6 +42,7 @@ struct Entities {
 	Entity background_entity;
 	
 	int level_width;
+	int level_height;
 
 	Entities(const std::string level_design_filepath);
 

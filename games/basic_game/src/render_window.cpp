@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "render_window.hpp"
 #include "entity.hpp"
@@ -31,7 +32,24 @@ void load_textures(SDL_Renderer* renderer) {
 	ammo_texture                = load_texture(renderer, AMMO_FILEPATH);
 }
 
-// RenderWindow::RenderWindow(const char* title, int width, int height) {
+Mix_Chunk* gunshot_sound;
+Mix_Chunk* reload_sound;
+Mix_Chunk* boing_sound;
+Mix_Chunk* dying_sound;
+
+Mix_Music* dark_halls;
+Mix_Music* imps_song;
+
+void load_sounds() {
+	gunshot_sound = load_wav(GUNSHOT_FILEPATH);
+	reload_sound  = load_wav(RELOAD_FILEPATH);
+	boing_sound   = load_wav(BOING_FILEPATH);
+	dying_sound   = load_wav(DYING_FILEPATH);
+
+	dark_halls    = load_mp3(DARK_HALLS_FILEPATH);
+	imps_song     = load_mp3(IMPS_SONG_FILEPATH);
+}
+
 void init_window(std::string title, SDL_Window** window, SDL_Renderer** renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) > 0) {
 		std::cout << "SDL initialization failed." << SDL_GetError() << std::endl;
@@ -39,6 +57,12 @@ void init_window(std::string title, SDL_Window** window, SDL_Renderer** renderer
 	if (!(IMG_Init(IMG_INIT_PNG))) {
 		std::cout << "IMG_Init failed" << SDL_GetError() << std::endl;
 	}
+
+	// Initialize SDL_mixer
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+    }
+	Mix_AllocateChannels(90);
 
 	*window = SDL_CreateWindow(
 			title.c_str(),
@@ -64,7 +88,6 @@ void init_window(std::string title, SDL_Window** window, SDL_Renderer** renderer
 }
 
 
-// SDL_Texture* RenderWindow::load_texture(const char* filepath) {
 SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath) {
 	SDL_Texture* texture = NULL;
 	texture = IMG_LoadTexture(renderer, filepath.c_str());
@@ -83,14 +106,32 @@ SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath) {
 	return texture;
 }
 
+Mix_Chunk* load_wav(std::string filepath) {
+	Mix_Chunk* sound = NULL;
+	sound = Mix_LoadWAV(filepath.c_str());
 
-// void RenderWindow::clear() {
+	if (sound == NULL) {
+		std::cout << "Failed to load a sound." << SDL_GetError() << std::endl;
+	}
+	return sound;
+}
+
+Mix_Music* load_mp3(std::string filepath) {
+	Mix_Music* sound = NULL;
+	sound = Mix_LoadMUS(filepath.c_str());
+
+	if (sound == NULL) {
+		std::cout << "Failed to load a sound." << SDL_GetError() << std::endl;
+	}
+	return sound;
+}
+
+
 void clear_window(SDL_Renderer* renderer) {
 	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 
-// int RenderWindow::get_sprite_index(Vector2f& player_pos, Vector2f& player_vel) {
 int get_sprite_index(bool is_standing_still, const int frame_idx) {
 	// 60 FPS
 	// Complete 7 phase walking animation in 1 second.
@@ -129,7 +170,6 @@ void update_scroll_factors(
 }
 
 
-// void RenderWindow::render_entity(Entity& entity) {
 void render_entity(
 		SDL_Renderer* renderer, 
 		Entity& entity, 

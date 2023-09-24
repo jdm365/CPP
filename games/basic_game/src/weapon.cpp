@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "../include/render_window.hpp"
 #include "../include/entity_manager.hpp"
@@ -53,6 +54,14 @@ void Weapon::fire(
 		
 		ammo--;
 		fps_cntr = (int)(60 / rounds_per_second);
+
+		Mix_Volume(-1, MIX_MAX_VOLUME / 16);
+
+		Mix_PlayChannel(-1, gunshot_sound, 0);
+
+		if (gunshot_sound == NULL) {
+			printf("Mix_PlayChannel: %s\n", Mix_GetError());
+		}
 	}
 	else if (fps_cntr > 0) {
 		fps_cntr--;
