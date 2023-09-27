@@ -1,3 +1,4 @@
+#include <random>
 #include <string>
 
 #include <SDL2/SDL.h>
@@ -25,7 +26,7 @@ int main(int argc, char* args[]) {
 
 	Entities entities(level_1);
 
-	int level_width = entities.level_width;
+	int level_width  = entities.level_width;
 	int level_height = entities.level_height;
 
 	uint32_t level_number = 0;
@@ -33,54 +34,34 @@ int main(int argc, char* args[]) {
 	int 	 time_elapsed = 0;
 
 	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
+	uint8_t 	   last_keyboard_state[SDL_NUM_SCANCODES] = {0};
+	bool 		   prev_left_click = false;
 
-	// Define weapons
-	Weapon chaingun(
-			CHAINGUN,
-			BULLET,
-			"CHAINGUN",
-			150,
-			45,
-			10,
-			weapon_textures[CHAINGUN]
-			);
-	respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
+	respawn(entities, renderer, scroll_factors, level_number + 1);
 
 	// Game Loop
 	while (true) {
 		// Play music if not done playing
 		if (Mix_PlayingMusic() == 0) {
-			int rand_val = rand() % 2;
-			std::cout << rand_val << std::endl;
-			if (rand_val == 0) {
-				Mix_PlayMusic(imps_song, -1);
-			} 
-			else {
-				Mix_PlayMusic(dark_halls, -1);
-			}
+			Mix_PlayMusic(imps_song, -1);
+			// Mix_PlayMusic(dark_halls, -1);
 		}
 
 		// Get keyboard state
 		SDL_PumpEvents();
 		handle_keyboard(
+				last_keyboard_state,
 				keyboard_state,
+				prev_left_click,
 				entities,
-				scroll_factors,
-				chaingun
+				scroll_factors
 				);
-
+		memcpy(last_keyboard_state, keyboard_state, SDL_NUM_SCANCODES);
 
 		detect_collisions(
 				entities,
 				scroll_factors
 				);
-		if (entities.player_entity.reload) {
-			entities.player_entity.reload = false;
-			chaingun.ammo = std::min(chaingun.ammo + 50, chaingun.max_ammo);
-
-			// Play reload sound
-			Mix_PlayChannel(-1, reload_sound, 0);
-		}
 
 		clear_window(renderer);
 
@@ -95,14 +76,12 @@ int main(int argc, char* args[]) {
 				renderer,
 				entities.player_entity.health * 0.01f
 				);
-		render_score(
-				renderer,
-				entities.player_entity.score
-				);
+		// render_score(renderer, 0);
+		uint8_t active_weapon = entities.player_entity.active_weapon_id;
 		weapon_message(
 				renderer,
-				chaingun.name, 
-				chaingun.ammo
+				entities.weapon_entities[active_weapon].name,
+				entities.weapon_entities[active_weapon].ammo
 				);
 
 		if (entities.player_entity.pos.y > level_height) {
@@ -117,7 +96,7 @@ int main(int argc, char* args[]) {
 			Mix_PauseMusic();
 			SDL_Delay(2000);
 			Mix_ResumeMusic();
-			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
+			respawn(entities, renderer, scroll_factors, level_number + 1);
 			continue;
 		}
 
@@ -132,7 +111,7 @@ int main(int argc, char* args[]) {
 			Mix_ResumeMusic();
 			entities = Entities(levels[level_number]);
 			level_width = entities.level_width;
-			respawn(entities, renderer, chaingun, scroll_factors, level_number + 1);
+			respawn(entities, renderer, scroll_factors, level_number + 1);
 			continue;
 		}
 

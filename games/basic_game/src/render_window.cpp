@@ -16,7 +16,7 @@ SDL_Texture* background_texture;
 SDL_Texture* player_texture;
 SDL_Texture* terrain_textures[2];
 SDL_Texture* enemy_textures[2];
-SDL_Texture* weapon_textures[1];
+SDL_Texture* weapon_textures[2];
 SDL_Texture* projectile_textures[1];
 SDL_Texture* ammo_texture;
 
@@ -28,12 +28,18 @@ void load_textures(SDL_Renderer* renderer) {
 	enemy_textures[WALKING]   	= load_texture(renderer, KRISTIN_MOUSTACHE_FILEPATH);
 	enemy_textures[FLYING]    	= load_texture(renderer, KRISTIN_JUMP_FILEPATH);
 	weapon_textures[CHAINGUN]   = load_texture(renderer, CHAINGUN_FILEPATH);
+	weapon_textures[PISTOL]     = load_texture(renderer, PISTOL_FILEPATH);
 	projectile_textures[BULLET] = load_texture(renderer, BULLET_FILEPATH);
 	ammo_texture                = load_texture(renderer, AMMO_FILEPATH);
+
+	if (weapon_textures[PISTOL] == NULL) {
+		std::cout << "Pistol texture is NULL" << std::endl;
+	}
 }
 
 Mix_Chunk* gunshot_sound;
 Mix_Chunk* reload_sound;
+Mix_Chunk* empty_chamber_sound;
 Mix_Chunk* boing_sound;
 Mix_Chunk* dying_sound;
 
@@ -41,13 +47,14 @@ Mix_Music* dark_halls;
 Mix_Music* imps_song;
 
 void load_sounds() {
-	gunshot_sound = load_wav(GUNSHOT_FILEPATH);
-	reload_sound  = load_wav(RELOAD_FILEPATH);
-	boing_sound   = load_wav(BOING_FILEPATH);
-	dying_sound   = load_wav(DYING_FILEPATH);
+	gunshot_sound 		= load_wav(GUNSHOT_FILEPATH);
+	reload_sound  		= load_wav(RELOAD_FILEPATH);
+	empty_chamber_sound = load_wav(EMPTY_CHAMBER_FILEPATH);
+	boing_sound   		= load_wav(BOING_FILEPATH);
+	dying_sound   		= load_wav(DYING_FILEPATH);
 
-	dark_halls    = load_mp3(DARK_HALLS_FILEPATH);
-	imps_song     = load_mp3(IMPS_SONG_FILEPATH);
+	dark_halls    		= load_mp3(DARK_HALLS_FILEPATH);
+	imps_song     		= load_mp3(IMPS_SONG_FILEPATH);
 }
 
 void init_window(std::string title, SDL_Window** window, SDL_Renderer** renderer) {
@@ -169,6 +176,259 @@ void update_scroll_factors(
 	scroll_factors.y = std::max(scroll_factors.y, -99 * GROUND_SIZE + WINDOW_HEIGHT);
 }
 
+void render_player(
+	SDL_Renderer* renderer, 
+	PlayerEntity& player_entity, 
+	const Vector2i& scroll_factors,
+	const int frame_idx
+	) {
+	if (!player_entity.alive) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(player_entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+
+	int step_index = get_sprite_index((bool)(player_entity.vel.x == 0), frame_idx);
+
+	Vector2f _src;
+	if (player_entity.vel.x == 0.0f) {
+		_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
+	}
+	else {
+		_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
+	}
+	src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
+
+	src.w = PLAYER_WIDTH_SRC;
+	src.h = PLAYER_HEIGHT_SRC - 1;
+
+	dst.x = player_entity.pos.x - scroll_factors.x;
+	dst.y = player_entity.pos.y + scroll_factors.y;
+	dst.w = player_entity.width;
+	dst.h = player_entity.height;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			player_entity.texture,
+			&src, 
+			&dst, 
+			player_entity.angle_rad * 180 / M_PI,
+			NULL, 
+			player_entity.facing_right ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL
+			);
+}
+
+void render_enemy(
+		SDL_Renderer* renderer,
+		EnemyEntity& enemy_entity,
+		const Vector2i& scroll_factors
+		) {
+	if (!enemy_entity.alive) return;
+	if (enemy_entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
+	if (enemy_entity.pos.x + enemy_entity.width < scroll_factors.x) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(enemy_entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = enemy_entity.pos.x - scroll_factors.x;
+	dst.y = enemy_entity.pos.y + scroll_factors.y;
+	dst.w = enemy_entity.width;
+	dst.h = enemy_entity.height;
+
+	enemy_entity.facing_right = enemy_entity.vel.x > 0.0f;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			enemy_entity.texture,
+			&src, 
+			&dst, 
+			enemy_entity.angle_rad * 180 / M_PI,
+			NULL, 
+			!enemy_entity.facing_right ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL
+			);
+}
+
+void render_projectile(
+		SDL_Renderer* renderer,
+		ProjectileEntity& projectile_entity,
+		const Vector2i& scroll_factors
+		) {
+	if (!projectile_entity.alive) return;
+	if (projectile_entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
+	if (projectile_entity.pos.x + projectile_entity.width < scroll_factors.x) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(projectile_entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = projectile_entity.pos.x - scroll_factors.x;
+	dst.y = projectile_entity.pos.y + scroll_factors.y;
+	dst.w = projectile_entity.width;
+	dst.h = projectile_entity.height;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			projectile_entity.texture,
+			&src, 
+			&dst, 
+			projectile_entity.angle_rad * 180 / M_PI,
+			NULL, 
+			SDL_FLIP_NONE
+			);
+}
+
+void render_pickup(
+		SDL_Renderer* renderer,
+		PickupEntity& pickup_entity,
+		const Vector2i& scroll_factors
+		) {
+	if (!pickup_entity.alive) return;
+	if (pickup_entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
+	if (pickup_entity.pos.x + pickup_entity.width < scroll_factors.x) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(pickup_entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = pickup_entity.pos.x - scroll_factors.x;
+	dst.y = pickup_entity.pos.y + scroll_factors.y;
+	dst.w = pickup_entity.width;
+	dst.h = pickup_entity.height;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			pickup_entity.texture,
+			&src, 
+			&dst, 
+			pickup_entity.angle_rad * 180 / M_PI,
+			NULL, 
+			SDL_FLIP_NONE
+			);
+}
+
+void render_background(
+		SDL_Renderer* renderer,
+		BackgroundEntity& entity,
+		const Vector2i& scroll_factors
+		) {
+	SDL_Point size;
+	SDL_QueryTexture(entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = 0;
+	dst.y = 0;
+	dst.w = WINDOW_WIDTH;
+	dst.h = WINDOW_HEIGHT;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			entity.texture,
+			&src, 
+			&dst, 
+			0,
+			NULL, 
+			SDL_FLIP_NONE
+			);
+}
+
+void render_terrain(
+		SDL_Renderer* renderer,
+		GroundEntity& entity,
+		const Vector2i& scroll_factors
+		) {
+	if (!entity.alive) return;
+	if (entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
+	if (entity.pos.x + entity.width < scroll_factors.x) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = entity.pos.x - scroll_factors.x;
+	dst.y = entity.pos.y + scroll_factors.y;
+	dst.w = entity.width;
+	dst.h = entity.height;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			entity.texture,
+			&src, 
+			&dst, 
+			entity.angle_rad * 180 / M_PI,
+			NULL, 
+			SDL_FLIP_NONE
+			);
+}
+
+void render_weapon(
+		SDL_Renderer* renderer,
+		WeaponEntity& weapon_entity,
+		const Vector2i& scroll_factors
+		) {
+	if (!weapon_entity.alive) return;
+	if (weapon_entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
+	if (weapon_entity.pos.x + weapon_entity.width < scroll_factors.x) return;
+
+	SDL_Point size;
+	SDL_QueryTexture(weapon_entity.texture, NULL, NULL, &size.x, &size.y);
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	SDL_Rect src, dst;
+	src.x = 0;
+	src.y = 0;
+	src.w = size.x;
+	src.h = size.y;
+
+	dst.x = weapon_entity.pos.x - scroll_factors.x;
+	dst.y = weapon_entity.pos.y + scroll_factors.y;
+	dst.w = weapon_entity.width;
+	dst.h = weapon_entity.height;
+
+	SDL_RenderCopyEx(
+			renderer, 
+			weapon_entity.texture,
+			&src, 
+			&dst, 
+			weapon_entity.angle_rad * 180 / M_PI,
+			NULL, 
+			(weapon_entity.angle_rad > M_PI / 2 || weapon_entity.angle_rad < -M_PI / 2) ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE
+			);
+}
+
+
 
 void render_entity(
 		SDL_Renderer* renderer, 
@@ -256,93 +516,78 @@ void render_entity(
 			);
 }
 
-// void RenderWindow::render_all(Entities& entities) {
 void render_all(
 		SDL_Renderer* renderer, 
 		Entities& entities, 
 		const Vector2i& scroll_factors, 
 		const int frame_idx
 		) {
-	render_entity(
-			renderer,
-			entities.background_entity,
-			scroll_factors,
-			frame_idx
-			);
-	for (Entity& entity: entities.walking_enemy_entities) {
-		render_entity(
+	render_background(renderer, entities.background_entity, scroll_factors);
+
+	for (EnemyEntity& entity: entities.walking_enemy_entities) {
+		render_enemy(
 				renderer,
 				entity,
-				scroll_factors,
-				frame_idx
+				scroll_factors
 				);
 	}
 
-	for (Entity& entity: entities.flying_enemy_entities) {
-		render_entity(
+	for (EnemyEntity& entity: entities.flying_enemy_entities) {
+		render_enemy(
 				renderer,
 				entity,
-				scroll_factors,
-				frame_idx
+				scroll_factors
 				);
 	}
 
-	for (Entity& entity: entities.ground_entities) {
-		render_entity(
+	for (GroundEntity& entity: entities.ground_entities) {
+		render_terrain(
 				renderer,
 				entity,
-				scroll_factors,
-				frame_idx
+				scroll_factors
 				);
 	}
 
-	for (Entity& entity: entities.projectile_entities) {
-		render_entity(
+	for (ProjectileEntity& entity: entities.projectile_entities) {
+		render_projectile(
 				renderer,
 				entity,
-				scroll_factors,
-				frame_idx
+				scroll_factors
 				);
 	}
 
-	render_entity(
+	render_player(
 			renderer,
 			entities.player_entity,
 			scroll_factors,
 			frame_idx
 			);
 
-	for (Entity& entity: entities.weapon_entities) {
-		render_entity(
-				renderer,
-				entity,
-				scroll_factors,
-				frame_idx
-				);
-	}
+	uint8_t active_weapon = entities.player_entity.active_weapon_id;
+	render_weapon(
+			renderer,
+			entities.weapon_entities[active_weapon],
+			scroll_factors
+			);
 
-	for (Entity& entity: entities.ammo_entities) {
-		render_entity(
+	for (PickupEntity& entity: entities.ammo_entities) {
+		render_pickup(
 				renderer,
 				entity,
-				scroll_factors,
-				frame_idx
+				scroll_factors
 				);
 	}
 }
 
-// void RenderWindow::display() {
 void display(SDL_Renderer* renderer) {
 	SDL_RenderPresent(renderer);
 }
 
-// void RenderWindow::quit() {
 void quit(SDL_Window* window) {
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
-// void RenderWindow::tick() {
 void tick(int& last_time, int& frame_idx) {
 	int time_elapsed = (int)SDL_GetTicks() - last_time;
 	int delay_time   = (int)1000 / FPS - time_elapsed;
@@ -502,7 +747,6 @@ void center_message(SDL_Renderer* renderer, std::string text) {
    TTF_CloseFont(font);
 }
 
-// void RenderWindow::weapon_message(std::string& weapon_name, int ammo) {
 void weapon_message(SDL_Renderer* renderer, std::string& weapon_name, int ammo) {
 
    SDL_Color color = { 255, 255, 255 };
@@ -510,6 +754,11 @@ void weapon_message(SDL_Renderer* renderer, std::string& weapon_name, int ammo) 
    // Display Score
    std::string weapon_name_text = "Weapon: " + weapon_name;
    std::string ammo_text 		= "Ammo: " + std::to_string(ammo);
+
+   if (ammo > 1000) {
+	   ammo_text = "Ammo: ∞";
+   }
+
    int num_chars_0 = weapon_name_text.length();
    int num_chars_1 = ammo_text.length();
 
@@ -519,13 +768,14 @@ void weapon_message(SDL_Renderer* renderer, std::string& weapon_name, int ammo) 
 		   );
    if (font == NULL) {
 	  std::cout << "Failed to load font." << std::endl;
-	  // std::exit(1);
    }
 
-   SDL_Surface* surface_message_0 = TTF_RenderText_Solid(font, weapon_name_text.c_str(), color);
-   SDL_Surface* surface_message_1 = TTF_RenderText_Solid(font, ammo_text.c_str(), color);
-   SDL_Texture* message_0 		= SDL_CreateTextureFromSurface(renderer, surface_message_0);
-   SDL_Texture* message_1 		= SDL_CreateTextureFromSurface(renderer, surface_message_1);
+   // Create a texture from the surface
+   SDL_Surface *surface_0 = TTF_RenderUTF8_Blended(font, weapon_name_text.c_str(), color);
+   SDL_Surface *surface_1 = TTF_RenderUTF8_Blended(font, ammo_text.c_str(), color);
+	
+   SDL_Texture *message_0 = SDL_CreateTextureFromSurface(renderer, surface_0);
+   SDL_Texture *message_1 = SDL_CreateTextureFromSurface(renderer, surface_1);
 
    // Display In Top Left 
    const int message_width_0	= 16 * num_chars_0;
@@ -550,8 +800,8 @@ void weapon_message(SDL_Renderer* renderer, std::string& weapon_name, int ammo) 
    SDL_RenderCopy(renderer, message_0, NULL, &message_rect_0);
    SDL_RenderCopy(renderer, message_1, NULL, &message_rect_1);
 
-   SDL_FreeSurface(surface_message_0);
-   SDL_FreeSurface(surface_message_1);
+   SDL_FreeSurface(surface_0);
+   SDL_FreeSurface(surface_1);
    SDL_DestroyTexture(message_0);
    SDL_DestroyTexture(message_1);
    TTF_CloseFont(font);

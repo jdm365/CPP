@@ -14,6 +14,7 @@
 
 Entities::Entities(const std::string level_design_filepath) {
 	// Define background entity
+	/*
 	background_entity = Entity(
 			Vector2f {0, 0},							// position 
 			Vector2f {0, 0},							// velocity 
@@ -23,6 +24,8 @@ Entities::Entities(const std::string level_design_filepath) {
 			TRANSPARENT,								// collision type
 			background_texture							// texture	
 			);
+	*/
+	background_entity = BackgroundEntity(background_texture);
 
 	std::vector<std::vector<int8_t>> level_design = read_level_csv(level_design_filepath);
 	level_width  = (int)level_design[0].size() * GROUND_SIZE;
@@ -57,6 +60,7 @@ Entities::Entities(const std::string level_design_filepath) {
 					break;
 				case 0:
 					// Define grass entity
+					/*
 					ground_entities.emplace_back(
 							Vector2f {(float)x_offset, (float)y_offset},
 							Vector2f {0, 0},
@@ -64,6 +68,15 @@ Entities::Entities(const std::string level_design_filepath) {
 							GROUND_SIZE,
 							GROUND,
 							STATIC,
+							terrain_textures[GRASS]
+							);
+					*/
+					ground_entities.emplace_back(
+							Vector2f {(float)x_offset, (float)y_offset},
+							Vector2f {0, 0},
+							GROUND_SIZE,
+							GROUND_SIZE,
+							GRASS,
 							terrain_textures[GRASS]
 							);
 					break;
@@ -74,8 +87,7 @@ Entities::Entities(const std::string level_design_filepath) {
 							Vector2f {0, 0},
 							GROUND_SIZE,
 							GROUND_SIZE,
-							GROUND,
-							STATIC,
+							DIRT,
 							terrain_textures[DIRT]
 							);
 					break;
@@ -87,7 +99,6 @@ Entities::Entities(const std::string level_design_filepath) {
 							64,
 							96,
 							ENEMY_WALKING,
-							DYNAMIC,
 							enemy_textures[WALKING]
 							);
 					break;
@@ -99,7 +110,6 @@ Entities::Entities(const std::string level_design_filepath) {
 							64,
 							96,
 							AMMO,
-							STATIC,
 							ammo_texture
 							);
 					break;
@@ -111,116 +121,12 @@ Entities::Entities(const std::string level_design_filepath) {
 							96,
 							128,
 							ENEMY_FLYING,
-							DYNAMIC,
 							enemy_textures[FLYING]
 							);
 					break;
 			}
 		}
 	}
-
-
-	/*
-	int width_counter = 0;
-
-	// Define ground entities
-	for (int idx = 0; idx < (int)level_design.size(); ++idx) {
-		if (level_design[idx] == -99) {
-			width_counter++;
-			continue;
-		}
-		else if (level_design[idx] == -50) {
-			int gap_width = GROUND_SIZE * (2 * width_counter + 1);
-
-			SDL_Point size;
-			SDL_QueryTexture(
-					enemy_textures[FLYING],
-					NULL, 
-					NULL, 
-					&size.x, 
-					&size.y
-					);
-			float scale_height = size.y / (float)size.x;
-			float texture_width  = gap_width - 2 * GROUND_SIZE;
-			float texture_height = scale_height * texture_width;
-
-			float enemy_x_pos = (idx + 1.5f) * GROUND_SIZE - gap_width * 0.5f;
-			float enemy_y_pos = WINDOW_HEIGHT + 2 * (int)texture_height;
-
-			flying_enemy_entities.emplace_back(
-					Vector2f {enemy_x_pos, enemy_y_pos}, 							// position
-					Vector2f {0, 0},												// velocity 
-					texture_width,													// width
-					texture_height,													// height
-					ENEMY_FLYING,													// entity type
-					DYNAMIC,														// collision type
-					enemy_textures[FLYING]											// texture	
-					);
-			continue;
-		}
-		else if (level_design[idx] == -25) {
-			SDL_Point size;
-			SDL_QueryTexture(
-					enemy_textures[WALKING],
-					NULL, 
-					NULL, 
-					&size.x, 
-					&size.y
-					);
-			float scale_height = size.y / (float)size.x;
-			float texture_width  = 3 * GROUND_SIZE;
-			float texture_height = scale_height * texture_width;
-
-			float enemy_x_pos = (idx - 1) * GROUND_SIZE;
-			float enemy_y_pos = WINDOW_HEIGHT - level_design[idx - 1] * GROUND_SIZE - (int)texture_height;
-
-			walking_enemy_entities.emplace_back(
-					Vector2f {enemy_x_pos, enemy_y_pos}, 							// position
-					Vector2f {0.25f * PLAYER_SPEED, 0},								// velocity 
-					texture_width,													// width
-					texture_height,													// height
-					ENEMY_WALKING,													// type
-					DYNAMIC,														// collision type
-					enemy_textures[WALKING]											// texture	
-					);
-		}
-		width_counter = 0;
-
-		int x_pos  		  = GROUND_SIZE * idx;
-		int diff          = (level_design[idx] == -25) ? level_design[idx - 1] : level_design[idx];
-		int height		  = WINDOW_HEIGHT - diff * GROUND_SIZE;
-		int n_dirt_layers = (GROUND_SIZE * 99 - height) / GROUND_SIZE;
-
-		Vector2f position;
-		position.x = x_pos;
-		position.y = height;
-		
-		ground_entities.emplace_back(
-					position, 								// position
-					Vector2f {0, 0}, 						// velocity
-					GROUND_SIZE, 							// width
-					GROUND_SIZE, 							// height
-					GROUND,									// entity type
-					STATIC,									// collision type
-					terrain_textures[GRASS]					// texture
-				);
-
-		for (int jdx = 1; jdx < n_dirt_layers + 1; ++jdx) {
-			Vector2f position;
-			position.x = x_pos;
-			position.y = height + jdx * GROUND_SIZE;
-			ground_entities.emplace_back(
-						position, 													// position
-						Vector2f {0, 0}, 											// velocity
-						GROUND_SIZE, 												// width
-						GROUND_SIZE, 												// height
-						GROUND,														// entity type
-						STATIC,														// collision type
-						terrain_textures[DIRT]										// texture
-					);
-			}
-		}
-	*/
 	
 	// Define player entity 
 	float scale_height = PLAYER_HEIGHT_SRC / (float)PLAYER_WIDTH_SRC;
@@ -233,6 +139,7 @@ Entities::Entities(const std::string level_design_filepath) {
 	respawn_pos.y = level_height - 6 * GROUND_SIZE - player_height;
 	// respawn_pos.y = WINDOW_HEIGHT - 6 * GROUND_SIZE - player_height;
 
+	/*
 	player_entity = Entity(
 			respawn_pos,																// position
 			Vector2f {0, 0},															// velocity 
@@ -242,6 +149,15 @@ Entities::Entities(const std::string level_design_filepath) {
 			DYNAMIC,																	// collision type
 			player_texture																// texture
 			);
+	*/
+	player_entity = PlayerEntity(
+			respawn_pos,
+			Vector2f {0, 0},
+			player_width,
+			player_height,
+			player_texture
+			);
+
 
 	SDL_Point size;
 	SDL_QueryTexture(
@@ -255,13 +171,45 @@ Entities::Entities(const std::string level_design_filepath) {
 	// Define weapon entities
 	int weapon_width = 150;
 	int weapon_height = size.y / (float)size.x * weapon_width;
-	weapon_entities.emplace_back(
-			respawn_pos,																// position
-			Vector2f {0, 0},															// velocity 
-			weapon_width,																// width
-			weapon_height,																// height 
-			WEAPON,																		// entity type
-			TRANSPARENT,																// collision type
-			weapon_textures[CHAINGUN]													// texture
+
+	weapon_entities.emplace(CHAINGUN, WeaponEntity(
+					respawn_pos,
+					Vector2f {0, 0},
+					weapon_width,
+					weapon_height,
+					CHAINGUN,
+					BULLET,
+					"CHAINGUN",
+					100,
+					100,
+					45,
+					10,
+					weapon_textures[CHAINGUN]
+					));
+
+	SDL_QueryTexture(
+			weapon_textures[PISTOL],
+			NULL, 
+			NULL, 
+			&size.x, 
+			&size.y
 			);
+
+	// Define weapon entities
+	weapon_width = 36;
+	weapon_height = size.y / (float)size.x * weapon_width;
+	weapon_entities.emplace(PISTOL, WeaponEntity(
+			respawn_pos,
+			Vector2f {0, 0},
+			weapon_width,
+			weapon_height,
+			PISTOL,
+			BULLET,
+			"PISTOL",
+			10000,
+			10000,
+			4,
+			10,
+			weapon_textures[PISTOL]
+			));
 }
