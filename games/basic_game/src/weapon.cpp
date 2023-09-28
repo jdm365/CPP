@@ -55,8 +55,6 @@ void Weapon::fire(
 		ammo--;
 		fps_cntr = (int)(60 / rounds_per_second);
 
-		Mix_Volume(-1, MIX_MAX_VOLUME / 16);
-
 		Mix_PlayChannel(-1, gunshot_sound, 0);
 
 		if (gunshot_sound == NULL) {

@@ -17,24 +17,21 @@ SDL_Texture* player_texture;
 SDL_Texture* terrain_textures[2];
 SDL_Texture* enemy_textures[2];
 SDL_Texture* weapon_textures[2];
-SDL_Texture* projectile_textures[1];
+SDL_Texture* projectile_textures[2];
 SDL_Texture* ammo_texture;
 
 void load_textures(SDL_Renderer* renderer) {
-	background_texture	  	  	= load_texture(renderer, NAMEK_FILEPATH);
-	player_texture		  	  	= load_texture(renderer, PLAYER_FILEPATH);
-	terrain_textures[GRASS]   	= load_texture(renderer, GRASS_FILEPATH);
-	terrain_textures[DIRT]    	= load_texture(renderer, DIRT_FILEPATH);
-	enemy_textures[WALKING]   	= load_texture(renderer, KRISTIN_MOUSTACHE_FILEPATH);
-	enemy_textures[FLYING]    	= load_texture(renderer, KRISTIN_JUMP_FILEPATH);
-	weapon_textures[CHAINGUN]   = load_texture(renderer, CHAINGUN_FILEPATH);
-	weapon_textures[PISTOL]     = load_texture(renderer, PISTOL_FILEPATH);
-	projectile_textures[BULLET] = load_texture(renderer, BULLET_FILEPATH);
-	ammo_texture                = load_texture(renderer, AMMO_FILEPATH);
-
-	if (weapon_textures[PISTOL] == NULL) {
-		std::cout << "Pistol texture is NULL" << std::endl;
-	}
+	background_texture	  	  	  = load_texture(renderer, NAMEK_FILEPATH);
+	player_texture		  	  	  = load_texture(renderer, PLAYER_FILEPATH);
+	terrain_textures[GRASS]   	  = load_texture(renderer, GRASS_FILEPATH);
+	terrain_textures[DIRT]    	  = load_texture(renderer, DIRT_FILEPATH);
+	enemy_textures[WALKING]   	  = load_texture(renderer, KRISTIN_MOUSTACHE_FILEPATH);
+	enemy_textures[FLYING]    	  = load_texture(renderer, KRISTIN_JUMP_FILEPATH);
+	weapon_textures[CHAINGUN]     = load_texture(renderer, CHAINGUN_FILEPATH);
+	weapon_textures[PISTOL]       = load_texture(renderer, PISTOL_FILEPATH);
+	projectile_textures[BULLET]   = load_texture(renderer, BULLET_FILEPATH);
+	projectile_textures[FIREBALL] = load_texture(renderer, FIREBALL_FILEPATH);
+	ammo_texture                  = load_texture(renderer, AMMO_FILEPATH);
 }
 
 Mix_Chunk* gunshot_sound;
@@ -42,16 +39,20 @@ Mix_Chunk* reload_sound;
 Mix_Chunk* empty_chamber_sound;
 Mix_Chunk* boing_sound;
 Mix_Chunk* dying_sound;
+Mix_Chunk* fireball_sound;
+Mix_Chunk* groan_sound;
 
 Mix_Music* dark_halls;
 Mix_Music* imps_song;
 
 void load_sounds() {
-	gunshot_sound 		= load_wav(GUNSHOT_FILEPATH);
-	reload_sound  		= load_wav(RELOAD_FILEPATH);
-	empty_chamber_sound = load_wav(EMPTY_CHAMBER_FILEPATH);
-	boing_sound   		= load_wav(BOING_FILEPATH);
-	dying_sound   		= load_wav(DYING_FILEPATH);
+	gunshot_sound 		= load_wav(GUNSHOT_FILEPATH, 0.0625f);
+	reload_sound  		= load_wav(RELOAD_FILEPATH, 0.3f);
+	empty_chamber_sound = load_wav(EMPTY_CHAMBER_FILEPATH, 0.3f);
+	boing_sound   		= load_wav(BOING_FILEPATH, 0.3f);
+	dying_sound   		= load_wav(DYING_FILEPATH, 0.3f);
+	fireball_sound 		= load_wav(FIREBALL_SOUND_FILEPATH, 0.15f);
+	groan_sound   		= load_wav(GROAN_SOUND_FILEPATH, 0.75f);
 
 	dark_halls    		= load_mp3(DARK_HALLS_FILEPATH);
 	imps_song     		= load_mp3(IMPS_SONG_FILEPATH);
@@ -113,13 +114,15 @@ SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath) {
 	return texture;
 }
 
-Mix_Chunk* load_wav(std::string filepath) {
+Mix_Chunk* load_wav(std::string filepath, float ratio_max_volume) {
 	Mix_Chunk* sound = NULL;
 	sound = Mix_LoadWAV(filepath.c_str());
 
 	if (sound == NULL) {
 		std::cout << "Failed to load a sound." << SDL_GetError() << std::endl;
 	}
+
+	Mix_VolumeChunk(sound, MIX_MAX_VOLUME * ratio_max_volume);
 	return sound;
 }
 
@@ -139,7 +142,7 @@ void clear_window(SDL_Renderer* renderer) {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 
-int get_sprite_index(bool is_standing_still, const int frame_idx) {
+int get_sprite_index_player(bool is_standing_still, const int frame_idx) {
 	// 60 FPS
 	// Complete 7 phase walking animation in 1 second.
 	// 60 / 7 = 8.57 frames per walk cycle. Call it 8.
@@ -190,16 +193,16 @@ void render_player(
 	// Size and location of the sprite on the sprite sheet and dst.
 	SDL_Rect src, dst;
 
-	int step_index = get_sprite_index((bool)(player_entity.vel.x == 0), frame_idx);
+	int step_index = get_sprite_index_player((bool)(player_entity.vel.x == 0), frame_idx);
 
-	Vector2f _src;
+	Vector2i _src;
 	if (player_entity.vel.x == 0.0f) {
 		_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
 	}
 	else {
 		_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
 	}
-	src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
+	src = {_src.x, _src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
 
 	src.w = PLAYER_WIDTH_SRC;
 	src.h = PLAYER_HEIGHT_SRC - 1;
@@ -223,7 +226,8 @@ void render_player(
 void render_enemy(
 		SDL_Renderer* renderer,
 		EnemyEntity& enemy_entity,
-		const Vector2i& scroll_factors
+		const Vector2i& scroll_factors,
+		const int frame_idx
 		) {
 	if (!enemy_entity.alive) return;
 	if (enemy_entity.pos.x > scroll_factors.x + WINDOW_WIDTH) return;
@@ -232,19 +236,28 @@ void render_enemy(
 	SDL_Point size;
 	SDL_QueryTexture(enemy_entity.texture, NULL, NULL, &size.x, &size.y);
 
-	// Size and location of the sprite on the sprite sheet and dst.
 	SDL_Rect src, dst;
-	src.x = 0;
-	src.y = 0;
-	src.w = size.x;
-	src.h = size.y;
+
+	// Size and location of the sprite on the sprite sheet and dst.
+	if (enemy_entity.enemy_id == ENEMY_WALKING) {
+		int step_index = get_sprite_index_player((bool)(enemy_entity.vel.x == 0), frame_idx);
+
+		Vector2i _src = ENEMY_SPRITE_SHEET_POSITIONS[step_index % 3];
+		src = {_src.x, _src.y, 35, size.y};
+	}
+	else if (enemy_entity.enemy_id == ENEMY_FLYING) {
+		src.x = 0;
+		src.y = 0;
+		src.w = size.x;
+		src.h = size.y;
+	}
 
 	dst.x = enemy_entity.pos.x - scroll_factors.x;
 	dst.y = enemy_entity.pos.y + scroll_factors.y;
-	dst.w = enemy_entity.width;
+	dst.w = enemy_entity.height * src.w / src.h;
 	dst.h = enemy_entity.height;
 
-	enemy_entity.facing_right = enemy_entity.vel.x > 0.0f;
+	enemy_entity.facing_right = (enemy_entity.vel.x > 0.0f);
 
 	SDL_RenderCopyEx(
 			renderer, 
@@ -473,16 +486,16 @@ void render_entity(
 		dst.h = entity.height;
 	}
 	else if (entity.entity_type == PLAYER) {
-		int step_index = get_sprite_index((bool)(entity.vel.x == 0), frame_idx);
+		int step_index = get_sprite_index_player((bool)(entity.vel.x == 0), frame_idx);
 
-		Vector2f _src;
+		Vector2i _src;
 		if (entity.vel.x == 0.0f) {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[(step_index % 3) + 7];
 		}
 		else {
 			_src = PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[step_index % 5];
 		}
-		src = {(int)_src.x, (int)_src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
+		src = {_src.x, _src.y, PLAYER_WIDTH_SRC, PLAYER_HEIGHT_SRC - 1};
 
 		src.w = PLAYER_WIDTH_SRC;
 		src.h = PLAYER_HEIGHT_SRC - 1;
@@ -528,7 +541,8 @@ void render_all(
 		render_enemy(
 				renderer,
 				entity,
-				scroll_factors
+				scroll_factors,
+				frame_idx
 				);
 	}
 
@@ -536,7 +550,8 @@ void render_all(
 		render_enemy(
 				renderer,
 				entity,
-				scroll_factors
+				scroll_factors,
+				frame_idx
 				);
 	}
 
@@ -591,7 +606,6 @@ void quit(SDL_Window* window) {
 void tick(int& last_time, int& frame_idx) {
 	int time_elapsed = (int)SDL_GetTicks() - last_time;
 	int delay_time   = (int)1000 / FPS - time_elapsed;
-	// std::cout << "Possible FPS: " << 1000 / time_elapsed << std::endl;
 
 	if (delay_time < 0) {
 		std::cout << "FPS: " << 1000 / time_elapsed << std::endl;

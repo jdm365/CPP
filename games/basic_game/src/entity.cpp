@@ -81,7 +81,6 @@ ProjectileEntity WeaponEntity::fire(
 		}
 		fps_cntr = (int)(FPS / rounds_per_second);
 
-		Mix_Volume(-1, MIX_MAX_VOLUME / 16);
 		Mix_PlayChannel(-1, gunshot_sound, 0);
 
 		return projectile_entity;
@@ -93,7 +92,6 @@ ProjectileEntity WeaponEntity::fire(
 	}
 	else if (ammo == 0) {
 		fps_cntr += rounds_per_second;
-		Mix_Volume(-1, MIX_MAX_VOLUME / 16);
 		Mix_PlayChannel(-1, empty_chamber_sound, 0);
 
 		ProjectileEntity projectile_entity;

@@ -13,7 +13,8 @@
 
 void detect_collisions(
 		Entities& entities,
-		Vector2i& scroll_factors
+		Vector2i& scroll_factors,
+		const int frame_idx
 		);
 void _detect_collision(
 		Entity& src_entity, 
@@ -40,6 +41,10 @@ void detect_collision_enemy_ground(
 		EnemyEntity& enemy_entity,
 		GroundEntity& ground_entity
 		);
+void detect_collision_projectile_player(
+		ProjectileEntity& projectile_entity,
+		PlayerEntity& enemy_entity
+		);
 void detect_collision_projectile_enemy(
 		ProjectileEntity& projectile_entity,
 		EnemyEntity& enemy_entity
@@ -56,7 +61,8 @@ void update_player(
 void update_enemy(
 		Entities& entity_manager,
 		EnemyEntity& entity, 
-		Vector2i& scroll_factors
+		Vector2i& scroll_factors,
+		const int frame_idx
 		);
 void update_projectiles(
 		std::vector<ProjectileEntity>& projectile_entities,

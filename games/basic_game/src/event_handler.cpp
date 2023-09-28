@@ -13,60 +13,12 @@
 #include "../include/math.hpp"
 
 
-/*
 void detect_collisions(
 		Entities& entities, 
-		Vector2i& scroll_factors
-		) {
-	// Player -> Enemies_0, Enemies_1, ...
-	// Player -> Platforms_0, Platforms_1, ...
-	// Enemies_0 -> Enemies_1, Enemies_2, ...
-	// Enemies_0 -> Platforms_0, Platforms_1, ...
-	
-	// PLAYER
-	std::vector<Entity*> non_player_entities = entities.get_non_player_entities();
-
-	#pragma omp parallel for schedule(static)
-	for (Entity* entity: non_player_entities) {
-		if (!entity->alive || entity->entity_type == PROJECTILE) {
-			continue;
-		}
-		_detect_collision(entities.player_entity, *entity);
-	}
-	update(entities, entities.player_entity, scroll_factors);
-
-	// ENEMIES
-	#pragma omp parallel for schedule(static)
-	for (int idx = 0; idx < (int)non_player_entities.size(); ++idx) {
-		if (
-				non_player_entities[idx]->collision_type != DYNAMIC 
-					|| 
-				!non_player_entities[idx]->alive
-			) {
-			continue;
-		}
-
-		non_player_entities[idx]->overhang = true;
-		for (int jdx = 0; jdx < (int)non_player_entities.size(); ++jdx) {
-			if (!non_player_entities[jdx]->alive) {
-				continue;
-			}
-			_detect_collision(
-					*non_player_entities[idx],
-					*non_player_entities[jdx]
-					);
-		}
-		update(entities, *non_player_entities[idx], scroll_factors);
-	}
-}
-*/
-void detect_collisions(
-		Entities& entities, 
-		Vector2i& scroll_factors
+		Vector2i& scroll_factors,
+		const int frame_idx
 		) {
 	// PLAYER
-	// std::vector<Entity*> non_player_entities = entities.get_non_player_entities();
-
 	#pragma omp parallel for schedule(static)
 	for (GroundEntity& entity: entities.ground_entities) {
 		if (!entity.alive) {
@@ -89,7 +41,6 @@ void detect_collisions(
 		}
 		detect_collision_player_enemy(entities.player_entity, entity); 
 	}
-	update_player(entities, entities.player_entity, scroll_factors);
 
 	#pragma omp parallel for schedule(static)
 	for (PickupEntity& entity: entities.ammo_entities) {
@@ -123,11 +74,13 @@ void detect_collisions(
 			}
 			detect_collision_projectile_ground(entity, dst_entity);
 		}
+		detect_collision_projectile_player(entity, entities.player_entity);
 	}
+	update_player(entities, entities.player_entity, scroll_factors);
 	update_projectiles(entities.projectile_entities, scroll_factors);
 
 	// ENEMIES
-	// #pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for (EnemyEntity& src_entity: entities.walking_enemy_entities) {
 		if (!src_entity.alive) {
 			continue;
@@ -146,28 +99,6 @@ void detect_collisions(
 		}
 	}
 
-	/*
-	#pragma omp parallel for schedule(static)
-	for (EnemyEntity& src_entity: entities.flying_enemy_entities) {
-		if (!src_entity.alive) {
-			continue;
-		}
-		for (EnemyEntity& dst_entity: entities.walking_enemy_entities) {
-			if (!dst_entity.alive) {
-				continue;
-			}
-			detect_collision_enemy_enemy(src_entity, dst_entity);
-		}
-		for (EnemyEntity& dst_entity: entities.flying_enemy_entities) {
-			if (!dst_entity.alive) {
-				continue;
-			}
-			detect_collision_enemy_enemy(src_entity, dst_entity);
-		}
-		update_enemy(entities, src_entity, scroll_factors);
-	}
-	*/
-
 	#pragma omp parallel for schedule(static)
 	for (EnemyEntity& src_entity: entities.flying_enemy_entities) {
 		if (!src_entity.alive) {
@@ -179,7 +110,7 @@ void detect_collisions(
 			}
 			detect_collision_enemy_ground(src_entity, dst_entity);
 		}
-		update_enemy(entities, src_entity, scroll_factors);
+		update_enemy(entities, src_entity, scroll_factors, frame_idx);
 	}
 
 	#pragma omp parallel for schedule(static)
@@ -193,7 +124,7 @@ void detect_collisions(
 			}
 			detect_collision_enemy_ground(src_entity, dst_entity);
 		}
-		update_enemy(entities, src_entity, scroll_factors);
+		update_enemy(entities, src_entity, scroll_factors, frame_idx);
 	}
 }
 
@@ -220,6 +151,11 @@ void detect_collision_player_enemy(
 
 	float dst_bottom = dst_next_pos.y + dst_entity.height;
 	float dst_right  = dst_next_pos.x + dst_entity.width;
+
+	dst_entity.distance_from_player = Vector2f {
+		dst_entity.pos.x - src_entity.pos.x + (dst_entity.width * 0.5f),
+		dst_entity.pos.y - src_entity.pos.y - (dst_entity.height * 0.5f)
+	};
 
 	// Only detect collisions for objects near src.
 	if (!(src_next_pos.x < dst_right + EPS && src_right > dst_next_pos.x - EPS
@@ -267,14 +203,11 @@ void detect_collision_player_enemy(
 		) {
 		local_collisions[2] = true;
 	}
-
-	dst_entity.distance_from_player = Vector2f {
-			std::abs(src_entity.pos.x - dst_entity.pos.x),
-			std::abs(src_entity.pos.y - dst_entity.pos.y)
-	};
-
 	if (local_collisions[0] || local_collisions[2]) {
 		src_entity.health -= ENEMY_DPF;
+
+		// Play groan sound
+		Mix_PlayChannel(-1, groan_sound, 0);
 	}
 	else if (local_collisions[1] || local_collisions[3]) {
 		dst_entity.health -= 100;
@@ -282,11 +215,9 @@ void detect_collision_player_enemy(
 		dst_entity.alive = false;
 
 		// Play boing sound
-		// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 		Mix_PlayChannel(-1, boing_sound, 0);
 
 		// Play dying sound
-		// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 		Mix_PlayChannel(-1, dying_sound, 0);
 		return;
 	}
@@ -676,6 +607,10 @@ void detect_collision_projectile_enemy(
 		ProjectileEntity& src_entity,
 		EnemyEntity& dst_entity
 		) {
+	if (src_entity.projectile_id == FIREBALL) {
+		return;
+	}
+
 	bool local_collisions[4] = {false, false, false, false};
 	const float EPS = 1e-3;
 
@@ -742,11 +677,95 @@ void detect_collision_projectile_enemy(
 		local_collisions[2] = true;
 	}
 
-	dst_entity.health -= 10;
+	dst_entity.health -= src_entity.damage;
 	dst_entity.vel.x -= dst_entity.vel.x;
 
 	// Stop rendering projectile by making it not alive.
 	src_entity.alive = false;
+}
+
+void detect_collision_projectile_player(
+		ProjectileEntity& src_entity,
+		PlayerEntity& dst_entity
+		) {
+	if (src_entity.projectile_id == BULLET) {
+		return;
+	}
+
+	bool local_collisions[4] = {false, false, false, false};
+	const float EPS = 1e-3;
+
+	float src_bottom_last = src_entity.pos.y + src_entity.height;
+	float src_right_last  = src_entity.pos.x + src_entity.width;
+
+	float dst_bottom_last = dst_entity.pos.y + dst_entity.height;
+	float dst_right_last  = dst_entity.pos.x + dst_entity.width;
+
+	// Detect if collision will happen on next frame.
+	Vector2f src_next_pos = vector_add(src_entity.pos, src_entity.vel);
+	Vector2f dst_next_pos = vector_add(dst_entity.pos, dst_entity.vel);
+
+	float src_bottom = src_next_pos.y + src_entity.height;
+	float src_right  = src_next_pos.x + src_entity.width;
+
+	float dst_bottom = dst_next_pos.y + dst_entity.height;
+	float dst_right  = dst_next_pos.x + dst_entity.width;
+
+	// Only detect collisions for objects near src.
+	if (!(src_next_pos.x < dst_right + EPS && src_right > dst_next_pos.x - EPS
+		&& src_next_pos.y < dst_bottom + EPS && src_bottom > dst_next_pos.y - EPS)) {
+		return;
+	}
+
+	// Collision Detection
+	// Two conditions
+	// 1. If src edge is past dst edge in next frame.
+	// 2. If src edge is not past dst edge in current frame.
+	
+	// Bottom
+	if (
+			(EPS > src_bottom_last - dst_entity.pos.y)
+				&& 
+			(-EPS < src_bottom - dst_next_pos.y)
+		) [[likely]] {
+		local_collisions[3] = true; // Bottom collision
+	}
+
+	// Top
+	else if (
+			(src_entity.pos.y - dst_bottom_last > -EPS)
+				&& 
+			(src_next_pos.y - dst_bottom < EPS)
+		) {
+		local_collisions[1] = true; // Top collision
+	}
+
+	// Left
+	else if (
+			(src_entity.pos.x - dst_right_last > -EPS)
+				&&
+			(src_next_pos.x - dst_right < EPS)
+		) {
+		local_collisions[0] = true;
+	}
+
+	// Right
+	else if (
+			(src_right_last - dst_entity.pos.x < EPS)
+				&&
+			(src_right - dst_next_pos.x > -EPS)
+		) {
+		local_collisions[2] = true;
+	}
+
+	dst_entity.health -= src_entity.damage;
+	// dst_entity.vel.x  -= dst_entity.vel.x;
+
+	// Stop rendering projectile by making it not alive.
+	src_entity.alive = false;
+
+	// Play groan sound
+	Mix_PlayChannel(-1, groan_sound, 0);
 }
 
 void detect_collision_projectile_ground(
@@ -950,7 +969,6 @@ void update(
 				entity.alive = false;
 
 				// Play dying sound
-				// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 				Mix_PlayChannel(-1, dying_sound, 0);
 
 				/*
@@ -985,16 +1003,11 @@ void update(
 			if (entity.health <= 0) {
 				entity.alive = false;
 
-				// Play dying sound
-				/*
 				Mix_PlayChannel(-1, dying_sound, 0);
-
-				Mix_Volume(-1, MIX_MAX_VOLUME / 4);
 
 				if (dying_sound == NULL) {
 					printf("Mix_PlayChannel: %s\n", Mix_GetError());
 				}
-				*/
 			}
 			break;
 
@@ -1124,11 +1137,11 @@ void update_player(
 void update_enemy(
 		Entities& entity_manager,
 		EnemyEntity& enemy_entity,
-		Vector2i& scroll_factors
+		Vector2i& scroll_factors,
+		const int frame_idx
 		) {
 	if (!enemy_entity.alive) {
 		// Play dying sound
-		// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 		Mix_PlayChannel(-1, dying_sound, 0);
 		return;
 	}
@@ -1139,6 +1152,34 @@ void update_enemy(
 				enemy_entity.vel.y -= 1.5f * JUMP_SPEED;
 			}
 
+			if ((l2_norm(enemy_entity.distance_from_player) < 1000.0f) && (frame_idx % 15 == 0)) { 
+				float firing_angle = std::atan2(
+						-enemy_entity.distance_from_player.y, 
+						-enemy_entity.distance_from_player.x
+						);
+				firing_angle += (rand() % 100) / 100.0f - 0.5f;
+
+				Vector2f projectile_vel = {
+					4.0f * std::cos(firing_angle),
+					4.0f * std::sin(firing_angle)
+				};
+
+				// Fire projectile
+				ProjectileEntity fireball(
+						Vector2f { enemy_entity.pos.x, enemy_entity.pos.y },
+						projectile_vel,
+						32,
+						32,
+						FIREBALL,
+						10,
+						projectile_textures[FIREBALL],
+						firing_angle
+						);
+				entity_manager.projectile_entities.push_back(fireball);
+
+				Mix_PlayChannel(-1, fireball_sound, 0);
+			}
+
 			enemy_entity.vel.y += GRAVITY;
 			enemy_entity.pos.y += enemy_entity.vel.y;
 
@@ -1146,7 +1187,6 @@ void update_enemy(
 				enemy_entity.alive = false;
 
 				// Play dying sound
-				// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 				Mix_PlayChannel(-1, dying_sound, 0);
 			}
 
@@ -1176,7 +1216,6 @@ void update_enemy(
 				enemy_entity.alive = false;
 
 				// Play dying sound
-				// Mix_Volume(-1, MIX_MAX_VOLUME / 3);
 				Mix_PlayChannel(-1, dying_sound, 0);
 			}
 			break;

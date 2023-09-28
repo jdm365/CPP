@@ -13,7 +13,8 @@ enum WeaponType {
 };
 
 enum ProjectileType {
-	BULLET
+	BULLET,
+	FIREBALL
 };
 
 enum EnemyType {

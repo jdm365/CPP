@@ -60,17 +60,6 @@ Entities::Entities(const std::string level_design_filepath) {
 					break;
 				case 0:
 					// Define grass entity
-					/*
-					ground_entities.emplace_back(
-							Vector2f {(float)x_offset, (float)y_offset},
-							Vector2f {0, 0},
-							GROUND_SIZE,
-							GROUND_SIZE,
-							GROUND,
-							STATIC,
-							terrain_textures[GRASS]
-							);
-					*/
 					ground_entities.emplace_back(
 							Vector2f {(float)x_offset, (float)y_offset},
 							Vector2f {0, 0},

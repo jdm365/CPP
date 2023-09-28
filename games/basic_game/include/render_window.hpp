@@ -21,10 +21,10 @@ void init_window(
 		SDL_Renderer** renderer
 		);
 SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath);
-Mix_Chunk* load_wav(std::string filepath);
+Mix_Chunk* load_wav(std::string filepath, float ratio_max_volume = 1.0f);
 Mix_Music* load_mp3(std::string filepath);
 void clear_window(SDL_Renderer* renderer);
-int get_sprite_index(bool is_standing_still, const int frame_idx);
+int get_sprite_index_player(bool is_standing_still, const int frame_idx);
 void update_scroll_factors(
 		Vector2i& scroll_factors, 
 		Vector2f& player_pos, 
@@ -44,7 +44,8 @@ void render_player(
 void render_enemy(
 		SDL_Renderer* renderer, 
 		EnemyEntity& enemy_entity,
-		const Vector2i& scroll_factors
+		const Vector2i& scroll_factors,
+		const int frame_idx
 		);
 void render_projectile(
 		SDL_Renderer* renderer, 
@@ -106,7 +107,7 @@ extern SDL_Texture* player_texture;
 extern SDL_Texture* terrain_textures[2];
 extern SDL_Texture* enemy_textures[2];
 extern SDL_Texture* weapon_textures[2];
-extern SDL_Texture* projectile_textures[1];
+extern SDL_Texture* projectile_textures[2];
 extern SDL_Texture* ammo_texture;
 
 void load_textures(SDL_Renderer* renderer);
@@ -117,21 +118,29 @@ extern Mix_Chunk* reload_sound;
 extern Mix_Chunk* empty_chamber_sound;
 extern Mix_Chunk* boing_sound;
 extern Mix_Chunk* dying_sound;
+extern Mix_Chunk* fireball_sound;
+extern Mix_Chunk* groan_sound;
 
 extern Mix_Music* dark_halls;
 extern Mix_Music* imps_song;
 
 void load_sounds();
 
-static const Vector2f PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
-	Vector2f {19, 11},
-	Vector2f {83, 11},
-	Vector2f {147, 11},
-	Vector2f {212, 11},
-	Vector2f {276, 11},
-	Vector2f {19, 75},
-	Vector2f {83, 75},
-	Vector2f {146, 75},
-	Vector2f {210, 75},
-	Vector2f {273, 75}
+static const Vector2i PLAYER_RIGHT_SPRITE_SHEET_POSITIONS[10] = {
+	Vector2i {19, 11},
+	Vector2i {83, 11},
+	Vector2i {147, 11},
+	Vector2i {212, 11},
+	Vector2i {276, 11},
+	Vector2i {19, 75},
+	Vector2i {83, 75},
+	Vector2i {146, 75},
+	Vector2i {210, 75},
+	Vector2i {273, 75}
+};
+
+static const Vector2i ENEMY_SPRITE_SHEET_POSITIONS[4] = {
+	Vector2i {11, 0},
+	Vector2i {75, 0},
+	Vector2i {139, 0}
 };

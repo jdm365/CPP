@@ -60,7 +60,8 @@ int main(int argc, char* args[]) {
 
 		detect_collisions(
 				entities,
-				scroll_factors
+				scroll_factors,
+				frame_idx
 				);
 
 		clear_window(renderer);
