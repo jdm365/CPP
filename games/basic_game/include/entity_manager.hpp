@@ -27,8 +27,7 @@ struct Entities {
 
 	std::unordered_map<uint8_t, WeaponEntity> weapon_entities;
 
-	// std::vector<Entity> ammo_entities;
-	std::vector<PickupEntity> ammo_entities;
+	std::vector<PickupEntity> pickup_entities;
 
 	// std::vector<Entity> ground_entities;
 	std::vector<GroundEntity> ground_entities;
@@ -40,32 +39,4 @@ struct Entities {
 	int level_height;
 
 	Entities(const std::string level_design_filepath);
-
-	/*
-	std::vector<Entity*> get_non_player_entities() {
-		std::vector<Entity*> all_entities;
-		all_entities.reserve(
-				walking_enemy_entities.size() + 
-				flying_enemy_entities.size() + 
-				ground_entities.size() + 
-				projectile_entities.size()
-				);
-		for (Entity& entity: walking_enemy_entities) {
-			all_entities.push_back(&entity);
-		}
-		for (Entity& entity: flying_enemy_entities) {
-			all_entities.push_back(&entity);
-		}
-		for (Entity& entity: ground_entities) {
-			all_entities.push_back(&entity);
-		}
-		for (Entity& entity: projectile_entities) {
-			all_entities.push_back(&entity);
-		}
-		for (Entity& entity: ammo_entities) {
-			all_entities.push_back(&entity);
-		}
-		return all_entities;
-	}
-	*/
 };

@@ -28,7 +28,8 @@ int get_sprite_index_player(bool is_standing_still, const int frame_idx);
 void update_scroll_factors(
 		Vector2i& scroll_factors, 
 		Vector2f& player_pos, 
-		int level_width
+		int level_width,
+		int level_height
 		);
 void render_background(
 		SDL_Renderer* renderer, 
@@ -109,6 +110,7 @@ extern SDL_Texture* enemy_textures[2];
 extern SDL_Texture* weapon_textures[2];
 extern SDL_Texture* projectile_textures[2];
 extern SDL_Texture* ammo_texture;
+extern SDL_Texture* door_texture;
 
 void load_textures(SDL_Renderer* renderer);
 

@@ -12,6 +12,8 @@
 #include "entity_manager.hpp"
 #include "weapon.hpp"
 
+#define VOLUME 0.1f
+
 SDL_Texture* background_texture;
 SDL_Texture* player_texture;
 SDL_Texture* terrain_textures[2];
@@ -19,6 +21,7 @@ SDL_Texture* enemy_textures[2];
 SDL_Texture* weapon_textures[2];
 SDL_Texture* projectile_textures[2];
 SDL_Texture* ammo_texture;
+SDL_Texture* door_texture;
 
 void load_textures(SDL_Renderer* renderer) {
 	background_texture	  	  	  = load_texture(renderer, NAMEK_FILEPATH);
@@ -32,6 +35,7 @@ void load_textures(SDL_Renderer* renderer) {
 	projectile_textures[BULLET]   = load_texture(renderer, BULLET_FILEPATH);
 	projectile_textures[FIREBALL] = load_texture(renderer, FIREBALL_FILEPATH);
 	ammo_texture                  = load_texture(renderer, AMMO_FILEPATH);
+	door_texture                  = load_texture(renderer, DOOR_FILEPATH);
 }
 
 Mix_Chunk* gunshot_sound;
@@ -46,12 +50,13 @@ Mix_Music* dark_halls;
 Mix_Music* imps_song;
 
 void load_sounds() {
-	gunshot_sound 		= load_wav(GUNSHOT_FILEPATH, 0.0625f);
+	// gunshot_sound 		= load_wav(GUNSHOT_FILEPATH, 0.0625f);
+	gunshot_sound 		= load_wav(GUNSHOT_FILEPATH, 0.125f);
 	reload_sound  		= load_wav(RELOAD_FILEPATH, 0.3f);
 	empty_chamber_sound = load_wav(EMPTY_CHAMBER_FILEPATH, 0.3f);
 	boing_sound   		= load_wav(BOING_FILEPATH, 0.3f);
 	dying_sound   		= load_wav(DYING_FILEPATH, 0.3f);
-	fireball_sound 		= load_wav(FIREBALL_SOUND_FILEPATH, 0.15f);
+	fireball_sound 		= load_wav(FIREBALL_SOUND_FILEPATH, 0.05f);
 	groan_sound   		= load_wav(GROAN_SOUND_FILEPATH, 0.75f);
 
 	dark_halls    		= load_mp3(DARK_HALLS_FILEPATH);
@@ -104,13 +109,6 @@ SDL_Texture* load_texture(SDL_Renderer* renderer, std::string filepath) {
 		std::cout << "Failed to load a texture." << SDL_GetError() << std::endl;
 	}
 
-	// Tint enemies color.
-	if (strcmp(filepath.c_str(), "assets/kristin_goggles.jpg") == 0) {
-		SDL_SetTextureColorMod(texture, 205, 50, 50);
-	}
-	else if (strcmp(filepath.c_str(), "assets/kristin_moustache.jpg") == 0) {
-		SDL_SetTextureColorMod(texture, 50, 200, 255);
-	}
 	return texture;
 }
 
@@ -122,13 +120,14 @@ Mix_Chunk* load_wav(std::string filepath, float ratio_max_volume) {
 		std::cout << "Failed to load a sound." << SDL_GetError() << std::endl;
 	}
 
-	Mix_VolumeChunk(sound, MIX_MAX_VOLUME * ratio_max_volume);
+	Mix_VolumeChunk(sound, MIX_MAX_VOLUME * ratio_max_volume * VOLUME);
 	return sound;
 }
 
 Mix_Music* load_mp3(std::string filepath) {
 	Mix_Music* sound = NULL;
 	sound = Mix_LoadMUS(filepath.c_str());
+	Mix_VolumeMusic(MIX_MAX_VOLUME * VOLUME);
 
 	if (sound == NULL) {
 		std::cout << "Failed to load a sound." << SDL_GetError() << std::endl;
@@ -161,7 +160,8 @@ int get_sprite_index_player(bool is_standing_still, const int frame_idx) {
 void update_scroll_factors(
 		Vector2i& scroll_factors,
 		Vector2f& player_pos, 
-		int level_width
+		int level_width,
+		int level_height
 		) {
 	scroll_factors = {
 		(int)player_pos.x - (int)(WINDOW_WIDTH * 0.5f),
@@ -173,10 +173,13 @@ void update_scroll_factors(
 			scroll_factors.x,
 			level_width - WINDOW_WIDTH
 			);
+	scroll_factors.y = std::max(
+			scroll_factors.y,
+			-(level_height - WINDOW_HEIGHT)
+			);
 
 	// Don't scroll past the left edge.
-	scroll_factors.x = std::max(scroll_factors.x, 0);
-	scroll_factors.y = std::max(scroll_factors.y, -99 * GROUND_SIZE + WINDOW_HEIGHT);
+	scroll_factors.x = std::max(scroll_factors.x, GROUND_SIZE);
 }
 
 void render_player(
@@ -585,7 +588,7 @@ void render_all(
 			scroll_factors
 			);
 
-	for (PickupEntity& entity: entities.ammo_entities) {
+	for (PickupEntity& entity: entities.pickup_entities) {
 		render_pickup(
 				renderer,
 				entity,

@@ -25,5 +25,6 @@ std::vector<std::vector<int8_t>> read_level_csv(const std::string in_file) {
 		row.clear();
 	}
 	file.close();
+
 	return level_design;
 }

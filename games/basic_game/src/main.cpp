@@ -10,6 +10,7 @@
 #include "weapon.hpp"
 
 
+
 int main(int argc, char* args[]) {
 	SDL_Window*   window   = NULL;
 	SDL_Renderer* renderer = NULL;
@@ -22,16 +23,16 @@ int main(int argc, char* args[]) {
 	const std::string level_2 = "assets/levels/level_2.csv";
 	const std::string levels[2] = {level_1, level_2};
 
-	Vector2i scroll_factors = {0, 0};
-
-	Entities entities(level_1);
-
-	int level_width  = entities.level_width;
-	int level_height = entities.level_height;
-
 	uint32_t level_number = 0;
 	int 	 frame_idx 	  = 0;
 	int 	 time_elapsed = 0;
+
+	Vector2i scroll_factors = {0, 0};
+
+	Entities entities(levels[level_number]);
+
+	int level_width  = entities.level_width;
+	int level_height = entities.level_height;
 
 	const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
 	uint8_t 	   last_keyboard_state[SDL_NUM_SCANCODES] = {0};
@@ -43,8 +44,8 @@ int main(int argc, char* args[]) {
 	while (true) {
 		// Play music if not done playing
 		if (Mix_PlayingMusic() == 0) {
-			Mix_PlayMusic(imps_song, -1);
-			// Mix_PlayMusic(dark_halls, -1);
+			// Mix_PlayMusic(imps_song, -1);
+			Mix_PlayMusic(dark_halls, -1);
 		}
 
 		// Get keyboard state
@@ -69,7 +70,8 @@ int main(int argc, char* args[]) {
 		update_scroll_factors(
 				scroll_factors,
 				entities.player_entity.pos,
-				level_width
+				level_width,
+				level_height
 				);
 
 		render_all(renderer, entities, scroll_factors, frame_idx);
@@ -102,7 +104,7 @@ int main(int argc, char* args[]) {
 		}
 
 		// Check if level complete
-		if (entities.player_entity.pos.x - scroll_factors.x + entities.player_entity.width > WINDOW_WIDTH) {
+		if (entities.player_entity.level_complete) {
 			// Wait 3 seconds, then load next level.
 			level_number++;
 			center_message(renderer, "LEVEL COMPLETE");
@@ -112,8 +114,8 @@ int main(int argc, char* args[]) {
 			Mix_ResumeMusic();
 			entities = Entities(levels[level_number]);
 			level_width = entities.level_width;
+			level_height = entities.level_height;
 			respawn(entities, renderer, scroll_factors, level_number + 1);
-			continue;
 		}
 
 		display(renderer);

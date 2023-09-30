@@ -20,6 +20,7 @@
 #define PISTOL_FILEPATH				"assets/textures/pistol.png"
 #define CHAINGUN_FILEPATH			"assets/textures/chain_gun.png"
 #define AMMO_FILEPATH				"assets/textures/ammo_texture.png"
+#define DOOR_FILEPATH				"assets/textures/door.png"
 
 // Sounds
 #define GUNSHOT_FILEPATH			"assets/sounds/gunshot.wav"

@@ -21,9 +21,6 @@ void detect_collisions(
 	// PLAYER
 	#pragma omp parallel for schedule(static)
 	for (GroundEntity& entity: entities.ground_entities) {
-		if (!entity.alive) {
-			continue;
-		}
 		detect_collision_player_ground(entities.player_entity, entity); 
 	}
 
@@ -43,7 +40,7 @@ void detect_collisions(
 	}
 
 	#pragma omp parallel for schedule(static)
-	for (PickupEntity& entity: entities.ammo_entities) {
+	for (PickupEntity& entity: entities.pickup_entities) {
 		if (!entity.alive) {
 			continue;
 		}
@@ -273,9 +270,11 @@ void detect_collision_player_ground(
 	
 	// Bottom
 	if (
-			(EPS > src_bottom_last - dst_entity.pos.y)
+			(-EPS < dst_entity.pos.y - src_bottom_last)
 				&& 
 			(-EPS < src_bottom - dst_next_pos.y)
+				&&
+			(dst_entity.collision_edges & 0b1000)
 		) [[likely]] {
 		local_collisions[3] = true; // Bottom collision
 	}
@@ -399,15 +398,17 @@ void detect_collision_player_pickup(
 		local_collisions[2] = true;
 	}
 
-	dst_entity.alive = false;
 
 	if (dst_entity.pickup_id == AMMO) {
+		dst_entity.alive = false;
 		uint8_t active_weapon = entities.player_entity.active_weapon_id;
-		// Use unordered map?
 		entities.weapon_entities[active_weapon].ammo = std::min(
 				entities.weapon_entities[active_weapon].max_ammo,
 				entities.weapon_entities[active_weapon].ammo + 50
 				);
+	}
+	else if (dst_entity.pickup_id == DOOR) {
+		entities.player_entity.level_complete = true;
 	}
 
 	// Play reload_sound
@@ -1084,6 +1085,7 @@ void update_player(
 	}
 	else if (player_entity.collisions[1]) {
 		player_entity.vel.y = GRAVITY;
+		player_entity.on_ground = false;
 	}
 	else {
 		player_entity.vel.y += GRAVITY;
@@ -1098,7 +1100,7 @@ void update_player(
 		player_entity.pos.x = 0;
 	}
 	else if (player_entity.pos.x - scroll_factors.x + player_entity.width > WINDOW_WIDTH) {
-		player_entity.pos.x = WINDOW_WIDTH + scroll_factors.x - player_entity.width + 20;
+		player_entity.pos.x = WINDOW_WIDTH + scroll_factors.x - player_entity.width;
 	}
 
 	{
@@ -1149,7 +1151,7 @@ void update_enemy(
 	switch(enemy_entity.enemy_id) {
 		case ENEMY_FLYING:
 			if (enemy_entity.pos.y == enemy_entity.respawn_pos.y) {
-				enemy_entity.vel.y -= 1.5f * JUMP_SPEED;
+				enemy_entity.vel.y -= 0.5f * JUMP_SPEED;
 			}
 
 			if ((l2_norm(enemy_entity.distance_from_player) < 1000.0f) && (frame_idx % 15 == 0)) { 
@@ -1180,7 +1182,7 @@ void update_enemy(
 				Mix_PlayChannel(-1, fireball_sound, 0);
 			}
 
-			enemy_entity.vel.y += GRAVITY;
+			enemy_entity.vel.y += GRAVITY * 0.167f;
 			enemy_entity.pos.y += enemy_entity.vel.y;
 
 			if (enemy_entity.health <= 0) {
@@ -1301,7 +1303,8 @@ void respawn(
 		memset(entity.collisions, 0, sizeof(entity.collisions));
 	}
 
-	for (PickupEntity& entity: entities.ammo_entities) {
+	for (PickupEntity& entity: entities.pickup_entities) {
 		entity.alive = true;
 	}
+	entities.player_entity.level_complete = false;
 }

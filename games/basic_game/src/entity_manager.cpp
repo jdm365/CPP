@@ -14,17 +14,6 @@
 
 Entities::Entities(const std::string level_design_filepath) {
 	// Define background entity
-	/*
-	background_entity = Entity(
-			Vector2f {0, 0},							// position 
-			Vector2f {0, 0},							// velocity 
-			WINDOW_WIDTH,								// width
-			WINDOW_HEIGHT,								// height 
-			BACKGROUND,									// entity type
-			TRANSPARENT,								// collision type
-			background_texture							// texture	
-			);
-	*/
 	background_entity = BackgroundEntity(background_texture);
 
 	std::vector<std::vector<int8_t>> level_design = read_level_csv(level_design_filepath);
@@ -77,7 +66,9 @@ Entities::Entities(const std::string level_design_filepath) {
 							GROUND_SIZE,
 							GROUND_SIZE,
 							DIRT,
-							terrain_textures[DIRT]
+							terrain_textures[DIRT],
+							0,
+							7
 							);
 					break;
 				case 2:
@@ -93,7 +84,7 @@ Entities::Entities(const std::string level_design_filepath) {
 					break;
 				case 3:
 					// Define ammo entity
-					ammo_entities.emplace_back(
+					pickup_entities.emplace_back(
 							Vector2f {(float)x_offset, (float)y_offset - ammo_height},
 							Vector2f {0, 0},
 							64,
@@ -113,6 +104,16 @@ Entities::Entities(const std::string level_design_filepath) {
 							enemy_textures[FLYING]
 							);
 					break;
+				case 5:
+					pickup_entities.emplace_back(
+							Vector2f {(float)x_offset, (float)y_offset - 64.0f},
+							Vector2f {0, 0},
+							64,
+							96,
+							DOOR,
+							door_texture
+							);
+					break;
 			}
 		}
 	}
@@ -124,21 +125,9 @@ Entities::Entities(const std::string level_design_filepath) {
 
 	Vector2f respawn_pos;
 	// TODO: Don't hardcode.
-	respawn_pos.x = 4 * GROUND_SIZE;
+	respawn_pos.x = 2 * GROUND_SIZE;
 	respawn_pos.y = level_height - 6 * GROUND_SIZE - player_height;
-	// respawn_pos.y = WINDOW_HEIGHT - 6 * GROUND_SIZE - player_height;
 
-	/*
-	player_entity = Entity(
-			respawn_pos,																// position
-			Vector2f {0, 0},															// velocity 
-			player_width,																// width
-			player_height,																// height 
-			PLAYER,																		// entity type
-			DYNAMIC,																	// collision type
-			player_texture																// texture
-			);
-	*/
 	player_entity = PlayerEntity(
 			respawn_pos,
 			Vector2f {0, 0},

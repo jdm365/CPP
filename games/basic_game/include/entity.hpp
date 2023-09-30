@@ -35,7 +35,8 @@ enum EntityType {
 	GROUND,
 	WEAPON,
 	PROJECTILE,
-	AMMO
+	AMMO,
+	DOOR
 };
 
 enum CollisionType {
@@ -120,6 +121,7 @@ struct PlayerEntity {
 	Vector2f respawn_vel;
 	bool is_collidable = true;
 	uint8_t active_weapon_id = PISTOL;
+	bool level_complete = false;
 };
 
 
@@ -179,7 +181,7 @@ struct GroundEntity {
 			uint8_t ground_id,
 			SDL_Texture* texture,
 			float angle_rad = 0.0f,
-			bool is_collidable = true
+			uint8_t collision_edges = 15
 			) :
 		pos(pos),
 		vel(vel),
@@ -188,7 +190,7 @@ struct GroundEntity {
 		ground_id(ground_id),
 		texture(texture),
 		angle_rad(angle_rad),
-		is_collidable(is_collidable) {};
+		collision_edges(collision_edges) {};
 	Vector2f pos;
 	Vector2f vel;
 	int width;
@@ -199,7 +201,9 @@ struct GroundEntity {
 	float angle_rad = 0.0f;
 
 	bool alive = true;
-	bool is_collidable = true;
+	// Use lowest 4 bits to represent which edges are collidable.
+	// left, right, top, bottom
+	uint8_t collision_edges = 15;
 };
 
 
